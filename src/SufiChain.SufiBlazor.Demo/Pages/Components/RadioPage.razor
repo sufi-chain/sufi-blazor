@@ -1,0 +1,95 @@
+@page "/demo/sufi-blazor/radio"
+
+<PageTitle>@(L["Menu:Demo:Radio"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Radio"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:RadioPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection 
+        Title="@L["Demo:RadioBasic"]"
+        SourceCode="@basicCode"
+        RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbRadioGroup @bind-Value="selectedOption">
+                <SbRadio Value="@("option1")" Label="@L["Demo:RadioOption1"]" />
+                <SbRadio Value="@("option2")" Label="@L["Demo:RadioOption2"]" />
+                <SbRadio Value="@("option3")" Label="@L["Demo:RadioOption3"]" />
+            </SbRadioGroup>
+            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:RadioSelected"]: @selectedOption</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:RadioHorizontal"]"
+        SourceCode="@horizontalCode">
+        <ExampleContent>
+            <SbRadioGroup @bind-Value="layoutOption" Orientation="SbOrientation.Horizontal">
+                <SbRadio Value="@("left")" Label="@L["Demo:RadioLeft"]" />
+                <SbRadio Value="@("center")" Label="@L["Demo:RadioCenter"]" />
+                <SbRadio Value="@("right")" Label="@L["Demo:RadioRight"]" />
+            </SbRadioGroup>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:RadioHelperText"]"
+        SourceCode="@helperCode">
+        <ExampleContent>
+            <SbRadioGroup @bind-Value="planOption" Label="@L["Demo:RadioSelectPlan"]">
+                <SbRadio Value="@("free")" Label="@L["Demo:RadioFree"]" HelperText="@L["Demo:RadioHelperBasic"]" />
+                <SbRadio Value="@("pro")" Label="@L["Demo:RadioPro"]" HelperText="@L["Demo:RadioHelperAdvanced"]" />
+                <SbRadio Value="@("enterprise")" Label="@L["Demo:RadioEnterprise"]" HelperText="@L["Demo:RadioHelperAll"]" />
+            </SbRadioGroup>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:RadioDisabled"]"
+        SourceCode="@disabledCode">
+        <ExampleContent>
+            <SbRadioGroup @bind-Value="disabledOption">
+                <SbRadio Value="@("enabled")" Label="@L["Demo:RadioEnabled"]" />
+                <SbRadio Value="@("disabled")" Label="@L["Demo:RadioDisabled"]" Disabled="true" />
+            </SbRadioGroup>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbRadio" />
+</DemoLayout>
+
+@code {
+    private string selectedOption = "option1";
+    private string layoutOption = "left";
+    private string planOption = "free";
+    private string disabledOption = "enabled";
+
+    private string basicCodeBehind = @"private string selectedOption = ""option1"";";
+
+    private string basicCode = @"<SbRadioGroup @bind-Value=""selectedOption"">
+    <SbRadio Value=""option1"" Label=""Option 1"" />
+    <SbRadio Value=""option2"" Label=""Option 2"" />
+    <SbRadio Value=""option3"" Label=""Option 3"" />
+</SbRadioGroup>";
+
+    private string horizontalCode = @"<SbRadioGroup @bind-Value=""layoutOption"" Orientation=""SbOrientation.Horizontal"">
+    <SbRadio Value=""left"" Label=""Left"" />
+    <SbRadio Value=""center"" Label=""Center"" />
+    <SbRadio Value=""right"" Label=""Right"" />
+</SbRadioGroup>";
+
+    private string helperCode = @"<SbRadioGroup @bind-Value=""planOption"" Label=""Select Plan"">
+    <SbRadio Value=""free"" Label=""Free"" HelperText=""Basic features"" />
+    <SbRadio Value=""pro"" Label=""Pro"" HelperText=""Advanced features"" />
+    <SbRadio Value=""enterprise"" Label=""Enterprise"" HelperText=""All features + support"" />
+</SbRadioGroup>";
+
+    private string disabledCode = @"<SbRadioGroup @bind-Value=""disabledOption"">
+    <SbRadio Value=""enabled"" Label=""Enabled"" />
+    <SbRadio Value=""disabled"" Label=""Disabled"" Disabled=""true"" />
+</SbRadioGroup>";
+}

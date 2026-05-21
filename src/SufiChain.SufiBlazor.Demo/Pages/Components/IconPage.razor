@@ -1,0 +1,422 @@
+@page "/demo/sufi-blazor/icon"
+@using SufiChain.SufiBlazor.Icons
+@inject IJSRuntime JS
+
+<PageTitle>Icon - Sufi Blazor Demo</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">Icon</SbHeading>
+    <SbText Color="SbColor.Muted">
+        A comprehensive icon library with @SufiIcons.Count icons across @SufiIcons.Categories.Count categories.
+        Click any icon to copy its usage code.
+    </SbText>
+
+    <SbDivider />
+
+    @* Full Icon Library with Search *@
+    <DemoSection Title="@L["Demo:IconLibrary"]" SourceCode="@libraryCode">
+        <ExampleContent>
+            <SbCard Class="my-4">
+                <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true" Class="mb-4">
+                    <div style="flex: 1; min-width: 200px; position: relative;">
+                        <SbIcon Name="search" Size="SbSize.Sm" Color="SbColor.Muted" 
+                                Style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; z-index: 1;" />
+                        <input type="text" 
+                               class="sb-search-input"
+                               placeholder="Search icons by name..." 
+                               value="@_searchQuery" 
+                               @oninput="OnSearchInput" />
+                    </div>
+                    <div style="min-width: 180px;">
+                        <select class="sb-select" @onchange="OnCategoryChanged" style="width: 100%; height: var(--sb-space-10); padding: 0 var(--sb-space-3); border-radius: var(--sb-radius-md); border: 1px solid var(--sb-color-border);">
+                            <option value="">All Categories</option>
+                            @foreach (var category in SufiIcons.Categories.OrderBy(c => c.ToString()))
+                            {
+                                <option value="@category">@category (@SufiIcons.GetByCategory(category).Count)</option>
+                            }
+                        </select>
+                    </div>
+                </SbStack>
+
+                @* Results Count *@
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted" Class="mb-3">
+                    Showing @_filteredIcons.Count of @SufiIcons.Count icons
+                    @if (_selectedCategory.HasValue)
+                    {
+                        <text> in @_selectedCategory.Value</text>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(_searchQuery))
+                    {
+                        <text> matching "@_searchQuery"</text>
+                    }
+                </SbText>
+
+                @* Icon Grid *@
+                <div class="icon-grid">
+                    @foreach (var icon in _filteredIcons.Take(200))
+                    {
+                        <div class="icon-item" @onclick="() => CopyIconUsage(icon.Name)" title="Click to copy: @GetUsageCode(icon.Name)">
+                            <SbIcon Name="@icon.Name" Size="SbSize.Lg" />
+                            <span class="icon-name">@icon.Name</span>
+                            <span class="icon-category">@icon.Category</span>
+                        </div>
+                    }
+                </div>
+
+                @if (_filteredIcons.Count > 200)
+                {
+                    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted" Class="mt-3">
+                        Showing first 200 icons. Use search to find more specific icons.
+                    </SbText>
+                }
+
+                @if (_filteredIcons.Count == 0)
+                {
+                    <SbStack Align="SbAlign.Center" Class="py-8">
+                        <SbIcon Name="search" Size="SbSize.Xl" Color="SbColor.Muted" />
+                        <SbText Color="SbColor.Muted" Class="mt-2">No icons found matching your criteria.</SbText>
+                    </SbStack>
+                }
+            </SbCard>
+        </ExampleContent>
+    </DemoSection>
+
+    @* Copied Toast *@
+    @if (_showCopiedToast)
+    {
+        <div class="copied-toast">
+            <SbIcon Name="check" Size="SbSize.Sm" />
+            <span>Copied: @_copiedIconName</span>
+        </div>
+    }
+
+    <DemoSection Title="@L["Demo:Sizes"]" SourceCode="@sizesCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Align="SbAlign.Center">
+                <SbStack Gap="2" Align="SbAlign.Center">
+                    <SbIcon Name="star" Size="SbSize.Xs" />
+                    <SbText Variant="SbTextVariant.Caption">xs (12px)</SbText>
+                </SbStack>
+                <SbStack Gap="2" Align="SbAlign.Center">
+                    <SbIcon Name="star" Size="SbSize.Sm" />
+                    <SbText Variant="SbTextVariant.Caption">sm (16px)</SbText>
+                </SbStack>
+                <SbStack Gap="2" Align="SbAlign.Center">
+                    <SbIcon Name="star" Size="SbSize.Md" />
+                    <SbText Variant="SbTextVariant.Caption">md (20px)</SbText>
+                </SbStack>
+                <SbStack Gap="2" Align="SbAlign.Center">
+                    <SbIcon Name="star" Size="SbSize.Lg" />
+                    <SbText Variant="SbTextVariant.Caption">lg (24px)</SbText>
+                </SbStack>
+                <SbStack Gap="2" Align="SbAlign.Center">
+                    <SbIcon Name="star" Size="SbSize.Xl" />
+                    <SbText Variant="SbTextVariant.Caption">xl (32px)</SbText>
+                </SbStack>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:Colors"]" SourceCode="@colorsCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbStack Align="SbAlign.Center" Gap="1">
+                    <SbIcon Name="circle" Size="SbSize.Lg" Color="SbColor.Primary" />
+                    <SbText Variant="SbTextVariant.Caption">Primary</SbText>
+                </SbStack>
+                <SbStack Align="SbAlign.Center" Gap="1">
+                    <SbIcon Name="circle" Size="SbSize.Lg" Color="SbColor.Secondary" />
+                    <SbText Variant="SbTextVariant.Caption">Secondary</SbText>
+                </SbStack>
+                <SbStack Align="SbAlign.Center" Gap="1">
+                    <SbIcon Name="check-circle" Size="SbSize.Lg" Color="SbColor.Success" />
+                    <SbText Variant="SbTextVariant.Caption">Success</SbText>
+                </SbStack>
+                <SbStack Align="SbAlign.Center" Gap="1">
+                    <SbIcon Name="alert-triangle" Size="SbSize.Lg" Color="SbColor.Warning" />
+                    <SbText Variant="SbTextVariant.Caption">Warning</SbText>
+                </SbStack>
+                <SbStack Align="SbAlign.Center" Gap="1">
+                    <SbIcon Name="alert-circle" Size="SbSize.Lg" Color="SbColor.Danger" />
+                    <SbText Variant="SbTextVariant.Caption">Danger</SbText>
+                </SbStack>
+                <SbStack Align="SbAlign.Center" Gap="1">
+                    <SbIcon Name="info" Size="SbSize.Lg" Color="SbColor.Info" />
+                    <SbText Variant="SbTextVariant.Caption">Info</SbText>
+                </SbStack>
+                <SbStack Align="SbAlign.Center" Gap="1">
+                    <SbIcon Name="settings" Size="SbSize.Lg" Color="SbColor.Muted" />
+                    <SbText Variant="SbTextVariant.Caption">Muted</SbText>
+                </SbStack>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:InButtons"]" SourceCode="@inButtonsCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true">
+                <SbButton>
+                    <StartIcon><SbIcon Name="plus" /></StartIcon>
+                    <ChildContent>Add Item</ChildContent>
+                </SbButton>
+                <SbButton Variant="SbButtonVariant.Outline">
+                    <StartIcon><SbIcon Name="edit" /></StartIcon>
+                    <ChildContent>Edit</ChildContent>
+                </SbButton>
+                <SbButton Color="SbColor.Danger" Variant="SbButtonVariant.Ghost">
+                    <StartIcon><SbIcon Name="trash" /></StartIcon>
+                    <ChildContent>Delete</ChildContent>
+                </SbButton>
+                <SbButton Color="SbColor.Success">
+                    <StartIcon><SbIcon Name="check" /></StartIcon>
+                    <ChildContent>Save</ChildContent>
+                    <EndIcon><SbIcon Name="chevron-down" /></EndIcon>
+                </SbButton>
+                <SbIconButton AriaLabel="@L["Demo:Settings"]">
+                    <Icon><SbIcon Name="settings" /></Icon>
+                </SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:Notifications"]">
+                    <Icon><SbIcon Name="bell" /></Icon>
+                </SbIconButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:RtlMirror"]" SourceCode="@rtlCode">
+        <ExampleContent>
+            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted" Class="mb-2">
+                Directional icons can be mirrored in RTL layouts using the Mirror parameter.
+            </SbText>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Align="SbAlign.Center">
+                <SbStack Align="SbAlign.Center" Gap="1">
+                    <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                        <SbIcon Name="arrow-right" Size="SbSize.Lg" />
+                        <span dir="rtl" style="display: inline-flex; align-items: center;">
+                            <SbIcon Name="arrow-right" Size="SbSize.Lg" Mirror="true" />
+                        </span>
+                    </SbStack>
+                    <SbText Variant="SbTextVariant.Caption">Normal / Mirror</SbText>
+                </SbStack>
+                <SbStack Align="SbAlign.Center" Gap="1">
+                    <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                        <SbIcon Name="chevron-right" Size="SbSize.Lg" />
+                        <span dir="rtl" style="display: inline-flex; align-items: center;">
+                            <SbIcon Name="chevron-right" Size="SbSize.Lg" Mirror="true" />
+                        </span>
+                    </SbStack>
+                    <SbText Variant="SbTextVariant.Caption">Normal / Mirror</SbText>
+                </SbStack>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbIcon" />
+</DemoLayout>
+
+<style>
+    .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 8px;
+    }
+
+    .icon-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 8px;
+        border-radius: var(--sb-radius-md);
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+        text-align: center;
+    }
+
+    .icon-item:hover {
+        background-color: var(--sb-color-surface-variant);
+    }
+
+    .icon-item:active {
+        background-color: var(--sb-color-primary-light);
+    }
+
+    .icon-name {
+        font-size: 11px;
+        color: var(--sb-color-text-primary);
+        margin-top: 6px;
+        word-break: break-all;
+        line-height: 1.2;
+    }
+
+    .icon-category {
+        font-size: 9px;
+        color: var(--sb-color-text-secondary);
+        margin-top: 2px;
+        text-transform: lowercase;
+    }
+
+    .copied-toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: var(--sb-color-success);
+        color: white;
+        padding: 10px 20px;
+        border-radius: var(--sb-radius-md);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: var(--sb-shadow-lg);
+        z-index: 9999;
+        animation: fadeInUp 0.2s ease;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+
+    .sb-select {
+        appearance: none;
+        background-color: var(--sb-color-surface);
+        color: var(--sb-color-text-primary);
+        cursor: pointer;
+    }
+
+    .sb-select:focus {
+        outline: 2px solid var(--sb-color-primary);
+        outline-offset: 2px;
+    }
+
+    .sb-search-input {
+        width: 100%;
+        height: 40px;
+        padding: 0 12px 0 40px;
+        border-radius: var(--sb-radius-md);
+        border: 1px solid var(--sb-color-border);
+        background-color: var(--sb-color-surface);
+        color: var(--sb-color-text-primary);
+        font-size: 14px;
+    }
+
+    .sb-search-input:focus {
+        outline: 2px solid var(--sb-color-primary);
+        outline-offset: 2px;
+        border-color: var(--sb-color-primary);
+    }
+
+    .sb-search-input::placeholder {
+        color: var(--sb-color-text-secondary);
+    }
+</style>
+
+@code {
+    private string _searchQuery = string.Empty;
+    private SiIconCategory? _selectedCategory;
+    private IReadOnlyCollection<SiIconMetadata> _filteredIcons = Array.Empty<SiIconMetadata>();
+    private bool _showCopiedToast;
+    private string _copiedIconName = string.Empty;
+    private System.Timers.Timer? _toastTimer;
+
+    protected override void OnInitialized()
+    {
+        UpdateFilteredIcons();
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        _searchQuery = e.Value?.ToString() ?? string.Empty;
+        UpdateFilteredIcons();
+    }
+
+    private void OnCategoryChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        _selectedCategory = string.IsNullOrEmpty(value) 
+            ? null 
+            : Enum.Parse<SiIconCategory>(value);
+        UpdateFilteredIcons();
+    }
+
+    private void UpdateFilteredIcons()
+    {
+        _filteredIcons = SufiIcons.Search(_searchQuery, _selectedCategory);
+        StateHasChanged();
+    }
+
+    private async Task CopyIconUsage(string iconName)
+    {
+        var usage = GetUsageCode(iconName);
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", usage);
+        
+        _copiedIconName = iconName;
+        _showCopiedToast = true;
+        StateHasChanged();
+
+        // Hide toast after 2 seconds
+        _toastTimer?.Dispose();
+        _toastTimer = new System.Timers.Timer(2000);
+        _toastTimer.Elapsed += (s, e) =>
+        {
+            _showCopiedToast = false;
+            _toastTimer?.Dispose();
+            InvokeAsync(StateHasChanged);
+        };
+        _toastTimer.AutoReset = false;
+        _toastTimer.Start();
+    }
+
+    private string GetUsageCode(string iconName)
+    {
+        return $"<SbIcon Name=\"{iconName}\" />";
+    }
+
+    public void Dispose()
+    {
+        _toastTimer?.Dispose();
+    }
+
+    private string libraryCode = @"// Search and filter icons
+<SbIcon Name=""home"" />
+<SbIcon Name=""user"" />
+<SbIcon Name=""settings"" />
+
+// Click any icon to copy its usage code";
+
+    private string sizesCode = @"<SbIcon Name=""star"" Size=""SbSize.Xs"" />
+<SbIcon Name=""star"" Size=""SbSize.Sm"" />
+<SbIcon Name=""star"" Size=""SbSize.Md"" />
+<SbIcon Name=""star"" Size=""SbSize.Lg"" />
+<SbIcon Name=""star"" Size=""SbSize.Xl"" />";
+
+    private string colorsCode = @"<SbIcon Name=""circle"" Color=""SbColor.Primary"" />
+<SbIcon Name=""circle"" Color=""SbColor.Secondary"" />
+<SbIcon Name=""check-circle"" Color=""SbColor.Success"" />
+<SbIcon Name=""alert-triangle"" Color=""SbColor.Warning"" />
+<SbIcon Name=""alert-circle"" Color=""SbColor.Danger"" />
+<SbIcon Name=""info"" Color=""SbColor.Info"" />
+<SbIcon Name=""settings"" Color=""SbColor.Muted"" />";
+
+    private string inButtonsCode = @"<SbButton>
+    <StartIcon><SbIcon Name=""plus"" /></StartIcon>
+    <ChildContent>Add Item</ChildContent>
+</SbButton>
+<SbButton Variant=""SbButtonVariant.Outline"">
+    <StartIcon><SbIcon Name=""edit"" /></StartIcon>
+    <ChildContent>Edit</ChildContent>
+</SbButton>
+<SbIconButton AriaLabel=""Settings"">
+    <Icon><SbIcon Name=""settings"" /></Icon>
+</SbIconButton>";
+
+    private string rtlCode = @"<SbIcon Name=""arrow-right"" Mirror=""true"" />
+<SbIcon Name=""chevron-right"" Mirror=""true"" />";
+}

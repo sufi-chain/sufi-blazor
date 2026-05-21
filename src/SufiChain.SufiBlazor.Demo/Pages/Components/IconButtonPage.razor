@@ -1,0 +1,188 @@
+@page "/demo/sufi-blazor/icon-button"
+
+<PageTitle>@(L["Menu:Demo:IconButton"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:IconButton"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:IconButtonPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection 
+        Title="@L["Demo:BasicUsage"]"
+        Description="@L["Demo:IconButtonDescription"]"
+        SourceCode='@basicCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3">
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaFavorite"]">
+                    <SbIcon Name="heart" />
+                </SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaStar"]">
+                    <SbIcon Name="star" />
+                </SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaBookmark"]">
+                    <SbIcon Name="bookmark" />
+                </SbIconButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:Variants"]"
+        SourceCode='@variantsCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3">
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaCheck"]" Variant="SbButtonVariant.Solid">
+                    <SbIcon Name="check" />
+                </SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaCheck"]" Variant="SbButtonVariant.Outline">
+                    <SbIcon Name="check" />
+                </SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaCheck"]" Variant="SbButtonVariant.Ghost">
+                    <SbIcon Name="check" />
+                </SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaCheck"]" Variant="SbButtonVariant.Link">
+                    <SbIcon Name="check" />
+                </SbIconButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:Colors"]"
+        SourceCode='@colorsCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3">
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaFavorite"]" Color="SbColor.Primary"><SbIcon Name="heart" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaFavorite"]" Color="SbColor.Secondary"><SbIcon Name="heart" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaFavorite"]" Color="SbColor.Success"><SbIcon Name="heart" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaFavorite"]" Color="SbColor.Warning"><SbIcon Name="heart" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaFavorite"]" Color="SbColor.Danger"><SbIcon Name="heart" /></SbIconButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:Sizes"]"
+        SourceCode='@sizesCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaSettings"]" Size="SbSize.Sm"><SbIcon Name="settings" Size="SbSize.Sm" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaSettings"]" Size="SbSize.Md"><SbIcon Name="settings" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaSettings"]" Size="SbSize.Lg"><SbIcon Name="settings" Size="SbSize.Lg" /></SbIconButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:States"]"
+        SourceCode='@statesCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3">
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaDelete"]"><SbIcon Name="trash" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaDelete"]" Disabled="true"><SbIcon Name="trash" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:IconButtonAriaDelete"]" Loading="true"><SbIcon Name="trash" /></SbIconButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:WithTooltip"]"
+        SourceCode='@withTooltipCode'>
+        <ExampleContent>
+            <SbIconButton AriaLabel="@L["Demo:IconButtonAriaRefresh"]" Title="@L["Demo:IconButtonTitleRefresh"]" Variant="SbButtonVariant.Outline" Color="SbColor.Primary">
+                <SbIcon Name="refresh" />
+            </SbIconButton>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:ButtonType"]"
+        SourceCode='@buttonTypeCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3">
+                <SbIconButton AriaLabel="@L["Demo:ButtonTypeButton"]" Type="button"><SbIcon Name="circle" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:ButtonTypeSubmit"]" Type="submit" Color="SbColor.Success"><SbIcon Name="check" /></SbIconButton>
+                <SbIconButton AriaLabel="@L["Demo:ButtonTypeReset"]" Type="reset" Variant="SbButtonVariant.Outline"><SbIcon Name="x" /></SbIconButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:ClickHandler"]"
+        SourceCode='@clickHandlerCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                <SbIconButton AriaLabel="@L["Demo:ClickMe"]" OnClick="OnIconButtonClick"><SbIcon Name="plus" /></SbIconButton>
+                <SbText Color="SbColor.Muted">@(iconClickCount == 0 ? L["Demo:ClickCountNone"] : string.Format(L["Demo:ClickCount"], iconClickCount))</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbIconButton" />
+</DemoLayout>
+
+@code {
+    private string basicCode = @"<SbIconButton AriaLabel=""Favorite"">
+    <SbIcon Name=""heart"" />
+</SbIconButton>";
+
+    private string variantsCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"">
+    <SbIconButton AriaLabel=""Check"" Variant=""SbButtonVariant.Solid"">
+        <SbIcon Name=""check"" />
+    </SbIconButton>
+    <SbIconButton AriaLabel=""Check"" Variant=""SbButtonVariant.Outline"">
+        <SbIcon Name=""check"" />
+    </SbIconButton>
+    <SbIconButton AriaLabel=""Check"" Variant=""SbButtonVariant.Ghost"">
+        <SbIcon Name=""check"" />
+    </SbIconButton>
+    <SbIconButton AriaLabel=""Check"" Variant=""SbButtonVariant.Link"">
+        <SbIcon Name=""check"" />
+    </SbIconButton>
+</SbStack>";
+
+    private string colorsCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"">
+    <SbIconButton AriaLabel=""Favorite"" Color=""SbColor.Primary""><SbIcon Name=""heart"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Favorite"" Color=""SbColor.Secondary""><SbIcon Name=""heart"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Favorite"" Color=""SbColor.Success""><SbIcon Name=""heart"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Favorite"" Color=""SbColor.Warning""><SbIcon Name=""heart"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Favorite"" Color=""SbColor.Danger""><SbIcon Name=""heart"" /></SbIconButton>
+</SbStack>";
+
+    private string sizesCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Align=""SbAlign.Center"">
+    <SbIconButton AriaLabel=""Settings"" Size=""SbSize.Sm""><SbIcon Name=""settings"" Size=""SbSize.Sm"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Settings"" Size=""SbSize.Md""><SbIcon Name=""settings"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Settings"" Size=""SbSize.Lg""><SbIcon Name=""settings"" Size=""SbSize.Lg"" /></SbIconButton>
+</SbStack>";
+
+    private string statesCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"">
+    <SbIconButton AriaLabel=""Delete""><SbIcon Name=""trash"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Delete"" Disabled=""true""><SbIcon Name=""trash"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Delete"" Loading=""true""><SbIcon Name=""trash"" /></SbIconButton>
+</SbStack>";
+
+    private string withTooltipCode = @"<SbIconButton AriaLabel=""Refresh data"" Title=""Refresh"" Variant=""SbButtonVariant.Outline"" Color=""SbColor.Primary"">
+    <SbIcon Name=""refresh"" />
+</SbIconButton>";
+
+    private string buttonTypeCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"">
+    <SbIconButton AriaLabel=""Button"" Type=""button""><SbIcon Name=""circle"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Submit"" Type=""submit"" Color=""SbColor.Success""><SbIcon Name=""check"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Reset"" Type=""reset"" Variant=""SbButtonVariant.Outline""><SbIcon Name=""x"" /></SbIconButton>
+</SbStack>";
+
+    private string clickHandlerCode = @"<SbIconButton AriaLabel=""Click me"" OnClick=""OnIconButtonClick"">
+    <SbIcon Name=""plus"" />
+</SbIconButton>
+
+@code {
+    private int iconClickCount;
+    private void OnIconButtonClick(MouseEventArgs e) => iconClickCount++;
+}";
+
+    private int iconClickCount;
+    private void OnIconButtonClick(MouseEventArgs e) => iconClickCount++;
+}

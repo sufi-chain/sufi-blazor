@@ -1,0 +1,89 @@
+@namespace SufiChain.SufiBlazor.Components.Builder
+
+<div class="sb-inspector-panel @(Collapsed ? "sb-inspector-panel--collapsed" : "") @Class">
+    <div class="sb-inspector-panel__header">
+        <h3 class="sb-inspector-panel__title">@Title</h3>
+        @if (Collapsible)
+        {
+            <button type="button" class="sb-inspector-panel__toggle" @onclick="ToggleCollapse">
+                @(Collapsed ? "▶" : "▼")
+            </button>
+        }
+        @if (HeaderActions != null)
+        {
+            <div class="sb-inspector-panel__header-actions">
+                @HeaderActions
+            </div>
+        }
+    </div>
+    
+    @if (!Collapsed)
+    {
+        <div class="sb-inspector-panel__body">
+            @if (Sections != null)
+            {
+                @Sections
+            }
+            else
+            {
+                @ChildContent
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Panel title.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = "Properties";
+    
+    /// <summary>
+    /// Panel content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Panel sections.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Sections { get; set; }
+    
+    /// <summary>
+    /// Header action buttons.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? HeaderActions { get; set; }
+    
+    /// <summary>
+    /// Whether the panel is collapsible.
+    /// </summary>
+    [Parameter]
+    public bool Collapsible { get; set; } = true;
+    
+    /// <summary>
+    /// Whether the panel is collapsed.
+    /// </summary>
+    [Parameter]
+    public bool Collapsed { get; set; }
+    
+    /// <summary>
+    /// Callback when collapsed state changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> CollapsedChanged { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private async Task ToggleCollapse()
+    {
+        Collapsed = !Collapsed;
+        await CollapsedChanged.InvokeAsync(Collapsed);
+    }
+}

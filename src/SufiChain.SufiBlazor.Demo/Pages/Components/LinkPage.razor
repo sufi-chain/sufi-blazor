@@ -1,0 +1,111 @@
+@page "/demo/sufi-blazor/link"
+
+<PageTitle>@(L["Menu:Demo:Link"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Link"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:LinkPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection 
+        Title="@L["Demo:BasicUsage"]"
+        SourceCode='@basicCode'>
+        <ExampleContent>
+            <SbLink Href="#">@L["Demo:BasicLink"]</SbLink>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:Colors"]"
+        SourceCode='@colorsCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="2">
+                <SbLink Href="#" Color="SbColor.Primary">@L["Demo:PrimaryLink"]</SbLink>
+                <SbLink Href="#" Color="SbColor.Secondary">@L["Demo:SecondaryLink"]</SbLink>
+                <SbLink Href="#" Color="SbColor.Success">@L["Demo:SuccessLink"]</SbLink>
+                <SbLink Href="#" Color="SbColor.Warning">@L["Demo:WarningLink"]</SbLink>
+                <SbLink Href="#" Color="SbColor.Danger">@L["Demo:DangerLink"]</SbLink>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:Underline"]"
+        SourceCode='@underlineCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="2">
+                <SbLink Href="#" Underline="SbLinkUnderline.Always">@L["Demo:AlwaysUnderlined"]</SbLink>
+                <SbLink Href="#" Underline="SbLinkUnderline.Hover">@L["Demo:UnderlineOnHover"]</SbLink>
+                <SbLink Href="#" Underline="SbLinkUnderline.None">@L["Demo:NoUnderline"]</SbLink>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:ExternalLink"]"
+        SourceCode='@externalCode'>
+        <ExampleContent>
+            <SbLink Href="https://github.com" Target="_blank" External="true">
+                @L["Demo:VisitGitHub"]
+            </SbLink>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:Disabled"]"
+        SourceCode='@disabledCode'>
+        <ExampleContent>
+            <SbLink Href="#" Disabled="true">@L["Demo:LinkDisabledText"]</SbLink>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:ClickHandler"]"
+        SourceCode='@clickHandlerCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                <SbLink Href="#" OnClick="OnLinkClick">@L["Demo:ClickMe"]</SbLink>
+                <SbText Color="SbColor.Muted">@(linkClickCount == 0 ? L["Demo:ClickCountNone"] : string.Format(L["Demo:ClickCount"], linkClickCount))</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbLink" />
+</DemoLayout>
+
+@code {
+    private string basicCode = @"<SbLink Href=""#"">Basic Link</SbLink>";
+
+    private string colorsCode = @"<SbStack Direction=""SbStackDirection.Column"" Gap=""2"">
+    <SbLink Href=""#"" Color=""SbColor.Primary"">Primary Link</SbLink>
+    <SbLink Href=""#"" Color=""SbColor.Secondary"">Secondary Link</SbLink>
+    <SbLink Href=""#"" Color=""SbColor.Success"">Success Link</SbLink>
+    <SbLink Href=""#"" Color=""SbColor.Warning"">Warning Link</SbLink>
+    <SbLink Href=""#"" Color=""SbColor.Danger"">Danger Link</SbLink>
+</SbStack>";
+
+    private string underlineCode = @"<SbStack Direction=""SbStackDirection.Column"" Gap=""2"">
+    <SbLink Href=""#"" Underline=""SbLinkUnderline.Always"">Always Underlined</SbLink>
+    <SbLink Href=""#"" Underline=""SbLinkUnderline.Hover"">Underline on Hover</SbLink>
+    <SbLink Href=""#"" Underline=""SbLinkUnderline.None"">No Underline</SbLink>
+</SbStack>";
+
+    private string externalCode = @"<SbLink Href=""https://github.com"" Target=""_blank"" External=""true"">
+    Visit GitHub
+</SbLink>";
+
+    private string disabledCode = @"<SbLink Href=""#"" Disabled=""true"">Admin (Restricted)</SbLink>";
+
+    private string clickHandlerCode = @"<SbLink Href=""#"" OnClick=""OnLinkClick"">Click me</SbLink>
+
+@code {
+    private int linkClickCount;
+    private void OnLinkClick(MouseEventArgs e) => linkClickCount++;
+}";
+
+    private int linkClickCount;
+    private void OnLinkClick(MouseEventArgs e) => linkClickCount++;
+}

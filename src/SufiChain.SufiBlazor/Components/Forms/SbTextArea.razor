@@ -1,0 +1,185 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+
+<div class="sb-textarea @(Error ? "sb-textarea--error" : "") @(Disabled ? "sb-textarea--disabled" : "") @(ReadOnly ? "sb-textarea--readonly" : "") @Class" style="@Style">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-textarea__label" for="@EffectiveId">
+            @Label
+            @if (Required)
+            {
+                <span class="sb-textarea__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+    <textarea class="sb-textarea__input"
+              value="@Value"
+              @oninput="OnInput"
+              @onchange="OnChange"
+              placeholder="@Placeholder"
+              disabled="@Disabled"
+              readonly="@ReadOnly"
+              rows="@Rows"
+              maxlength="@MaxLength"
+              aria-invalid="@(Error ? "true" : null)"
+              aria-describedby="@AriaDescribedBy"
+              id="@EffectiveId"
+              @attributes="AdditionalAttributes"></textarea>
+    
+    @if (!string.IsNullOrEmpty(HelperText) && !Error)
+    {
+        <div class="sb-textarea__helper" id="@(EffectiveId)-helper">@HelperText</div>
+    }
+    @if (Error && !string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="sb-textarea__error" id="@(EffectiveId)-error" role="alert">@ErrorMessage</div>
+    }
+    
+    @if (ShowCharacterCount && MaxLength.HasValue)
+    {
+        <div class="sb-textarea__counter">
+            @(Value?.Length ?? 0) / @MaxLength
+        </div>
+    }
+    
+    @if (Resizable)
+    {
+        <div class="sb-textarea__resize-handle"></div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// The current text value.
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+    
+    /// <summary>
+    /// Callback when value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+    
+    /// <summary>
+    /// Placeholder text.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+    
+    /// <summary>
+    /// Number of visible text rows.
+    /// </summary>
+    [Parameter]
+    public int Rows { get; set; } = 3;
+    
+    /// <summary>
+    /// Maximum character length.
+    /// </summary>
+    [Parameter]
+    public int? MaxLength { get; set; }
+    
+    /// <summary>
+    /// Whether to show character count.
+    /// </summary>
+    [Parameter]
+    public bool ShowCharacterCount { get; set; }
+    
+    /// <summary>
+    /// Whether the textarea is resizable.
+    /// </summary>
+    [Parameter]
+    public bool Resizable { get; set; } = true;
+    
+    /// <summary>
+    /// Whether the textarea is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Whether the textarea is read-only.
+    /// </summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
+    
+    /// <summary>
+    /// Whether the textarea has an error.
+    /// </summary>
+    [Parameter]
+    public bool Error { get; set; }
+    
+    /// <summary>
+    /// Element ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Label text displayed above the textarea.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Whether the field is required (shows asterisk).
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
+    /// Helper or hint text shown below the textarea (hidden when Error is true).
+    /// </summary>
+    [Parameter]
+    public string? HelperText { get; set; }
+
+    /// <summary>
+    /// Error message shown when Error is true.
+    /// </summary>
+    [Parameter]
+    public string? ErrorMessage { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles for the wrapper element.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+    
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string EffectiveId => Id ?? _generatedId;
+    private readonly string _generatedId = $"sb-textarea-{Guid.NewGuid():N}";
+
+    private string? AriaDescribedBy
+    {
+        get
+        {
+            if (Error && !string.IsNullOrEmpty(ErrorMessage))
+                return $"{EffectiveId}-error";
+            if (!string.IsNullOrEmpty(HelperText) && !Error)
+                return $"{EffectiveId}-helper";
+            return null;
+        }
+    }
+    
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(value);
+    }
+    
+    private async Task OnChange(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(value);
+    }
+}

@@ -1,0 +1,65 @@
+@namespace SufiChain.SufiBlazor.Components.Layout
+
+<div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Maximum width preset for the container.
+    /// </summary>
+    [Parameter]
+    public SbContainerMaxWidth MaxWidth { get; set; } = SbContainerMaxWidth.Lg;
+
+    /// <summary>
+    /// When true, removes horizontal padding (gutters).
+    /// </summary>
+    [Parameter]
+    public bool DisableGutters { get; set; }
+
+    /// <summary>
+    /// The content to render inside the container.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-container" };
+
+            classes.Add($"sb-container--{MaxWidth.ToString().ToLowerInvariant()}");
+
+            if (DisableGutters)
+            {
+                classes.Add("sb-container--no-gutters");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+}

@@ -1,0 +1,63 @@
+@namespace SufiChain.SufiBlazor.Components.Builder
+
+<div class="sb-inspector-section @(_isExpanded ? "sb-inspector-section--expanded" : "") @Class">
+    <button type="button" class="sb-inspector-section__header" @onclick="ToggleExpand">
+        <span class="sb-inspector-section__chevron">@(_isExpanded ? "▼" : "▶")</span>
+        <span class="sb-inspector-section__title">@Title</span>
+        @if (Badge != null)
+        {
+            <span class="sb-inspector-section__badge">@Badge</span>
+        }
+    </button>
+    
+    @if (_isExpanded)
+    {
+        <div class="sb-inspector-section__content">
+            @ChildContent
+        </div>
+    }
+</div>
+
+@code {
+    private bool _isExpanded;
+    
+    /// <summary>
+    /// Section title.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = "";
+    
+    /// <summary>
+    /// Section content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Badge content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Badge { get; set; }
+    
+    /// <summary>
+    /// Whether initially expanded.
+    /// </summary>
+    [Parameter]
+    public bool DefaultExpanded { get; set; } = true;
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        _isExpanded = DefaultExpanded;
+    }
+    
+    private void ToggleExpand()
+    {
+        _isExpanded = !_isExpanded;
+    }
+}

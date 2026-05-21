@@ -1,0 +1,100 @@
+@namespace SufiChain.SufiBlazor.Components.Builder
+
+<div class="sb-drag-handle @(Disabled ? "sb-drag-handle--disabled" : "") @Class"
+     draggable="@(!Disabled)"
+     @ondragstart="OnDragStart"
+     @ondragend="OnDragEnd"
+     role="button"
+     aria-label="@AriaLabel"
+     tabindex="@(Disabled ? -1 : 0)"
+     @onkeydown="OnKeyDown">
+    @if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        <span class="sb-drag-handle__icon">⋮⋮</span>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Handle content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Data to transfer during drag.
+    /// </summary>
+    [Parameter]
+    public object? Data { get; set; }
+    
+    /// <summary>
+    /// Whether the handle is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Accessibility label.
+    /// </summary>
+    [Parameter]
+    public string AriaLabel { get; set; } = "Drag to reorder";
+    
+    /// <summary>
+    /// Callback when drag starts.
+    /// </summary>
+    [Parameter]
+    public EventCallback<DragEventArgs> OnDragStarted { get; set; }
+    
+    /// <summary>
+    /// Callback when drag ends.
+    /// </summary>
+    [Parameter]
+    public EventCallback<DragEventArgs> OnDragEnded { get; set; }
+    
+    /// <summary>
+    /// Callback for keyboard reordering (up).
+    /// </summary>
+    [Parameter]
+    public EventCallback OnMoveUp { get; set; }
+    
+    /// <summary>
+    /// Callback for keyboard reordering (down).
+    /// </summary>
+    [Parameter]
+    public EventCallback OnMoveDown { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private async Task OnDragStart(DragEventArgs e)
+    {
+        await OnDragStarted.InvokeAsync(e);
+    }
+    
+    private async Task OnDragEnd(DragEventArgs e)
+    {
+        await OnDragEnded.InvokeAsync(e);
+    }
+    
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (Disabled) return;
+        
+        switch (e.Key)
+        {
+            case "ArrowUp":
+                await OnMoveUp.InvokeAsync();
+                break;
+            case "ArrowDown":
+                await OnMoveDown.InvokeAsync();
+                break;
+        }
+    }
+}

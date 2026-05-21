@@ -1,0 +1,182 @@
+@page "/demo/error-handling"
+@inherits SufiChain.SufiAbp.UI.Blazor.SufiAbpComponentBase
+@using Microsoft.AspNetCore.Components.Routing
+@using SufiChain.SufiAbp.UI.Blazor
+@using SufiChain.SufiBlazor.Demo.Localization
+@using SufiChain.SufiBlazor.Components
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Layout
+@using System.Net.Http
+@inject SufiChain.SufiAbp.UI.Notifications.IUiNotificationService NotificationService
+@inject SufiChain.SufiAbp.UI.Progression.IUiPageProgressService PageProgressService
+@inject NavigationManager Navigation
+
+<PageTitle>@(L["Menu:Demo:ErrorHandling"] + " - Demo")</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:ErrorHandling"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:ErrorHandlingDescription"]</SbText>
+
+    <SbDivider />
+
+    <SbStack Gap="4">
+        <div>
+            <h2 class="h5">1. @L["Demo:ErrorHandlingThrowHandler"]</h2>
+            <p class="small text-muted">@L["Demo:ErrorHandlingThrowHandlerDesc"]</p>
+            <SbButton OnClick="ThrowOnClick">@L["Demo:ErrorHandlingThrowException"]</SbButton>
+        </div>
+
+        <div>
+            <h2 class="h5">2. @L["Demo:ErrorHandlingThrowRender"]</h2>
+            <p class="small text-muted">@L["Demo:ErrorHandlingThrowRenderDesc"]</p>
+            <SbButton OnClick="() => { _shouldThrowRender = true; StateHasChanged(); }">@L["Demo:ErrorHandlingTriggerRender"]</SbButton>
+        </div>
+
+        <div>
+            <h2 class="h5">3. @L["Demo:ErrorHandlingBackendError"]</h2>
+            <p class="small text-muted">@L["Demo:ErrorHandlingBackendErrorDesc"]</p>
+            <SbButton OnClick="SimulateBackendError" Loading='@IsOperationLoading("backend")'>
+                @L["Demo:ErrorHandlingSimulateBackend"]
+            </SbButton>
+        </div>
+
+        <div>
+            <h2 class="h5">4. @L["Demo:ErrorHandlingValidationError"]</h2>
+            <p class="small text-muted">@L["Demo:ErrorHandlingValidationErrorDesc"]</p>
+            <SbButton OnClick="SimulateValidationError" Loading='@IsOperationLoading("validation")'>
+                @L["Demo:ErrorHandlingSimulateValidation"]
+            </SbButton>
+        </div>
+
+        <div>
+            <h2 class="h5">5. @L["Demo:ErrorHandlingNetworkError"]</h2>
+            <p class="small text-muted">@L["Demo:ErrorHandlingNetworkErrorDesc"]</p>
+            <SbButton OnClick="SimulateNetworkError" Loading='@IsOperationLoading("network")'>
+                @L["Demo:ErrorHandlingSimulateNetwork"]
+            </SbButton>
+        </div>
+
+        <div>
+            <h2 class="h5">6. @L["Demo:ErrorHandlingShow404"]</h2>
+            <p class="small text-muted">@L["Demo:ErrorHandlingShow404Desc"]</p>
+            <SbButton OnClick="Show404Page" Variant="SbButtonVariant.Outline">
+                @L["Demo:ErrorHandlingShow404Button"]
+            </SbButton>
+        </div>
+
+        <div>
+            <h2 class="h5">7. @L["Demo:ErrorHandlingShow403"]</h2>
+            <p class="small text-muted">@L["Demo:ErrorHandlingShow403Desc"]</p>
+            <SbButton OnClick="Show403Page" Variant="SbButtonVariant.Outline">
+                @L["Demo:ErrorHandlingShow403Button"]
+            </SbButton>
+        </div>
+
+        <div>
+            <h2 class="h5">8. Test Notifications (Circuit Isolation)</h2>
+            <p class="small text-muted">Test that notifications only appear in the current browser/tab</p>
+            <SbStack Direction="SbStackDirection.Row" Gap="2">
+                <SbButton OnClick="ShowSuccessNotification" Color="SbColor.Success">Success Toast</SbButton>
+                <SbButton OnClick="ShowInfoNotification" Color="SbColor.Info">Info Toast</SbButton>
+                <SbButton OnClick="ShowWarningNotification" Color="SbColor.Warning">Warning Toast</SbButton>
+                <SbButton OnClick="ShowErrorNotification" Color="SbColor.Danger">Error Toast</SbButton>
+            </SbStack>
+        </div>
+
+        <div>
+            <h2 class="h5">9. Test Page Progress (Circuit Isolation)</h2>
+            <p class="small text-muted">Test that progress bar only appears in the current browser/tab</p>
+            <SbStack Direction="SbStackDirection.Row" Gap="2">
+                <SbButton OnClick="ShowIndeterminateProgress">Show Progress</SbButton>
+                <SbButton OnClick="ShowDeterminateProgress">Show 50% Progress</SbButton>
+                <SbButton OnClick="HideProgress" Variant="SbButtonVariant.Outline">Hide Progress</SbButton>
+            </SbStack>
+        </div>
+
+        <SbAlert Severity="SbAlertSeverity.Info" Title="Circuit Isolation Test">
+            Open this page in two different browsers (Edge + Chrome) and test that notifications, messages, block UI, and progress bars only appear in the browser where you clicked the button.
+        </SbAlert>
+    </SbStack>
+</DemoLayout>
+
+
+
+@if (_shouldThrowRender)
+{
+    throw new InvalidOperationException("Demo: intentional render exception from ErrorDemo page");
+}
+
+@code {
+    private bool _shouldThrowRender;
+
+    protected override void OnInitialized()
+    {
+        LocalizationResource = typeof(SufiBlazorDemoResource);
+    }
+
+    private void ThrowOnClick()
+    {
+        throw new InvalidOperationException("Demo: intentional exception from button click");
+    }
+
+    private Task SimulateBackendError() => ExecuteWithLoadingAsync(
+        () => throw new InvalidOperationException("Demo: simulated backend/API error"),
+        "backend",
+        LoadingBehavior.BlockUi);
+
+    private Task SimulateValidationError() => ExecuteWithLoadingAsync(
+        () => throw new ArgumentException("Demo: simulated validation error - Name is required."),
+        "validation",
+        LoadingBehavior.BlockUi);
+
+    private Task SimulateNetworkError() => ExecuteWithLoadingAsync(
+        () => throw new HttpRequestException("Demo: simulated network failure"),
+        "network",
+        LoadingBehavior.BlockUi);
+
+    private void Show404Page()
+    {
+        Navigation.NavigateTo("/demo/this-route-does-not-exist-404");
+    }
+
+    private void Show403Page()
+    {
+        Navigation.NavigateTo("/demo/forbidden-demo");
+    }
+
+    private async Task ShowSuccessNotification()
+    {
+        await NotificationService.SuccessAsync("Success! This notification should only appear in THIS browser.", "Success");
+    }
+
+    private async Task ShowInfoNotification()
+    {
+        await NotificationService.InfoAsync("Info: This notification should only appear in THIS browser.", "Information");
+    }
+
+    private async Task ShowWarningNotification()
+    {
+        await NotificationService.WarnAsync("Warning: This notification should only appear in THIS browser.", "Warning");
+    }
+
+    private async Task ShowErrorNotification()
+    {
+        await NotificationService.ErrorAsync("Error: This notification should only appear in THIS browser.", "Error");
+    }
+
+    private async Task ShowIndeterminateProgress()
+    {
+        await PageProgressService.ShowIndeterminateAsync();
+        await Task.Delay(3000);
+        await PageProgressService.HideAsync();
+    }
+
+    private async Task ShowDeterminateProgress()
+    {
+        await PageProgressService.SetProgressAsync(50);
+        await Task.Delay(3000);
+        await PageProgressService.HideAsync();
+    }
+
+    private Task HideProgress() => PageProgressService.HideAsync();
+}

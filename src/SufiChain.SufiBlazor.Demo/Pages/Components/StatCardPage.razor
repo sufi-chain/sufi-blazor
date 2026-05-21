@@ -1,0 +1,257 @@
+@page "/demo/sufi-blazor/stat-card"
+
+<PageTitle>@(L["Menu:Demo:StatCard"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:StatCard"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:StatCardDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BasicUsage"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbStatCard Label="Total Users"
+                          Value="2,543" />
+                <SbStatCard Label="Revenue"
+                          Value="98,234"
+                          Prefix="$" />
+                <SbStatCard Label="Growth Rate"
+                          Value="12.5"
+                          Suffix="%" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StatCardWithIcons"]" SourceCode="@iconsCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbStatCard Label="Total Sales"
+                          Value="1,249"
+                          Prefix="$">
+                    <Icon>
+                        <SbIcon Name="dollar-sign" Size="SbSize.Xl" Color="SbColor.Success" />
+                    </Icon>
+                </SbStatCard>
+                
+                <SbStatCard Label="Active Users"
+                          Value="8,459">
+                    <Icon>
+                        <SbIcon Name="users" Size="SbSize.Xl" Color="SbColor.Primary" />
+                    </Icon>
+                </SbStatCard>
+                
+                <SbStatCard Label="Conversion Rate"
+                          Value="3.24"
+                          Suffix="%">
+                    <Icon>
+                        <SbIcon Name="trend-up" Size="SbSize.Xl" Color="SbColor.Info" />
+                    </Icon>
+                </SbStatCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StatCardWithTrends"]" SourceCode="@trendsCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbStatCard Label="Total Orders"
+                          Value="3,456"
+                          Trend="12.5"
+                          TrendLabel="vs last month">
+                    <Icon>
+                        <SbIcon Name="shopping-cart" Size="SbSize.Xl" Color="SbColor.Primary" />
+                    </Icon>
+                </SbStatCard>
+                
+                <SbStatCard Label="Revenue"
+                          Value="45,678"
+                          Prefix="$"
+                          Trend="8.2"
+                          TrendLabel="vs last week">
+                    <Icon>
+                        <SbIcon Name="dollar-sign" Size="SbSize.Xl" Color="SbColor.Success" />
+                    </Icon>
+                </SbStatCard>
+                
+                <SbStatCard Label="Bounce Rate"
+                          Value="23.4"
+                          Suffix="%"
+                          Trend="-5.3"
+                          TrendLabel="vs last month">
+                    <Icon>
+                        <SbIcon Name="trend-down" Size="SbSize.Xl" Color="SbColor.Warning" />
+                    </Icon>
+                </SbStatCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StatCardWithDescriptions"]" SourceCode="@descriptionsCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbStatCard Label="Page Views"
+                          Value="234,567"
+                          Trend="15.3"
+                          TrendLabel="from last month"
+                          Description="Total page views across all pages">
+                    <Icon>
+                        <SbIcon Name="eye" Size="SbSize.Xl" Color="SbColor.Info" />
+                    </Icon>
+                </SbStatCard>
+                
+                <SbStatCard Label="Average Session"
+                          Value="3.5"
+                          Suffix="min"
+                          Trend="-2.1"
+                          TrendLabel="from last month"
+                          Description="Average time users spend on site">
+                    <Icon>
+                        <SbIcon Name="clock" Size="SbSize.Xl" Color="SbColor.Warning" />
+                    </Icon>
+                </SbStatCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StatCardWithActions"]" SourceCode="@actionsCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbStatCard Label="Pending Tasks"
+                          Value="12"
+                          Description="Tasks awaiting review">
+                    <Icon>
+                        <SbIcon Name="clipboard-list" Size="SbSize.Xl" Color="SbColor.Warning" />
+                    </Icon>
+                    <Actions>
+                        <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline">
+                            View All
+                        </SbButton>
+                    </Actions>
+                </SbStatCard>
+                
+                <SbStatCard Label="New Messages"
+                          Value="45"
+                          Trend="23.5"
+                          TrendLabel="vs yesterday"
+                          Description="Unread messages">
+                    <Icon>
+                        <SbIcon Name="mail" Size="SbSize.Xl" Color="SbColor.Primary" />
+                    </Icon>
+                    <Actions>
+                        <SbIconButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost">
+                            <Icon><SbIcon Name="arrow-right" Mirror="true" /></Icon>
+                        </SbIconButton>
+                    </Actions>
+                </SbStatCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StatCardNoTrendDisplay"]" SourceCode="@noTrendCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbStatCard Label="Total Products"
+                          Value="1,234"
+                          ShowTrend="false"
+                          Description="Items in inventory">
+                    <Icon>
+                        <SbIcon Name="package" Size="SbSize.Xl" Color="SbColor.Secondary" />
+                    </Icon>
+                </SbStatCard>
+                
+                <SbStatCard Label="Categories"
+                          Value="48"
+                          ShowTrend="false"
+                          Description="Product categories">
+                    <Icon>
+                        <SbIcon Name="grid" Size="SbSize.Xl" Color="SbColor.Secondary" />
+                    </Icon>
+                </SbStatCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbStatCard" />
+</DemoLayout>
+
+@code {
+    private const string basicCode = @"<SbStatCard Label=""Total Users""
+          Value=""2,543"" />
+
+<SbStatCard Label=""Revenue""
+          Value=""98,234""
+          Prefix=""$"" />
+
+<SbStatCard Label=""Growth Rate""
+          Value=""12.5""
+          Suffix=""%"" />";
+
+    private const string iconsCode = @"<SbStatCard Label=""Total Sales""
+          Value=""1,249""
+          Prefix=""$"">
+    <Icon>
+        <SbIcon Name=""dollar-sign"" Size=""SbSize.Xl"" Color=""SbColor.Success"" />
+    </Icon>
+</SbStatCard>
+
+<SbStatCard Label=""Active Users""
+          Value=""8,459"">
+    <Icon>
+        <SbIcon Name=""users"" Size=""SbSize.Xl"" Color=""SbColor.Primary"" />
+    </Icon>
+</SbStatCard>";
+
+    private const string trendsCode = @"<SbStatCard Label=""Total Orders""
+          Value=""3,456""
+          Trend=""12.5""
+          TrendLabel=""vs last month"">
+    <Icon>
+        <SbIcon Name=""shopping-cart"" Size=""SbSize.Xl"" Color=""SbColor.Primary"" />
+    </Icon>
+</SbStatCard>
+
+<SbStatCard Label=""Bounce Rate""
+          Value=""23.4""
+          Suffix=""%""
+          Trend=""-5.3""
+          TrendLabel=""vs last month"">
+    <Icon>
+        <SbIcon Name=""trend-down"" Size=""SbSize.Xl"" Color=""SbColor.Warning"" />
+    </Icon>
+</SbStatCard>";
+
+    private const string descriptionsCode = @"<SbStatCard Label=""Page Views""
+          Value=""234,567""
+          Trend=""15.3""
+          TrendLabel=""from last month""
+          Description=""Total page views across all pages"">
+    <Icon>
+        <SbIcon Name=""eye"" Size=""SbSize.Xl"" Color=""SbColor.Info"" />
+    </Icon>
+</SbStatCard>";
+
+    private const string actionsCode = @"<SbStatCard Label=""Pending Tasks""
+          Value=""12""
+          Description=""Tasks awaiting review"">
+    <Icon>
+        <SbIcon Name=""clipboard-list"" Size=""SbSize.Xl"" Color=""SbColor.Warning"" />
+    </Icon>
+    <Actions>
+        <SbButton Size=""SbSize.Sm"" Variant=""SbButtonVariant.Outline"">
+            View All
+        </SbButton>
+    </Actions>
+</SbStatCard>";
+
+    private const string noTrendCode = @"<SbStatCard Label=""Total Products""
+          Value=""1,234""
+          ShowTrend=""false""
+          Description=""Items in inventory"">
+    <Icon>
+        <SbIcon Name=""package"" Size=""SbSize.Xl"" Color=""SbColor.Secondary"" />
+    </Icon>
+</SbStatCard>";
+}

@@ -1,0 +1,87 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+
+@if (_errors.Any())
+{
+    <div class="sb-validation-summary" role="alert">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <p class="sb-validation-summary__title">@Title</p>
+        }
+        <ul class="sb-validation-summary__list">
+            @foreach (var error in _errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    private IEnumerable<string> _errors = Enumerable.Empty<string>();
+
+    /// <summary>
+    /// The EditContext from EditForm.
+    /// </summary>
+    [CascadingParameter]
+    private EditContext? EditContext { get; set; }
+
+    /// <summary>
+    /// Optional title for the summary.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; } = "Please correct the following errors:";
+
+    /// <summary>
+    /// Whether to show model-level errors only.
+    /// </summary>
+    [Parameter]
+    public bool ShowModelErrorsOnly { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (EditContext != null)
+        {
+            EditContext.OnValidationStateChanged += HandleValidationStateChanged;
+            UpdateErrors();
+        }
+    }
+
+    private void HandleValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        UpdateErrors();
+        StateHasChanged();
+    }
+
+    private void UpdateErrors()
+    {
+        if (EditContext == null)
+        {
+            _errors = Enumerable.Empty<string>();
+            return;
+        }
+
+        if (ShowModelErrorsOnly)
+        {
+            _errors = EditContext.GetValidationMessages()
+                .Where(m => !EditContext.GetValidationMessages().Any());
+        }
+        else
+        {
+            _errors = EditContext.GetValidationMessages();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (EditContext != null)
+        {
+            EditContext.OnValidationStateChanged -= HandleValidationStateChanged;
+        }
+    }
+}

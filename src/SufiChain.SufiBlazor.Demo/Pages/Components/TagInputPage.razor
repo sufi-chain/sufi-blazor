@@ -1,0 +1,130 @@
+@page "/demo/sufi-blazor/tag-input"
+
+<PageTitle>@(L["Menu:Demo:TagInput"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:TagInput"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:TagInputPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:TagInputBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:TagInputTags"]">
+                    <SbTagInput @bind-Tags="_tags" Placeholder="@L["Demo:TagInputPlaceholderAdd"]" />
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:TagInputTags"]: @string.Join(", ", _tags)</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TagInputMaxTags"]" SourceCode="@maxTagsCode" RelatedCode="@maxTagsCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:TagInputSkills"]">
+                    <SbTagInput @bind-Tags="_skills" 
+                               MaxTags="5"
+                               Placeholder="@L["Demo:TagInputPlaceholderSkills"]" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TagInputAllowDuplicates"]" SourceCode="@duplicatesCode" RelatedCode="@duplicatesCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:TagInputItems"]">
+                    <SbTagInput @bind-Tags="_items" 
+                               AllowDuplicates="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TagInputCustomDelimiters"]" SourceCode="@delimitersCode" RelatedCode="@delimitersCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:TagInputEmails"]">
+                    <SbTagInput @bind-Tags="_emails" 
+                               Delimiters="@(new[] { "Enter", " " })"
+                               Placeholder="@L["Demo:TagInputPlaceholderEmails"]" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TagInputPrepopulated"]" SourceCode="@prepopulatedCode" RelatedCode="@prepopulatedCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:TagInputCategories"]">
+                    <SbTagInput @bind-Tags="_categories" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TagInputDisabled"]" SourceCode="@disabledCode" RelatedCode="@disabledCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:TagInputLockedTags"]">
+                    <SbTagInput Tags="@_lockedTags" Disabled="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbTagInput" />
+</DemoLayout>
+
+@code {
+    private List<string> _tags = new();
+    private List<string> _skills = new();
+    private List<string> _items = new();
+    private List<string> _emails = new();
+    private List<string> _categories = new() { "Technology", "Business", "Design" };
+    private List<string> _lockedTags = new() { "Read-only", "Tag 1", "Tag 2" };
+
+    private const string basicCodeBehind = @"private List<string> _tags = new();";
+
+    private const string basicCode = @"<SbFormField Label=""Tags"">
+    <SbTagInput @bind-Tags=""_tags"" Placeholder=""Add tags..."" />
+</SbFormField>";
+
+    private const string maxTagsCodeBehind = @"private List<string> _skills = new();";
+
+    private const string maxTagsCode = @"<SbFormField Label=""Skills"">
+    <SbTagInput @bind-Tags=""_skills"" 
+               MaxTags=""5""
+               Placeholder=""Add up to 5 skills..."" />
+</SbFormField>";
+
+    private const string duplicatesCodeBehind = @"private List<string> _items = new();";
+
+    private const string duplicatesCode = @"<SbFormField Label=""Items"">
+    <SbTagInput @bind-Tags=""_items"" 
+               AllowDuplicates=""true"" />
+</SbFormField>";
+
+    private const string delimitersCodeBehind = @"private List<string> _emails = new();";
+
+    private const string delimitersCode = @"<SbFormField Label=""Emails"">
+    <SbTagInput @bind-Tags=""_emails"" 
+               Delimiters=""@(new[] { ""Enter"", "" "" })""
+               Placeholder=""Enter emails separated by space..."" />
+</SbFormField>";
+
+    private const string prepopulatedCodeBehind = @"private List<string> _categories = new() { ""Technology"", ""Business"", ""Design"" };";
+
+    private const string prepopulatedCode = @"<SbFormField Label=""Categories"">
+    <SbTagInput @bind-Tags=""_categories"" />
+</SbFormField>";
+
+    private const string disabledCodeBehind = @"private List<string> _lockedTags = new() { ""Read-only"", ""Tag 1"", ""Tag 2"" };";
+
+    private const string disabledCode = @"<SbFormField Label=""Locked Tags"">
+    <SbTagInput Tags=""@_lockedTags"" Disabled=""true"" />
+</SbFormField>";
+}

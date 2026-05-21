@@ -1,0 +1,467 @@
+@page "/demo/sufi-blazor/stepper"
+
+<PageTitle>@(L["Menu:Demo:Stepper"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Stepper"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:StepperDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BasicStepper"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStepper @bind-ActiveIndex="_activeIndex1">
+                <SbStep Label="Select campaign settings">
+                    <SbCard>
+                        <SbHeading Level="3">Campaign Settings</SbHeading>
+                        <SbText>Configure your campaign name and description.</SbText>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Create an ad group">
+                    <SbCard>
+                        <SbHeading Level="3">Ad Group</SbHeading>
+                        <SbText>Set up your ad group and targeting options.</SbText>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Create an ad">
+                    <SbCard>
+                        <SbHeading Level="3">Create Ad</SbHeading>
+                        <SbText>Design your advertisement content.</SbText>
+                    </SbCard>
+                </SbStep>
+            </SbStepper>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithDescriptions"]" SourceCode="@descriptionsCode" RelatedCode="@descriptionsCodeBehind">
+        <ExampleContent>
+            <SbStepper @bind-ActiveIndex="_activeIndex2">
+                <SbStep Label="Account Information" Description="Enter your personal details">
+                    <SbCard>
+                        <SbStack Gap="4">
+                            <SbTextField TValue="string" @bind-Value="_step2FullName" Label="Full Name" Placeholder="John Doe" />
+                            <SbTextField TValue="string" @bind-Value="_step2Email" Label="Email" Placeholder="john@example.com" Type="email" />
+                        </SbStack>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Address" Description="Provide your shipping address">
+                    <SbCard>
+                        <SbStack Gap="4">
+                            <SbTextField TValue="string" @bind-Value="_step2Street" Label="Street Address" />
+                            <SbTextField TValue="string" @bind-Value="_step2City" Label="City" />
+                        </SbStack>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Review" Description="Confirm your information">
+                    <SbCard>
+                        <SbHeading Level="3">Review Your Details</SbHeading>
+                        <SbText Color="SbColor.Muted">Please review the information you've provided.</SbText>
+                    </SbCard>
+                </SbStep>
+            </SbStepper>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithOptionalSteps"]" SourceCode="@optionalCode" RelatedCode="@optionalCodeBehind">
+        <ExampleContent>
+            <SbStepper @bind-ActiveIndex="_activeIndex3">
+                <SbStep Label="Basic Info">
+                    <SbCard>
+                        <SbText>Required: Enter basic information.</SbText>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Additional Details" Optional="true">
+                    <SbCard>
+                        <SbText>Optional: Add extra details if you wish.</SbText>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Confirmation">
+                    <SbCard>
+                        <SbText>Required: Confirm your submission.</SbText>
+                    </SbCard>
+                </SbStep>
+            </SbStepper>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:NonLinearStepper"]" SourceCode="@nonLinearCode" RelatedCode="@nonLinearCodeBehind">
+        <ExampleContent>
+            <SbStepper @bind-ActiveIndex="_activeIndex4" Linear="false">
+                <SbStep Label="Step 1">
+                    <SbCard>
+                        <SbText>You can jump to any step in non-linear mode.</SbText>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Step 2">
+                    <SbCard>
+                        <SbText>Click any step number to navigate.</SbText>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Step 3">
+                    <SbCard>
+                        <SbText>No need to follow sequential order.</SbText>
+                    </SbCard>
+                </SbStep>
+            </SbStepper>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:VerticalOrientation"]" SourceCode="@verticalCode" RelatedCode="@verticalCodeBehind">
+        <ExampleContent>
+            <SbStepper @bind-ActiveIndex="_activeIndex5" Orientation="SbStepperOrientation.Vertical">
+                <SbStep Label="Personal Details">
+                    <SbCard>
+                        <SbStack Gap="3">
+                            <SbTextField TValue="string" @bind-Value="_step5Name" Label="Name" />
+                            <SbTextField TValue="string" @bind-Value="_step5Email" Label="Email" Type="email" />
+                        </SbStack>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Company Info">
+                    <SbCard>
+                        <SbStack Gap="3">
+                            <SbTextField TValue="string" @bind-Value="_step5Company" Label="Company Name" />
+                            <SbTextField TValue="string" @bind-Value="_step5JobTitle" Label="Job Title" />
+                        </SbStack>
+                    </SbCard>
+                </SbStep>
+                
+                <SbStep Label="Preferences">
+                    <SbCard>
+                        <SbSwitch @bind-Value="_step5Newsletters" Label="Receive newsletters" />
+                    </SbCard>
+                </SbStep>
+            </SbStepper>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CustomIcons"]" SourceCode="@iconsCode" RelatedCode="@iconsCodeBehind">
+        <ExampleContent>
+            <SbStepper @bind-ActiveIndex="_activeIndex6">
+                <SbStep Label="Account">
+                    <Icon>
+                        <SbIcon Name="user" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbCard>
+                            <SbText>Create your account</SbText>
+                        </SbCard>
+                    </ChildContent>
+                </SbStep>
+                
+                <SbStep Label="Payment">
+                    <Icon>
+                        <SbIcon Name="credit-card" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbCard>
+                            <SbText>Enter payment details</SbText>
+                        </SbCard>
+                    </ChildContent>
+                </SbStep>
+                
+                <SbStep Label="Complete">
+                    <Icon>
+                        <SbIcon Name="check" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbCard>
+                            <SbText>All set!</SbText>
+                        </SbCard>
+                    </ChildContent>
+                </SbStep>
+            </SbStepper>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StepperCustomButtonText"]" SourceCode="@customButtonTextCode" RelatedCode="@customButtonTextCodeBehind">
+        <ExampleContent>
+            <SbStepper @bind-ActiveIndex="_activeIndex9"
+                      BackText="Previous"
+                      NextText="Continue"
+                      FinishText="Complete Setup"
+                      OptionalText="(Optional)">
+                <SbStep Label="Step 1">
+                    <SbCard><SbText>First step content</SbText></SbCard>
+                </SbStep>
+                <SbStep Label="Step 2" Optional="true">
+                    <SbCard><SbText>Optional step content</SbText></SbCard>
+                </SbStep>
+                <SbStep Label="Step 3">
+                    <SbCard><SbText>Final step content</SbText></SbCard>
+                </SbStep>
+            </SbStepper>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithoutNavigationButtons"]" SourceCode="@noNavCode" RelatedCode="@noNavCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbStepper @bind-ActiveIndex="_activeIndex7" ShowNavigation="false" Linear="false">
+                    <SbStep Label="Introduction">
+                        <SbCard>
+                            <SbText>Welcome! Use the custom buttons below to navigate.</SbText>
+                        </SbCard>
+                    </SbStep>
+                    
+                    <SbStep Label="Details">
+                        <SbCard>
+                            <SbText>This stepper has custom navigation controls.</SbText>
+                        </SbCard>
+                    </SbStep>
+                    
+                    <SbStep Label="Finish">
+                        <SbCard>
+                            <SbText>You've reached the end!</SbText>
+                        </SbCard>
+                    </SbStep>
+                </SbStepper>
+                
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.SpaceBetween">
+                    <SbButton Variant="SbButtonVariant.Outline" 
+                             Disabled="@(_activeIndex7 == 0)"
+                             OnClick="@(() => _activeIndex7--)">
+                        Previous
+                    </SbButton>
+                    <SbButton OnClick="@(() => _activeIndex7 = Math.Min(_activeIndex7 + 1, 2))">
+                        @(_activeIndex7 == 2 ? "Done" : "Next")
+                    </SbButton>
+                </SbStack>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithFinishCallback"]" SourceCode="@finishCode" RelatedCode="@finishCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbStepper @bind-ActiveIndex="_activeIndex8" OnFinish="HandleFinish">
+                    <SbStep Label="Step 1">
+                        <SbCard><SbText>First step content</SbText></SbCard>
+                    </SbStep>
+                    <SbStep Label="Step 2">
+                        <SbCard><SbText>Second step content</SbText></SbCard>
+                    </SbStep>
+                    <SbStep Label="Final Step">
+                        <SbCard><SbText>Click Finish to complete</SbText></SbCard>
+                    </SbStep>
+                </SbStepper>
+                
+                @if (_finished)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Success">
+                        @L["Demo:StepperCompletedSuccess"]
+                    </SbAlert>
+                }
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbStepper" />
+</DemoLayout>
+
+@code {
+    private int _activeIndex1 = 0;
+    private int _activeIndex2 = 0;
+    private int _activeIndex3 = 0;
+    private int _activeIndex4 = 0;
+    private int _activeIndex5 = 0;
+    private int _activeIndex6 = 0;
+    private int _activeIndex7 = 0;
+    private int _activeIndex8 = 0;
+    private int _activeIndex9 = 0;
+    private bool _finished = false;
+
+    // With Descriptions stepper (Account + Address steps)
+    private string _step2FullName = "";
+    private string _step2Email = "";
+    private string _step2Street = "";
+    private string _step2City = "";
+
+    // Vertical Orientation stepper
+    private string _step5Name = "";
+    private string _step5Email = "";
+    private string _step5Company = "";
+    private string _step5JobTitle = "";
+    private bool _step5Newsletters = false;
+
+    private void HandleFinish()
+    {
+        _finished = true;
+    }
+
+    private const string basicCodeBehind = @"private int _activeIndex = 0;";
+
+    private const string basicCode = @"<SbStepper @bind-ActiveIndex=""_activeIndex"">
+    <SbStep Label=""Select campaign settings"">
+        <SbCard>
+            <SbHeading Level=""3"">Campaign Settings</SbHeading>
+            <SbText>Configure your campaign.</SbText>
+        </SbCard>
+    </SbStep>
+    
+    <SbStep Label=""Create an ad group"">
+        <SbCard>
+            <SbHeading Level=""3"">Ad Group</SbHeading>
+            <SbText>Set up your ad group.</SbText>
+        </SbCard>
+    </SbStep>
+    
+    <SbStep Label=""Create an ad"">
+        <SbCard>
+            <SbHeading Level=""3"">Create Ad</SbHeading>
+            <SbText>Design your ad.</SbText>
+        </SbCard>
+    </SbStep>
+</SbStepper>";
+
+    private const string descriptionsCodeBehind = @"private int _activeIndex = 0;";
+
+    private const string descriptionsCode = @"<SbStepper @bind-ActiveIndex=""_activeIndex"">
+    <SbStep Label=""Account"" Description=""Enter your personal details"">
+        <SbCard>
+            <SbTextField Label=""Full Name"" />
+        </SbCard>
+    </SbStep>
+    
+    <SbStep Label=""Address"" Description=""Provide shipping address"">
+        <SbCard>
+            <SbTextField Label=""Street Address"" />
+        </SbCard>
+    </SbStep>
+</SbStepper>";
+
+    private const string optionalCodeBehind = @"private int _activeIndex = 0;";
+
+    private const string optionalCode = @"<SbStepper @bind-ActiveIndex=""_activeIndex"">
+    <SbStep Label=""Basic Info"">
+        <SbCard><SbText>Required step</SbText></SbCard>
+    </SbStep>
+    
+    <SbStep Label=""Additional Details"" Optional=""true"">
+        <SbCard><SbText>Optional step</SbText></SbCard>
+    </SbStep>
+    
+    <SbStep Label=""Confirmation"">
+        <SbCard><SbText>Final step</SbText></SbCard>
+    </SbStep>
+</SbStepper>";
+
+    private const string nonLinearCodeBehind = @"private int _activeIndex = 0;";
+
+    private const string nonLinearCode = @"<SbStepper @bind-ActiveIndex=""_activeIndex"" Linear=""false"">
+    <SbStep Label=""Step 1"">
+        <SbCard><SbText>Click any step to jump</SbText></SbCard>
+    </SbStep>
+    
+    <SbStep Label=""Step 2"">
+        <SbCard><SbText>Non-sequential navigation</SbText></SbCard>
+    </SbStep>
+    
+    <SbStep Label=""Step 3"">
+        <SbCard><SbText>Flexible order</SbText></SbCard>
+    </SbStep>
+</SbStepper>";
+
+    private const string verticalCodeBehind = @"private int _activeIndex = 0;";
+
+    private const string verticalCode = @"<SbStepper @bind-ActiveIndex=""_activeIndex"" 
+          Orientation=""SbStepperOrientation.Vertical"">
+    <SbStep Label=""Personal Details"">
+        <SbCard><SbTextField Label=""Name"" /></SbCard>
+    </SbStep>
+    
+    <SbStep Label=""Company Info"">
+        <SbCard><SbTextField Label=""Company"" /></SbCard>
+    </SbStep>
+</SbStepper>";
+
+    private const string iconsCodeBehind = @"private int _activeIndex = 0;";
+
+    private const string iconsCode = @"<SbStepper @bind-ActiveIndex=""_activeIndex"">
+    <SbStep Label=""Account"">
+        <Icon>
+            <SbIcon Name=""user"" Size=""SbSize.Sm"" />
+        </Icon>
+        <ChildContent>
+            <SbCard><SbText>Create account</SbText></SbCard>
+        </ChildContent>
+    </SbStep>
+    
+    <SbStep Label=""Payment"">
+        <Icon>
+            <SbIcon Name=""credit-card"" Size=""SbSize.Sm"" />
+        </Icon>
+        <ChildContent>
+            <SbCard><SbText>Enter payment</SbText></SbCard>
+        </ChildContent>
+    </SbStep>
+</SbStepper>";
+
+    private const string customButtonTextCodeBehind = @"private int _activeIndex = 0;";
+
+    private const string customButtonTextCode = @"<SbStepper @bind-ActiveIndex=""_activeIndex""
+          BackText=""Previous""
+          NextText=""Continue""
+          FinishText=""Complete Setup""
+          OptionalText=""(Optional)"">
+    <SbStep Label=""Step 1"">
+        <SbCard><SbText>First step content</SbText></SbCard>
+    </SbStep>
+    <SbStep Label=""Step 2"" Optional=""true"">
+        <SbCard><SbText>Optional step content</SbText></SbCard>
+    </SbStep>
+    <SbStep Label=""Step 3"">
+        <SbCard><SbText>Final step content</SbText></SbCard>
+    </SbStep>
+</SbStepper>";
+
+    private const string noNavCodeBehind = @"private int _activeIndex = 0;";
+
+    private const string noNavCode = @"<SbStepper @bind-ActiveIndex=""_activeIndex"" 
+          ShowNavigation=""false"" 
+          Linear=""false"">
+    <SbStep Label=""Introduction"">
+        <SbCard><SbText>Custom navigation below</SbText></SbCard>
+    </SbStep>
+    <!-- More steps... -->
+</SbStepper>
+
+<SbStack Direction=""SbStackDirection.Row"" Gap=""2"">
+    <SbButton Disabled=""@(_activeIndex == 0)"" 
+             OnClick=""@(() => _activeIndex--)"">
+        Previous
+    </SbButton>
+    <SbButton OnClick=""@(() => _activeIndex++)"">Next</SbButton>
+</SbStack>";
+
+    private const string finishCodeBehind = @"private int _activeIndex = 0;
+private bool _finished = false;
+
+private void HandleFinish()
+{
+    _finished = true;
+}";
+
+    private const string finishCode = @"<SbStepper @bind-ActiveIndex=""_activeIndex"" OnFinish=""HandleFinish"">
+    <SbStep Label=""Step 1"">
+        <SbCard><SbText>First step</SbText></SbCard>
+    </SbStep>
+    <SbStep Label=""Step 2"">
+        <SbCard><SbText>Second step</SbText></SbCard>
+    </SbStep>
+    <SbStep Label=""Final Step"">
+        <SbCard><SbText>Click Finish</SbText></SbCard>
+    </SbStep>
+</SbStepper>";
+}

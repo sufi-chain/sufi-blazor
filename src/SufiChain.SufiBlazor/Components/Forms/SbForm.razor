@@ -1,0 +1,110 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@Model" 
+          OnValidSubmit="@HandleValidSubmit" 
+          OnInvalidSubmit="@HandleInvalidSubmit"
+          class="@GetFormClass()"
+          @attributes="AdditionalAttributes">
+    
+    @if (EnableDataAnnotationsValidation)
+    {
+        <DataAnnotationsValidator />
+    }
+    
+    @if (ShowValidationSummary && _hasSubmitted && !_isValid)
+    {
+        <div class="sb-form__validation-summary">
+            <ValidationSummary />
+        </div>
+    }
+    
+    <div class="sb-form__content">
+        @ChildContent
+    </div>
+    
+    @if (FooterContent != null)
+    {
+        <div class="sb-form__footer">
+            @FooterContent
+        </div>
+    }
+</EditForm>
+
+@code {
+    private bool _hasSubmitted;
+    private bool _isValid = true;
+    
+    /// <summary>
+    /// The model to bind the form to.
+    /// </summary>
+    [Parameter]
+    public object Model { get; set; } = new();
+    
+    /// <summary>
+    /// Form content (fields).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Footer content (submit buttons).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+    
+    /// <summary>
+    /// Callback when form is submitted with valid data.
+    /// </summary>
+    [Parameter]
+    public EventCallback<EditContext> OnValidSubmit { get; set; }
+    
+    /// <summary>
+    /// Callback when form is submitted with invalid data.
+    /// </summary>
+    [Parameter]
+    public EventCallback<EditContext> OnInvalidSubmit { get; set; }
+    
+    /// <summary>
+    /// Whether to enable DataAnnotations validation.
+    /// </summary>
+    [Parameter]
+    public bool EnableDataAnnotationsValidation { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to show validation summary.
+    /// </summary>
+    [Parameter]
+    public bool ShowValidationSummary { get; set; } = true;
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+    
+    private async Task HandleValidSubmit(EditContext context)
+    {
+        _hasSubmitted = true;
+        _isValid = true;
+        await OnValidSubmit.InvokeAsync(context);
+    }
+    
+    private async Task HandleInvalidSubmit(EditContext context)
+    {
+        _hasSubmitted = true;
+        _isValid = false;
+        await OnInvalidSubmit.InvokeAsync(context);
+    }
+    
+    private string GetFormClass()
+    {
+        return string.IsNullOrEmpty(Class) ? "sb-form" : $"sb-form {Class}";
+    }
+}

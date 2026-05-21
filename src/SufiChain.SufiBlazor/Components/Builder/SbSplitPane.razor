@@ -1,0 +1,129 @@
+@namespace SufiChain.SufiBlazor.Components.Builder
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+
+<div class="sb-split-pane sb-split-pane--@Orientation.ToString().ToLower() @Class" @ref="_containerRef">
+    <div class="sb-split-pane__panel sb-split-pane__panel--first" style="@GetPanelStyle(true)">
+        @FirstPane
+    </div>
+    
+    <div class="sb-split-pane__divider @(_isDragging ? "sb-split-pane__divider--dragging" : "")"
+         @onmousedown="StartDrag">
+        <div class="sb-split-pane__divider-handle"></div>
+    </div>
+    
+    <div class="sb-split-pane__panel sb-split-pane__panel--second" style="@GetPanelStyle(false)">
+        @SecondPane
+    </div>
+</div>
+
+@code {
+    private ElementReference _containerRef;
+    private DotNetObjectReference<SbSplitPane>? _dotNetRef;
+    private bool _isDragging;
+    private double _splitPosition;
+    
+    /// <summary>
+    /// First pane content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? FirstPane { get; set; }
+    
+    /// <summary>
+    /// Second pane content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? SecondPane { get; set; }
+    
+    /// <summary>
+    /// Split orientation.
+    /// </summary>
+    [Parameter]
+    public SbSplitOrientation Orientation { get; set; } = SbSplitOrientation.Horizontal;
+    
+    /// <summary>
+    /// Initial split position (percentage).
+    /// </summary>
+    [Parameter]
+    public double SplitPosition { get; set; } = 50;
+    
+    /// <summary>
+    /// Callback when split position changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<double> SplitPositionChanged { get; set; }
+    
+    /// <summary>
+    /// Minimum first pane size (percentage).
+    /// </summary>
+    [Parameter]
+    public double MinFirstPane { get; set; } = 10;
+    
+    /// <summary>
+    /// Minimum second pane size (percentage).
+    /// </summary>
+    [Parameter]
+    public double MinSecondPane { get; set; } = 10;
+    
+    /// <summary>
+    /// Whether the divider can be collapsed.
+    /// </summary>
+    [Parameter]
+    public bool Collapsible { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        _splitPosition = SplitPosition;
+    }
+    
+    protected override void OnParametersSet()
+    {
+        _splitPosition = SplitPosition;
+    }
+    
+    private string GetPanelStyle(bool isFirst)
+    {
+        var size = isFirst ? _splitPosition : (100 - _splitPosition);
+        var property = Orientation == SbSplitOrientation.Horizontal ? "width" : "height";
+        return $"{property}: calc({size}% - 4px)";
+    }
+    
+    private async Task StartDrag(MouseEventArgs e)
+    {
+        _isDragging = true;
+        _dotNetRef = DotNetObjectReference.Create(this);
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.splitPane.startDrag", _containerRef, _dotNetRef, Orientation.ToString().ToLower());
+    }
+    
+    [JSInvokable]
+    public async Task UpdatePosition(double position)
+    {
+        _splitPosition = Math.Max(MinFirstPane, Math.Min(100 - MinSecondPane, position));
+        await SplitPositionChanged.InvokeAsync(_splitPosition);
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    [JSInvokable]
+    public void EndDrag()
+    {
+        _isDragging = false;
+        InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}
+
+public enum SbSplitOrientation
+{
+    Horizontal,
+    Vertical
+}

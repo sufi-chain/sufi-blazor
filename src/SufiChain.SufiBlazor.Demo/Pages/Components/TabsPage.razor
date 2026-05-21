@@ -1,0 +1,135 @@
+@page "/demo/sufi-blazor/tabs"
+
+<PageTitle>@(L["Menu:Demo:Tabs"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Tabs"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:TabsDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:TabsBasic"]" SourceCode="@basicTabs">
+        <ExampleContent>
+            <SbTabs>
+                <SbTab Label="Account">
+                    <SbCard>
+                        <SbText>Account settings content goes here.</SbText>
+                    </SbCard>
+                </SbTab>
+                <SbTab Label="Password">
+                    <SbCard>
+                        <SbText>Password settings content goes here.</SbText>
+                    </SbCard>
+                </SbTab>
+                <SbTab Label="Notifications">
+                    <SbCard>
+                        <SbText>Notification preferences content goes here.</SbText>
+                    </SbCard>
+                </SbTab>
+            </SbTabs>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TabsWithIcons"]" SourceCode="@withIcons">
+        <ExampleContent>
+            <SbTabs>
+                <SbTab Label="Home">
+                    <Icon><SbIcon Name="home" Size="SbSize.Sm" /></Icon>
+                    <ChildContent>
+                        <SbCard><SbText>Home content</SbText></SbCard>
+                    </ChildContent>
+                </SbTab>
+                <SbTab Label="Profile">
+                    <Icon><SbIcon Name="user" Size="SbSize.Sm" /></Icon>
+                    <ChildContent>
+                        <SbCard><SbText>Profile content</SbText></SbCard>
+                    </ChildContent>
+                </SbTab>
+                <SbTab Label="Settings">
+                    <Icon><SbIcon Name="settings" Size="SbSize.Sm" /></Icon>
+                    <ChildContent>
+                        <SbCard><SbText>Settings content</SbText></SbCard>
+                    </ChildContent>
+                </SbTab>
+            </SbTabs>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TabsControlledTab"]" SourceCode="@controlledCode" RelatedCode="@controlledCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                    <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@(() => _activeTab = 0)">@string.Format(L["Demo:TabsGoToTab"], 1)</SbButton>
+                    <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@(() => _activeTab = 1)">@string.Format(L["Demo:TabsGoToTab"], 2)</SbButton>
+                    <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="@(() => _activeTab = 2)">@string.Format(L["Demo:TabsGoToTab"], 3)</SbButton>
+                </SbStack>
+                <SbTabs @bind-ActiveIndex="_activeTab">
+                    <SbTab Label="Tab 1"><SbCard><SbText>Content 1</SbText></SbCard></SbTab>
+                    <SbTab Label="Tab 2"><SbCard><SbText>Content 2</SbText></SbCard></SbTab>
+                    <SbTab Label="Tab 3"><SbCard><SbText>Content 3</SbText></SbCard></SbTab>
+                </SbTabs>
+                <SbText Variant="SbTextVariant.Caption">@string.Format(L["Demo:TabsActiveTabIndex"], _activeTab)</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TabsDisabledTab"]" SourceCode="@disabledCode">
+        <ExampleContent>
+            <SbTabs>
+                <SbTab Label="Active Tab">
+                    <SbCard><SbText>This tab is active.</SbText></SbCard>
+                </SbTab>
+                <SbTab Label="Disabled Tab" Disabled="true">
+                    <SbCard><SbText>This tab is disabled.</SbText></SbCard>
+                </SbTab>
+                <SbTab Label="Another Tab">
+                    <SbCard><SbText>Another active tab.</SbText></SbCard>
+                </SbTab>
+            </SbTabs>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbTabs" />
+</DemoLayout>
+
+@code {
+    private int _activeTab = 0;
+
+    private string basicTabs = @"<SbTabs>
+    <SbTab Label=""Account"">
+        <SbCard><SbText>Account settings content.</SbText></SbCard>
+    </SbTab>
+    <SbTab Label=""Password"">
+        <SbCard><SbText>Password settings content.</SbText></SbCard>
+    </SbTab>
+    <SbTab Label=""Notifications"">
+        <SbCard><SbText>Notification preferences.</SbText></SbCard>
+    </SbTab>
+</SbTabs>";
+
+    private string withIcons = @"<SbTabs>
+    <SbTab Label=""Home"">
+        <Icon><SbIcon Name=""home"" Size=""SbSize.Sm"" /></Icon>
+        <ChildContent>
+            <SbCard><SbText>Home content</SbText></SbCard>
+        </ChildContent>
+    </SbTab>
+    ...
+</SbTabs>";
+
+    private string controlledCodeBehind = @"private int _activeTab = 0;";
+
+    private string controlledCode = @"<SbTabs @bind-ActiveIndex=""_activeTab"">
+    <SbTab Label=""Tab 1"">...</SbTab>
+    <SbTab Label=""Tab 2"">...</SbTab>
+    <SbTab Label=""Tab 3"">...</SbTab>
+</SbTabs>";
+
+    private string disabledCode = @"<SbTabs>
+    <SbTab Label=""Active Tab"">...</SbTab>
+    <SbTab Label=""Disabled Tab"" Disabled=""true"">...</SbTab>
+    <SbTab Label=""Another Tab"">...</SbTab>
+</SbTabs>";
+}

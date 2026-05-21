@@ -1,0 +1,89 @@
+@page "/demo/sufi-blazor/progress"
+
+<PageTitle>@(L["Menu:Demo:Progress"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Progress"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:ProgressDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:ProgressLinear"]" SourceCode="@linearCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbProgress Value="25" />
+                <SbProgress Value="50" />
+                <SbProgress Value="75" />
+                <SbProgress Value="100" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithLabel"]" SourceCode="@labelCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbProgress Value="35" ShowLabel="true" />
+                <SbProgress Value="70" ShowLabel="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ProgressColors"]" SourceCode="@colorsCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbProgress Value="60" Color="SbColor.Primary" />
+                <SbProgress Value="60" Color="SbColor.Success" />
+                <SbProgress Value="60" Color="SbColor.Warning" />
+                <SbProgress Value="60" Color="SbColor.Danger" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ProgressIndeterminate"]" SourceCode="@indeterminateCode">
+        <ExampleContent>
+            <SbProgress Indeterminate="true" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ProgressCircular"]" SourceCode="@circularCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4">
+                <SbProgress Type="SbProgressType.Circular" Value="25" />
+                <SbProgress Type="SbProgressType.Circular" Value="50" ShowLabel="true" />
+                <SbProgress Type="SbProgressType.Circular" Value="75" ShowLabel="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ProgressCircularSizes"]" SourceCode="@sizesCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Align="SbAlign.Center">
+                <SbProgress Type="SbProgressType.Circular" Value="70" Size="SbSize.Sm" ShowLabel="true" />
+                <SbProgress Type="SbProgressType.Circular" Value="70" Size="SbSize.Md" ShowLabel="true" />
+                <SbProgress Type="SbProgressType.Circular" Value="70" Size="SbSize.Lg" ShowLabel="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbProgress" />
+</DemoLayout>
+
+@code {
+    private const string linearCode = @"<SbProgress Value=""25"" />
+<SbProgress Value=""50"" />
+<SbProgress Value=""100"" />";
+
+    private const string labelCode = @"<SbProgress Value=""35"" ShowLabel=""true"" />";
+
+    private const string colorsCode = @"<SbProgress Value=""60"" Color=""SbColor.Success"" />
+<SbProgress Value=""60"" Color=""SbColor.Warning"" />";
+
+    private const string indeterminateCode = @"<SbProgress Indeterminate=""true"" />";
+
+    private const string circularCode = @"<SbProgress Type=""SbProgressType.Circular"" Value=""25"" />
+<SbProgress Type=""SbProgressType.Circular"" Value=""50"" ShowLabel=""true"" />";
+
+    private const string sizesCode = @"<SbProgress Type=""SbProgressType.Circular"" Value=""70"" Size=""SbSize.Sm"" />
+<SbProgress Type=""SbProgressType.Circular"" Value=""70"" Size=""SbSize.Lg"" />";
+}

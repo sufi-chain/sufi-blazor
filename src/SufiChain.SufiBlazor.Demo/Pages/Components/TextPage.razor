@@ -1,0 +1,110 @@
+@page "/demo/sufi-blazor/text"
+
+<PageTitle>@(L["Menu:Demo:Text"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Text"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:TextDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:TextHeadings"]" SourceCode="@headingsCode">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbHeading Level="1">@L["Demo:TextHeading1"]</SbHeading>
+                <SbHeading Level="2">@L["Demo:TextHeading2"]</SbHeading>
+                <SbHeading Level="3">@L["Demo:TextHeading3"]</SbHeading>
+                <SbHeading Level="4">@L["Demo:TextHeading4"]</SbHeading>
+                <SbHeading Level="5">@L["Demo:TextHeading5"]</SbHeading>
+                <SbHeading Level="6">@L["Demo:TextHeading6"]</SbHeading>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextVariants"]" SourceCode="@variantsCode">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbText Variant="SbTextVariant.Body">@L["Demo:TextBodyDefault"]</SbText>
+                <SbText Variant="SbTextVariant.BodySmall">@L["Demo:TextBodySmall"]</SbText>
+                <SbText Variant="SbTextVariant.Caption">@L["Demo:TextCaption"]</SbText>
+                <SbText Variant="SbTextVariant.Overline">@L["Demo:TextOverline"]</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextColors"]" SourceCode="@colorsCode">
+        <ExampleContent>
+            <SbStack Gap="2">
+                <SbText>@L["Demo:TextDefaultColor"]</SbText>
+                <SbText Color="SbColor.Primary">@L["Demo:TextPrimaryColor"]</SbText>
+                <SbText Color="SbColor.Secondary">@L["Demo:TextSecondaryColor"]</SbText>
+                <SbText Color="SbColor.Success">@L["Demo:TextSuccessColor"]</SbText>
+                <SbText Color="SbColor.Warning">@L["Demo:TextWarningColor"]</SbText>
+                <SbText Color="SbColor.Danger">@L["Demo:TextDangerColor"]</SbText>
+                <SbText Color="SbColor.Muted">@L["Demo:TextMutedColor"]</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextAlignment"]" SourceCode="@alignmentCode">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbCard>
+                    <SbText Align="SbTextAlign.Start">@L["Demo:TextStartAligned"]</SbText>
+                </SbCard>
+                <SbCard>
+                    <SbText Align="SbTextAlign.Center">@L["Demo:TextCenterAligned"]</SbText>
+                </SbCard>
+                <SbCard>
+                    <SbText Align="SbTextAlign.End">@L["Demo:TextEndAligned"]</SbText>
+                </SbCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextHeadingSizes"]" SourceCode="@headingSizesCode">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbHeading Level="3" Size="1">@L["Demo:TextH3Size1"]</SbHeading>
+                <SbHeading Level="3" Size="3">@L["Demo:TextH3Size3"]</SbHeading>
+                <SbHeading Level="3" Size="5">@L["Demo:TextH3Size5"]</SbHeading>
+                <SbHeading Level="3" Size="6">@L["Demo:TextH3Size6"]</SbHeading>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbText" />
+</DemoLayout>
+
+@code {
+    private string headingsCode = @"<SbHeading Level=""1"">Heading 1</SbHeading>
+<SbHeading Level=""2"">Heading 2</SbHeading>
+<SbHeading Level=""3"">Heading 3</SbHeading>
+<SbHeading Level=""4"">Heading 4</SbHeading>
+<SbHeading Level=""5"">Heading 5</SbHeading>
+<SbHeading Level=""6"">Heading 6</SbHeading>";
+
+    private string variantsCode = @"<SbText Variant=""SbTextVariant.Body"">Body text (default)</SbText>
+<SbText Variant=""SbTextVariant.BodySmall"">Body small text</SbText>
+<SbText Variant=""SbTextVariant.Caption"">Caption text</SbText>
+<SbText Variant=""SbTextVariant.Overline"">Overline text</SbText>";
+
+    private string colorsCode = @"<SbText>Default text color</SbText>
+<SbText Color=""SbColor.Primary"">Primary color</SbText>
+<SbText Color=""SbColor.Secondary"">Secondary color</SbText>
+<SbText Color=""SbColor.Success"">Success color</SbText>
+<SbText Color=""SbColor.Warning"">Warning color</SbText>
+<SbText Color=""SbColor.Danger"">Danger color</SbText>
+<SbText Color=""SbColor.Muted"">Muted color</SbText>";
+
+    private string alignmentCode = @"<SbText Align=""SbTextAlign.Start"">Start aligned text</SbText>
+<SbText Align=""SbTextAlign.Center"">Center aligned text</SbText>
+<SbText Align=""SbTextAlign.End"">End aligned text</SbText>";
+
+    private string headingSizesCode = @"<SbHeading Level=""3"" Size=""1"">H3 with Size 1 (largest)</SbHeading>
+<SbHeading Level=""3"" Size=""3"">H3 with Size 3</SbHeading>
+<SbHeading Level=""3"" Size=""5"">H3 with Size 5</SbHeading>
+<SbHeading Level=""3"" Size=""6"">H3 with Size 6 (smallest)</SbHeading>";
+}

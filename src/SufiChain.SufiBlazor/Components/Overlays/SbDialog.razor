@@ -1,0 +1,327 @@
+@namespace SufiChain.SufiBlazor.Components.Overlays
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<dialog @ref="_dialogRef"
+        class="@CssClass"
+        style="@EffectiveStyle"
+        @onkeydown="HandleKeyDown"
+        @oncancel="HandleCancel"
+        aria-labelledby="@(Title != null ? _titleId : null)"
+        aria-modal="true"
+        @attributes="FilteredAttributes">
+    <div class="sb-dialog__container" @onclick:stopPropagation="true">
+        @if (ShowHeader)
+        {
+            <header class="sb-dialog__header">
+                @if (Header != null)
+                {
+                    @Header
+                }
+                else if (Title != null)
+                {
+                    <h2 id="@_titleId" class="sb-dialog__title">@Title</h2>
+                }
+                @if (ShowCloseButton)
+                {
+                    <button type="button"
+                            class="sb-dialog__close-btn"
+                            @onclick="HandleCloseButtonClick"
+                            aria-label="@L["Close"]">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                }
+            </header>
+        }
+        <div class="sb-dialog__body">
+            @ChildContent
+        </div>
+        @if (Footer != null)
+        {
+            <footer class="sb-dialog__footer">
+                @Footer
+            </footer>
+        }
+    </div>
+</dialog>
+
+@code {
+    private ElementReference _dialogRef;
+    private readonly string _titleId = $"sb-dialog-title-{Guid.NewGuid():N}";
+    private bool _isOpen;
+
+    /// <summary>
+    /// Whether the dialog is open.
+    /// </summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>
+    /// Callback when open state changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>
+    /// Dialog title displayed in header.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// Custom header content (replaces Title).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Header { get; set; }
+
+    /// <summary>
+    /// Footer content for actions.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// Dialog body content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Dialog size preset (e.g. Lg). Used when Width/MaxWidth/Height/MaxHeight are not set; with Size alone the modal uses the preset dimensions.
+    /// </summary>
+    [Parameter]
+    public SbDialogSize Size { get; set; } = SbDialogSize.Md;
+
+    /// <summary>
+    /// Optional. Override width. Value is applied as-is to CSS (e.g. "800px", "80%", "50vw"). When set, overrides Size for width.
+    /// </summary>
+    [Parameter]
+    public string? Width { get; set; }
+
+    /// <summary>
+    /// Optional. Override max-width. Value is applied as-is to CSS (e.g. "800px", "80%", "1200px"). When set, overrides Size for max-width.
+    /// </summary>
+    [Parameter]
+    public string? MaxWidth { get; set; }
+
+    /// <summary>
+    /// Optional. Override height. Value is applied as-is to CSS (e.g. "80vh", "600px", "80%").
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; }
+
+    /// <summary>
+    /// Optional. Override max-height. Value is applied as-is to CSS (e.g. "90vh", "800px", "80%").
+    /// </summary>
+    [Parameter]
+    public string? MaxHeight { get; set; }
+
+    /// <summary>
+    /// Whether to close on Escape key.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnEscape { get; set; } = true;
+
+    /// <summary>
+    /// Whether to close when clicking backdrop. Default is false so backdrop clicks do nothing.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnBackdropClick { get; set; } = false;
+
+    /// <summary>
+    /// Whether to show the close button.
+    /// </summary>
+    [Parameter]
+    public bool ShowCloseButton { get; set; } = true;
+
+    /// <summary>
+    /// Optional callback when the header close (X) button is clicked.
+    /// If set, this runs instead of the default close behavior, so the parent can e.g. call its own Hide() to keep @bind-Open in sync.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnCloseButtonClick { get; set; }
+
+    /// <summary>
+    /// Callback when dialog closes with reason.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbDialogCloseReason> OnClose { get; set; }
+
+    /// <summary>
+    /// When true, the dialog body uses overflow: visible so dropdowns (e.g. SbSelect) inside the modal
+    /// are not clipped by the body. Use for modals that contain selects or other overflow menus.
+    /// </summary>
+    [Parameter]
+    public bool AllowDropdownOverflow { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool ShowHeader => Header != null || Title != null || ShowCloseButton;
+
+    private static string? GetDimensionValue(string? parameterValue, Dictionary<string, object>? attrs, params string[] keys)
+    {
+        if (!string.IsNullOrWhiteSpace(parameterValue))
+            return parameterValue.Trim();
+        if (attrs == null)
+            return null;
+        foreach (var key in keys)
+        {
+            if (attrs.TryGetValue(key, out var v) && v is string s && !string.IsNullOrWhiteSpace(s))
+                return s.Trim();
+        }
+        return null;
+    }
+
+    private bool HasDimensionOverrides
+    {
+        get
+        {
+            var w = GetDimensionValue(Width, AdditionalAttributes, "Width", "width");
+            var mw = GetDimensionValue(MaxWidth, AdditionalAttributes, "MaxWidth", "max-width", "maxwidth");
+            var h = GetDimensionValue(Height, AdditionalAttributes, "Height", "height");
+            var mh = GetDimensionValue(MaxHeight, AdditionalAttributes, "MaxHeight", "max-height", "maxheight");
+            return w != null || mw != null || h != null || mh != null;
+        }
+    }
+
+    private IReadOnlyDictionary<string, object>? FilteredAttributes
+    {
+        get
+        {
+            if (AdditionalAttributes == null || AdditionalAttributes.Count == 0)
+                return AdditionalAttributes;
+            var omit = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                { "width", "maxwidth", "max-width", "height", "maxheight", "max-height" };
+            var filtered = new Dictionary<string, object>(AdditionalAttributes);
+            foreach (var key in AdditionalAttributes.Keys)
+            {
+                if (omit.Contains(key))
+                    filtered.Remove(key);
+            }
+            return filtered.Count == AdditionalAttributes.Count ? AdditionalAttributes : filtered;
+        }
+    }
+
+    private string EffectiveStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            var w = GetDimensionValue(Width, AdditionalAttributes, "Width", "width");
+            if (w != null)
+                parts.Add($"width: {w}");
+            var mw = GetDimensionValue(MaxWidth, AdditionalAttributes, "MaxWidth", "max-width", "maxwidth");
+            if (mw != null)
+                parts.Add($"max-width: {mw}");
+            var h = GetDimensionValue(Height, AdditionalAttributes, "Height", "height");
+            if (h != null)
+                parts.Add($"height: {h}");
+            var mh = GetDimensionValue(MaxHeight, AdditionalAttributes, "MaxHeight", "max-height", "maxheight");
+            if (mh != null)
+                parts.Add($"max-height: {mh}");
+            if (!string.IsNullOrWhiteSpace(Style))
+                parts.Add(Style.Trim());
+            return parts.Count > 0 ? string.Join("; ", parts) : string.Empty;
+        }
+    }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-dialog" };
+            if (!HasDimensionOverrides)
+                classes.Add($"sb-dialog--{Size.ToString().ToLowerInvariant()}");
+            if (AllowDropdownOverflow)
+                classes.Add("sb-dialog--allow-dropdown-overflow");
+            if (!string.IsNullOrWhiteSpace(Class))
+                classes.Add(Class);
+            return string.Join(" ", classes);
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Open != _isOpen)
+        {
+            _isOpen = Open;
+            if (Open)
+            {
+                await ShowAsync();
+            }
+            else
+            {
+                await HideAsync();
+            }
+        }
+    }
+
+    private async Task ShowAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.showModal", _dialogRef);
+    }
+
+    private async Task HideAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.close", _dialogRef);
+    }
+
+    private async Task HandleCloseButtonClick()
+    {
+        if (OnCloseButtonClick.HasDelegate)
+        {
+            await OnCloseButtonClick.InvokeAsync();
+        }
+        else
+        {
+            await CloseAsync(SbDialogCloseReason.CloseButton);
+        }
+    }
+
+    private async Task CloseAsync(SbDialogCloseReason reason)
+    {
+        _isOpen = false;
+        await HideAsync();
+        await OnClose.InvokeAsync(reason);
+        await OpenChanged.InvokeAsync(false);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape" && CloseOnEscape)
+        {
+            await CloseAsync(SbDialogCloseReason.Escape);
+        }
+    }
+
+    private async Task HandleCancel()
+    {
+        // Native dialog cancel event (Escape key)
+        if (CloseOnEscape)
+        {
+            await CloseAsync(SbDialogCloseReason.Escape);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Cleanup if needed
+    }
+}

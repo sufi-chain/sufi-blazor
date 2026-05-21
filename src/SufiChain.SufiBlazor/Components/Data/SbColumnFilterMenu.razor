@@ -1,0 +1,430 @@
+@namespace SufiChain.SufiBlazor.Components.Data
+@using SufiChain.SufiBlazor.Contracts.Data
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Common
+@using Microsoft.JSInterop
+@using System.Globalization
+@inject IStringLocalizer<SufiBlazorResource> L
+@inject IJSRuntime JSRuntime
+
+<div class="sb-filter-menu @(IsOpen ? "sb-filter-menu--open" : "")" @ref="_triggerRef" @onclick:stopPropagation="true">
+    <SbIconButton Size="SbSize.Sm"
+                  Variant="SbButtonVariant.Ghost"
+                  Color="@(HasActiveFilter ? SbColor.Primary : SbColor.Secondary)"
+                  Class="@GetTriggerClass()"
+                  AriaLabel="@L["FilterBy", ColumnTitle]"
+                  OnClick="ToggleMenu">
+        <Icon><SbIcon Name="@(HasActiveFilter ? "filter" : "more-vertical")" Size="SbSize.Sm" /></Icon>
+    </SbIconButton>
+    
+    @if (IsOpen)
+    {
+        <div class="sb-filter-menu__dropdown sb-filter-menu__dropdown--fixed" style="@_dropdownFixedStyle" role="dialog" aria-label="@L["FilterOptions"]">
+            <div class="sb-filter-menu__header">
+                <span class="sb-filter-menu__title">@L["FilterBy", ColumnTitle]</span>
+                @if (HasActiveFilter)
+                {
+                    <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" Color="SbColor.Secondary" OnClick="ClearFilter">
+                        @L["Clear"]
+                    </SbButton>
+                }
+            </div>
+            
+            <div class="sb-filter-menu__content">
+                @if (FilterTemplate != null)
+                {
+                    @FilterTemplate(this)
+                }
+                else
+                {
+                    @* Default filter UI using design system components *@
+                    <div class="sb-filter-menu__field">
+                        <label class="sb-filter-menu__label">@L["Operator"]</label>
+                        <SbSelect TItem="SbFilterOperator" TValue="SbFilterOperator"
+                                  Items="@GetAvailableOperators().ToList()"
+                                  Value="@_selectedOperator"
+                                  ValueChanged="@(v => _selectedOperator = v)"
+                                  ValueField="@(op => op)"
+                                  TextField="@(op => GetOperatorLabel(op))"
+                                  Placeholder="@L["Operator"]"
+                                  Class="sb-filter-menu__select" />
+                    </div>
+                    
+                    @if (!IsNullOperator(_selectedOperator))
+                    {
+                        <div class="sb-filter-menu__field">
+                            <label class="sb-filter-menu__label">@L["Value"]</label>
+                            @if (IsBoolType())
+                            {
+                                <SbSelect TItem="bool?" TValue="bool?"
+                                          Items="@(new bool?[] { true, false })"
+                                          Value="@(string.IsNullOrEmpty(_filterValue) ? null : _filterValue == "true")"
+                                          ValueChanged="@(v => _filterValue = v == true ? "true" : "false")"
+                                          ValueField="@(b => b)"
+                                          TextField="@(b => b == true ? L["Yes"].Value : L["No"].Value)"
+                                          Placeholder="@L["Value"]"
+                                          Class="sb-filter-menu__select" />
+                            }
+                            else if (IsDateType())
+                            {
+                                <input type="date" class="sb-filter-menu__input" value="@_filterValue" @onchange="@(e => _filterValue = e.Value?.ToString())" placeholder="@L["EnterValue_Placeholder"]" />
+                            }
+                            else if (IsNumericType())
+                            {
+                                <input type="number" class="sb-filter-menu__input" value="@_filterValue" @onchange="@(e => _filterValue = e.Value?.ToString())" placeholder="@L["EnterValue_Placeholder"]" />
+                            }
+                            else
+                            {
+                                <input type="text" class="sb-filter-menu__input" value="@_filterValue" @onchange="@(e => _filterValue = e.Value?.ToString())" placeholder="@L["EnterValue_Placeholder"]" />
+                            }
+                        </div>
+                        
+                        @if (_selectedOperator == SbFilterOperator.Between)
+                        {
+                            <div class="sb-filter-menu__field">
+                                <label class="sb-filter-menu__label">@L["And"]</label>
+                                @if (IsDateType())
+                                {
+                                    <input type="date" class="sb-filter-menu__input" value="@_filterValue2" @onchange="@(e => _filterValue2 = e.Value?.ToString())" placeholder="@L["EnterValue_Placeholder"]" />
+                                }
+                                else if (IsNumericType())
+                                {
+                                    <input type="number" class="sb-filter-menu__input" value="@_filterValue2" @onchange="@(e => _filterValue2 = e.Value?.ToString())" placeholder="@L["EnterValue_Placeholder"]" />
+                                }
+                                else
+                                {
+                                    <input type="text" class="sb-filter-menu__input" value="@_filterValue2" @onchange="@(e => _filterValue2 = e.Value?.ToString())" placeholder="@L["EnterValue_Placeholder"]" />
+                                }
+                            </div>
+                        }
+                    }
+                }
+            </div>
+            
+            <div class="sb-filter-menu__actions">
+                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" Color="SbColor.Secondary" OnClick="Close">
+                    @L["Cancel"]
+                </SbButton>
+                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Solid" Color="SbColor.Primary" OnClick="ApplyFilter">
+                    @L["Apply"]
+                </SbButton>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _triggerRef;
+    private string? _dropdownFixedStyle;
+    private bool _isOpen;
+    private SbFilterOperator _selectedOperator = SbFilterOperator.Contains;
+    private string? _filterValue;
+    private string? _filterValue2;
+    
+    /// <summary>
+    /// The field name to filter on.
+    /// </summary>
+    [Parameter]
+    public string? Field { get; set; }
+    
+    /// <summary>
+    /// The column title for display.
+    /// </summary>
+    [Parameter]
+    public string ColumnTitle { get; set; } = "";
+    
+    /// <summary>
+    /// The type of the field (for determining available operators).
+    /// </summary>
+    [Parameter]
+    public Type FieldType { get; set; } = typeof(string);
+    
+    /// <summary>
+    /// The current filter for this column (if any).
+    /// </summary>
+    [Parameter]
+    public SbFilter? CurrentFilter { get; set; }
+    
+    /// <summary>
+    /// Callback when filter changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbFilter?> OnFilterChanged { get; set; }
+    
+    /// <summary>
+    /// Custom filter template.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<SbColumnFilterMenu>? FilterTemplate { get; set; }
+    
+    /// <summary>
+    /// Whether the menu is open.
+    /// </summary>
+    public bool IsOpen
+    {
+        get => _isOpen;
+        set
+        {
+            if (_isOpen != value)
+            {
+                _isOpen = value;
+                StateHasChanged();
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Whether there's an active filter.
+    /// </summary>
+    public bool HasActiveFilter => CurrentFilter != null;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsOpen)
+        {
+            try
+            {
+                var rect = await JSRuntime.InvokeAsync<BoundingRect>("SufiBlazor.dom.getBoundingRectObject", _triggerRef);
+                if (rect != null)
+                {
+                    const int gap = 4;
+                    const int dropdownClampWidth = 240; // min-width of dropdown; used so far-end column popover stays in viewport
+                    var top = rect.Top + rect.Height + gap;
+                    var inv = CultureInfo.InvariantCulture;
+                    var vw = rect.ViewportWidth > 0 ? rect.ViewportWidth : 0;
+                    if (rect.IsRtl)
+                    {
+                        // CSS right = distance from viewport right; align dropdown's right edge with trigger's right edge
+                        var cssRight = vw > 0 ? vw - rect.Right : 0;
+                        // If dropdown would extend past left edge (rect.Right - width < 0), clamp so left edge stays at 0
+                        if (vw > 0 && rect.Right < dropdownClampWidth)
+                            cssRight = vw - dropdownClampWidth;
+                        _dropdownFixedStyle = $"position: fixed; top: {top.ToString(inv)}px; right: {cssRight.ToString(inv)}px; left: auto; min-width: 240px;";
+                    }
+                    else
+                    {
+                        var left = rect.Left;
+                        // If dropdown would extend past right edge, clamp so it stays in viewport
+                        if (vw > 0 && left + dropdownClampWidth > vw)
+                            left = vw - dropdownClampWidth;
+                        _dropdownFixedStyle = $"position: fixed; top: {top.ToString(inv)}px; left: {left.ToString(inv)}px; right: auto; min-width: 240px;";
+                    }
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+            catch (JSException)
+            {
+                _dropdownFixedStyle = null;
+            }
+        }
+        else if (!IsOpen)
+        {
+            _dropdownFixedStyle = null;
+        }
+    }
+
+    private sealed record BoundingRect(double Top, double Left, double Bottom, double Right, double Width, double Height, bool IsRtl = false, double ViewportWidth = 0);
+
+    protected override void OnParametersSet()
+    {
+        if (CurrentFilter != null)
+        {
+            _selectedOperator = CurrentFilter.Operator;
+            _filterValue = CurrentFilter.Value?.ToString();
+            _filterValue2 = CurrentFilter.Value2?.ToString();
+        }
+        else
+        {
+            _selectedOperator = IsStringType() ? SbFilterOperator.Contains : SbFilterOperator.Equals;
+            _filterValue = null;
+            _filterValue2 = null;
+        }
+    }
+    
+    private void ToggleMenu()
+    {
+        IsOpen = !IsOpen;
+    }
+    
+    private string GetTriggerClass() => "sb-filter-menu__trigger " + (HasActiveFilter ? "sb-filter-menu__trigger--active" : "");
+    
+    private void Close()
+    {
+        IsOpen = false;
+    }
+    
+    private async Task ApplyFilter()
+    {
+        if (string.IsNullOrEmpty(Field))
+        {
+            Close();
+            return;
+        }
+        
+        SbFilter? filter = null;
+        
+        if (!IsNullOperator(_selectedOperator) && !string.IsNullOrEmpty(_filterValue))
+        {
+            var value = ConvertValue(_filterValue);
+            var value2 = _selectedOperator == SbFilterOperator.Between ? ConvertValue(_filterValue2) : null;
+            
+            filter = new SbFilter(Field, _selectedOperator, value, value2);
+        }
+        else if (IsNullOperator(_selectedOperator))
+        {
+            filter = new SbFilter(Field, _selectedOperator, null);
+        }
+        
+        await OnFilterChanged.InvokeAsync(filter);
+        Close();
+    }
+    
+    private async Task ClearFilter()
+    {
+        _filterValue = null;
+        _filterValue2 = null;
+        _selectedOperator = IsStringType() ? SbFilterOperator.Contains : SbFilterOperator.Equals;
+        
+        await OnFilterChanged.InvokeAsync(null);
+        Close();
+    }
+    
+    private object? ConvertValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return null;
+        
+        try
+        {
+            var targetType = Nullable.GetUnderlyingType(FieldType) ?? FieldType;
+            
+            if (targetType == typeof(int)) return int.Parse(value);
+            if (targetType == typeof(long)) return long.Parse(value);
+            if (targetType == typeof(decimal)) return decimal.Parse(value);
+            if (targetType == typeof(double)) return double.Parse(value);
+            if (targetType == typeof(float)) return float.Parse(value);
+            if (targetType == typeof(DateTime)) return DateTime.Parse(value);
+            if (targetType == typeof(DateOnly)) return DateOnly.Parse(value);
+            if (targetType == typeof(bool)) return bool.Parse(value);
+            
+            return value;
+        }
+        catch
+        {
+            return value;
+        }
+    }
+    
+    private bool IsStringType()
+    {
+        var type = Nullable.GetUnderlyingType(FieldType) ?? FieldType;
+        return type == typeof(string);
+    }
+    
+    private bool IsNumericType()
+    {
+        var type = Nullable.GetUnderlyingType(FieldType) ?? FieldType;
+        return type == typeof(int) || type == typeof(long) || type == typeof(decimal) ||
+               type == typeof(double) || type == typeof(float);
+    }
+    
+    private bool IsDateType()
+    {
+        var type = Nullable.GetUnderlyingType(FieldType) ?? FieldType;
+        return type == typeof(DateTime) || type == typeof(DateOnly);
+    }
+    
+    private bool IsBoolType()
+    {
+        var type = Nullable.GetUnderlyingType(FieldType) ?? FieldType;
+        return type == typeof(bool);
+    }
+    
+    private bool IsNullOperator(SbFilterOperator op)
+    {
+        return op == SbFilterOperator.IsNull || op == SbFilterOperator.IsNotNull;
+    }
+    
+    private IEnumerable<SbFilterOperator> GetAvailableOperators()
+    {
+        if (IsBoolType())
+        {
+            return new[] { SbFilterOperator.Equals, SbFilterOperator.NotEquals };
+        }
+        
+        if (IsStringType())
+        {
+            return new[]
+            {
+                SbFilterOperator.Contains,
+                SbFilterOperator.Equals,
+                SbFilterOperator.NotEquals,
+                SbFilterOperator.StartsWith,
+                SbFilterOperator.EndsWith,
+                SbFilterOperator.IsNull,
+                SbFilterOperator.IsNotNull
+            };
+        }
+        
+        if (IsNumericType() || IsDateType())
+        {
+            return new[]
+            {
+                SbFilterOperator.Equals,
+                SbFilterOperator.NotEquals,
+                SbFilterOperator.GreaterThan,
+                SbFilterOperator.GreaterThanOrEqual,
+                SbFilterOperator.LessThan,
+                SbFilterOperator.LessThanOrEqual,
+                SbFilterOperator.Between,
+                SbFilterOperator.IsNull,
+                SbFilterOperator.IsNotNull
+            };
+        }
+        
+        // Default operators
+        return new[]
+        {
+            SbFilterOperator.Equals,
+            SbFilterOperator.NotEquals,
+            SbFilterOperator.Contains,
+            SbFilterOperator.IsNull,
+            SbFilterOperator.IsNotNull
+        };
+    }
+    
+    private string GetOperatorLabel(SbFilterOperator op) => op switch
+    {
+        SbFilterOperator.Equals => L["FilterEquals"].Value ?? "Equals",
+        SbFilterOperator.NotEquals => L["FilterNotEquals"].Value ?? "Not equals",
+        SbFilterOperator.Contains => L["FilterContains"].Value ?? "Contains",
+        SbFilterOperator.StartsWith => L["FilterStartsWith"].Value ?? "Starts with",
+        SbFilterOperator.EndsWith => L["FilterEndsWith"].Value ?? "Ends with",
+        SbFilterOperator.GreaterThan => L["FilterGreaterThan"].Value ?? "Greater than",
+        SbFilterOperator.GreaterThanOrEqual => L["FilterGreaterThanOrEqual"].Value ?? "Greater than or equal",
+        SbFilterOperator.LessThan => L["FilterLessThan"].Value ?? "Less than",
+        SbFilterOperator.LessThanOrEqual => L["FilterLessThanOrEqual"].Value ?? "Less than or equal",
+        SbFilterOperator.Between => L["FilterBetween"].Value ?? "Between",
+        SbFilterOperator.In => L["FilterInList"].Value ?? "In list",
+        SbFilterOperator.IsNull => L["FilterIsEmpty"].Value ?? "Is empty",
+        SbFilterOperator.IsNotNull => L["FilterIsNotEmpty"].Value ?? "Is not empty",
+        _ => op.ToString()
+    };
+    
+    /// <summary>
+    /// Sets the filter value programmatically.
+    /// </summary>
+    public void SetFilterValue(string? value, string? value2 = null)
+    {
+        _filterValue = value;
+        _filterValue2 = value2;
+    }
+    
+    /// <summary>
+    /// Sets the filter operator programmatically.
+    /// </summary>
+    public void SetOperator(SbFilterOperator op)
+    {
+        _selectedOperator = op;
+    }
+}

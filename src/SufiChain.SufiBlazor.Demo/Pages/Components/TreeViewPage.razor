@@ -1,0 +1,465 @@
+@page "/demo/sufi-blazor/tree-view"
+
+<PageTitle>@(L["Menu:Demo:TreeView"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:TreeView"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:TreeViewDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:TreeViewBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbTreeView TItem="FileNode"
+                       Items="@_fileSystem"
+                       TextSelector="@(node => node.Name)"
+                       ChildSelector="@(node => node.Children)" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TreeViewWithIcons"]" SourceCode="@iconsCode" RelatedCode="@iconsCodeBehind">
+        <ExampleContent>
+            <SbTreeView TItem="FileNode"
+                       Items="@_fileSystemWithIcons"
+                       TextSelector="@(node => node.Name)"
+                       ChildSelector="@(node => node.Children)"
+                       IconSelector="@(node => node.Icon)" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TreeViewWithSelection"]" SourceCode="@selectionCode" RelatedCode="@selectionCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbTreeView TItem="FileNode"
+                           Items="@_fileSystem"
+                           TextSelector="@(node => node.Name)"
+                           ChildSelector="@(node => node.Children)"
+                           @bind-SelectedItem="_selectedNode" />
+                
+                @if (_selectedNode != null)
+                {
+                    <SbAlert Severity="SbAlertSeverity.Info">
+                        @string.Format(L["Demo:TreeViewSelectedLabel"], _selectedNode.Name)
+                    </SbAlert>
+                }
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TreeViewWithCheckboxes"]" SourceCode="@checkboxesCode" RelatedCode="@checkboxesCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbTreeView TItem="FileNode"
+                           Items="@_fileSystem"
+                           TextSelector="@(node => node.Name)"
+                           ChildSelector="@(node => node.Children)"
+                           ShowCheckboxes="true"
+                           @bind-CheckedItems="_checkedNodes" />
+                
+                @if (_checkedNodes.Any())
+                {
+                    <SbCard>
+                        <SbHeading Level="4">@string.Format(L["Demo:TreeViewCheckedItemsCount"], _checkedNodes.Count)</SbHeading>
+                        <ul style="margin: 0; padding-left: var(--sb-space-4);">
+                            @foreach (var node in _checkedNodes)
+                            {
+                                <li>@node.Name</li>
+                            }
+                        </ul>
+                    </SbCard>
+                }
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TreeViewOrganizationStructure"]" SourceCode="@orgCode" RelatedCode="@orgCodeBehind">
+        <ExampleContent>
+            <SbTreeView TItem="Employee"
+                       Items="@_organization"
+                       TextSelector="@(emp => emp.Name)"
+                       ChildSelector="@(emp => emp.Reports)"
+                       IconSelector="@(emp => emp.IsManager ? "user-check" : "user")"
+                       @bind-SelectedItem="_selectedEmployee" />
+            
+            @if (_selectedEmployee != null)
+            {
+                <SbCard style="margin-top: var(--sb-space-4);">
+                    <SbStack Gap="2">
+                        <SbHeading Level="4">@_selectedEmployee.Name</SbHeading>
+                        <SbText Size="SbSize.Sm" Color="SbColor.Muted">@_selectedEmployee.Title</SbText>
+                        <SbText Size="SbSize.Sm">@string.Format(L["Demo:TreeViewDepartmentLabel"], _selectedEmployee.Department)</SbText>
+                    </SbStack>
+                </SbCard>
+            }
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TreeViewFileExplorer"]" SourceCode="@explorerCode" RelatedCode="@explorerCodeBehind">
+        <ExampleContent>
+            <div style="border: 1px solid var(--sb-color-border); border-radius: var(--sb-radius-md); overflow: hidden;">
+                <div style="padding: var(--sb-space-3); background: var(--sb-color-surface); border-bottom: 1px solid var(--sb-color-border);">
+                    <SbHeading Level="4">@L["Demo:TreeViewFileExplorerHeading"]</SbHeading>
+                </div>
+                <div style="padding: var(--sb-space-2);">
+                    <SbTreeView TItem="FileNode"
+                               Items="@_projectStructure"
+                               TextSelector="@(node => node.Name)"
+                               ChildSelector="@(node => node.Children)"
+                               IconSelector="@GetFileIcon"
+                               @bind-SelectedItem="_selectedFile" />
+                </div>
+                @if (_selectedFile != null)
+                {
+                    <div style="padding: var(--sb-space-3); background: var(--sb-color-surface); border-top: 1px solid var(--sb-color-border);">
+                        <SbText Size="SbSize.Sm"><strong>@_selectedFile.Name</strong> - @_selectedFile.Type</SbText>
+                    </div>
+                }
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TreeViewCategoriesDefaultExpansion"]" SourceCode="@categoriesCode" RelatedCode="@categoriesCodeBehind">
+        <ExampleContent>
+            <SbTreeView TItem="Category"
+                       Items="@_categories"
+                       TextSelector="@(cat => $"{cat.Name} ({cat.Count})")"
+                       ChildSelector="@(cat => cat.SubCategories)"
+                       IsExpandedSelector="@(cat => cat.DefaultExpanded)"
+                       IconSelector="@(cat => "folder")" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbTreeView" />
+</DemoLayout>
+
+@code {
+    private FileNode? _selectedNode;
+    private FileNode? _selectedFile;
+    private HashSet<FileNode> _checkedNodes = new();
+    private Employee? _selectedEmployee;
+
+    private List<FileNode> _fileSystem = new()
+    {
+        new FileNode
+        {
+            Name = "Documents",
+            Children = new()
+            {
+                new FileNode { Name = "Resume.pdf" },
+                new FileNode { Name = "Cover Letter.docx" }
+            }
+        },
+        new FileNode
+        {
+            Name = "Pictures",
+            Children = new()
+            {
+                new FileNode
+                {
+                    Name = "Vacation",
+                    Children = new()
+                    {
+                        new FileNode { Name = "beach.jpg" },
+                        new FileNode { Name = "sunset.jpg" }
+                    }
+                },
+                new FileNode { Name = "profile.png" }
+            }
+        },
+        new FileNode { Name = "Downloads" }
+    };
+
+    private List<FileNode> _fileSystemWithIcons = new()
+    {
+        new FileNode
+        {
+            Name = "Documents",
+            Icon = "folder",
+            Children = new()
+            {
+                new FileNode { Name = "Resume.pdf", Icon = "file-text" },
+                new FileNode { Name = "Report.xlsx", Icon = "file-spreadsheet" }
+            }
+        },
+        new FileNode
+        {
+            Name = "Pictures",
+            Icon = "folder",
+            Children = new()
+            {
+                new FileNode { Name = "photo1.jpg", Icon = "image" },
+                new FileNode { Name = "photo2.png", Icon = "image" }
+            }
+        }
+    };
+
+    private List<FileNode> _projectStructure = new()
+    {
+        new FileNode
+        {
+            Name = "src",
+            Type = "folder",
+            Children = new()
+            {
+                new FileNode
+                {
+                    Name = "components",
+                    Type = "folder",
+                    Children = new()
+                    {
+                        new FileNode { Name = "Button.razor", Type = "blazor" },
+                        new FileNode { Name = "Card.razor", Type = "blazor" }
+                    }
+                },
+                new FileNode { Name = "App.razor", Type = "blazor" },
+                new FileNode { Name = "Program.cs", Type = "csharp" }
+            }
+        },
+        new FileNode { Name = "README.md", Type = "markdown" },
+        new FileNode { Name = "package.json", Type = "json" }
+    };
+
+    private List<Employee> _organization = new()
+    {
+        new Employee
+        {
+            Name = "Alice Johnson",
+            Title = "CEO",
+            Department = "Executive",
+            IsManager = true,
+            Reports = new()
+            {
+                new Employee
+                {
+                    Name = "Bob Smith",
+                    Title = "CTO",
+                    Department = "Technology",
+                    IsManager = true,
+                    Reports = new()
+                    {
+                        new Employee { Name = "Charlie Brown", Title = "Senior Developer", Department = "Engineering" },
+                        new Employee { Name = "Diana Prince", Title = "DevOps Engineer", Department = "Engineering" }
+                    }
+                },
+                new Employee
+                {
+                    Name = "Eve Wilson",
+                    Title = "CFO",
+                    Department = "Finance",
+                    IsManager = true,
+                    Reports = new()
+                    {
+                        new Employee { Name = "Frank Miller", Title = "Accountant", Department = "Finance" }
+                    }
+                }
+            }
+        }
+    };
+
+    private List<Category> _categories = new()
+    {
+        new Category
+        {
+            Name = "Electronics",
+            Count = 150,
+            DefaultExpanded = true,
+            SubCategories = new()
+            {
+                new Category { Name = "Computers", Count = 50 },
+                new Category { Name = "Phones", Count = 75 },
+                new Category { Name = "Tablets", Count = 25 }
+            }
+        },
+        new Category
+        {
+            Name = "Clothing",
+            Count = 200,
+            SubCategories = new()
+            {
+                new Category { Name = "Men", Count = 100 },
+                new Category { Name = "Women", Count = 100 }
+            }
+        }
+    };
+
+    private string GetFileIcon(FileNode node)
+    {
+        if (node.Type == "folder") return "folder";
+        if (node.Type == "blazor" || node.Type == "csharp") return "code";
+        if (node.Type == "markdown") return "file-text";
+        if (node.Type == "json") return "braces";
+        return "file";
+    }
+
+    private class FileNode
+    {
+        public string Name { get; set; } = "";
+        public string Type { get; set; } = "file";
+        public string? Icon { get; set; }
+        public List<FileNode> Children { get; set; } = new();
+    }
+
+    private class Employee
+    {
+        public string Name { get; set; } = "";
+        public string Title { get; set; } = "";
+        public string Department { get; set; } = "";
+        public bool IsManager { get; set; }
+        public List<Employee> Reports { get; set; } = new();
+    }
+
+    private class Category
+    {
+        public string Name { get; set; } = "";
+        public int Count { get; set; }
+        public bool DefaultExpanded { get; set; }
+        public List<Category> SubCategories { get; set; } = new();
+    }
+
+    private const string basicCodeBehind = @"private List<FileNode> _fileSystem = new()
+{
+    new FileNode
+    {
+        Name = ""Documents"",
+        Children = new()
+        {
+            new FileNode { Name = ""Resume.pdf"" },
+            new FileNode { Name = ""Cover Letter.docx"" }
+        }
+    },
+    new FileNode { Name = ""Downloads"" }
+};
+
+private class FileNode
+{
+    public string Name { get; set; } = """";
+    public List<FileNode> Children { get; set; } = new();
+}";
+
+    private const string basicCode = @"<SbTreeView TItem=""FileNode""
+           Items=""@_fileSystem""
+           TextSelector=""@(node => node.Name)""
+           ChildSelector=""@(node => node.Children)"" />";
+
+    private const string iconsCodeBehind = @"private List<FileNode> _fileSystemWithIcons = new()
+{
+    new FileNode
+    {
+        Name = ""Documents"",
+        Icon = ""folder"",
+        Children = new()
+        {
+            new FileNode { Name = ""Resume.pdf"", Icon = ""file-text"" }
+        }
+    }
+};
+
+private class FileNode
+{
+    public string Name { get; set; } = """";
+    public string? Icon { get; set; }
+    public List<FileNode> Children { get; set; } = new();
+}";
+
+    private const string iconsCode = @"<SbTreeView TItem=""FileNode""
+           Items=""@_fileSystemWithIcons""
+           TextSelector=""@(node => node.Name)""
+           ChildSelector=""@(node => node.Children)""
+           IconSelector=""@(node => node.Icon)"" />";
+
+    private const string selectionCodeBehind = @"private FileNode? _selectedNode;";
+
+    private const string selectionCode = @"<SbTreeView TItem=""FileNode""
+           Items=""@_fileSystem""
+           TextSelector=""@(node => node.Name)""
+           ChildSelector=""@(node => node.Children)""
+           @bind-SelectedItem=""_selectedNode"" />
+
+@if (_selectedNode != null)
+{
+    <SbAlert>Selected: @_selectedNode.Name</SbAlert>
+}";
+
+    private const string checkboxesCodeBehind = @"private HashSet<FileNode> _checkedNodes = new();";
+
+    private const string checkboxesCode = @"<SbTreeView TItem=""FileNode""
+           Items=""@_fileSystem""
+           TextSelector=""@(node => node.Name)""
+           ChildSelector=""@(node => node.Children)""
+           ShowCheckboxes=""true""
+           @bind-CheckedItems=""_checkedNodes"" />";
+
+    private const string orgCodeBehind = @"private Employee? _selectedEmployee;
+
+private List<Employee> _organization = new()
+{
+    new Employee
+    {
+        Name = ""Alice Johnson"",
+        Title = ""CEO"",
+        Reports = new()
+        {
+            new Employee { Name = ""Bob Smith"", Title = ""CTO"" }
+        }
+    }
+};
+
+private class Employee
+{
+    public string Name { get; set; } = """";
+    public string Title { get; set; } = """";
+    public bool IsManager { get; set; }
+    public List<Employee> Reports { get; set; } = new();
+}";
+
+    private const string orgCode = @"<SbTreeView TItem=""Employee""
+           Items=""@_organization""
+           TextSelector=""@(emp => emp.Name)""
+           ChildSelector=""@(emp => emp.Reports)""
+           IconSelector=""@(emp => emp.IsManager ? ""user-check"" : ""user"")""
+           @bind-SelectedItem=""_selectedEmployee"" />";
+
+    private const string explorerCodeBehind = @"private FileNode? _selectedFile;
+
+private string GetFileIcon(FileNode node)
+{
+    if (node.Type == ""folder"") return ""folder"";
+    if (node.Type == ""code"") return ""code"";
+    return ""file"";
+}";
+
+    private const string explorerCode = @"<SbTreeView TItem=""FileNode""
+           Items=""@_projectStructure""
+           TextSelector=""@(node => node.Name)""
+           ChildSelector=""@(node => node.Children)""
+           IconSelector=""@GetFileIcon""
+           @bind-SelectedItem=""_selectedFile"" />";
+
+    private const string categoriesCodeBehind = @"private List<Category> _categories = new()
+{
+    new Category
+    {
+        Name = ""Electronics"",
+        DefaultExpanded = true,
+        SubCategories = new()
+        {
+            new Category { Name = ""Computers"" }
+        }
+    }
+};
+
+private class Category
+{
+    public string Name { get; set; } = """";
+    public bool DefaultExpanded { get; set; }
+    public List<Category> SubCategories { get; set; } = new();
+}";
+
+    private const string categoriesCode = @"<SbTreeView TItem=""Category""
+           Items=""@_categories""
+           TextSelector=""@(cat => cat.Name)""
+           ChildSelector=""@(cat => cat.SubCategories)""
+           IsExpandedSelector=""@(cat => cat.DefaultExpanded)"" />";
+}

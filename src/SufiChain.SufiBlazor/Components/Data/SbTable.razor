@@ -1,0 +1,106 @@
+@namespace SufiChain.SufiBlazor.Components.Data
+@typeparam TItem
+
+<div class="sb-table-container @Class">
+    <table class="sb-table @(Striped ? "sb-table--striped" : "") @(Hover ? "sb-table--hover" : "") @(Bordered ? "sb-table--bordered" : "") @(Compact ? "sb-table--compact" : "")">
+        @if (HeaderContent != null)
+        {
+            <thead class="sb-table__head">
+                @HeaderContent
+            </thead>
+        }
+        <tbody class="sb-table__body">
+            @if (Items != null && Items.Any())
+            {
+                @foreach (var item in Items)
+                {
+                    <tr class="sb-table__row" @onclick="() => OnRowClick.InvokeAsync(item)">
+                        @RowTemplate(item)
+                    </tr>
+                }
+            }
+            else if (EmptyContent != null)
+            {
+                <tr>
+                    <td colspan="100" class="sb-table__empty">
+                        @EmptyContent
+                    </td>
+                </tr>
+            }
+        </tbody>
+        @if (FooterContent != null)
+        {
+            <tfoot class="sb-table__foot">
+                @FooterContent
+            </tfoot>
+        }
+    </table>
+</div>
+
+@code {
+    /// <summary>
+    /// Data items.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<TItem>? Items { get; set; }
+    
+    /// <summary>
+    /// Row template.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<TItem> RowTemplate { get; set; } = default!;
+    
+    /// <summary>
+    /// Header content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? HeaderContent { get; set; }
+    
+    /// <summary>
+    /// Footer content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+    
+    /// <summary>
+    /// Empty state content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+    
+    /// <summary>
+    /// Whether to show striped rows.
+    /// </summary>
+    [Parameter]
+    public bool Striped { get; set; }
+    
+    /// <summary>
+    /// Whether to highlight rows on hover.
+    /// </summary>
+    [Parameter]
+    public bool Hover { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to show borders.
+    /// </summary>
+    [Parameter]
+    public bool Bordered { get; set; }
+    
+    /// <summary>
+    /// Whether to use compact spacing.
+    /// </summary>
+    [Parameter]
+    public bool Compact { get; set; }
+    
+    /// <summary>
+    /// Callback when row is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TItem> OnRowClick { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+}

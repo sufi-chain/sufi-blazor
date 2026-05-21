@@ -1,0 +1,80 @@
+@namespace SufiChain.SufiBlazor.Components.Surfaces
+
+@if (ChildContent != null)
+{
+    <div class="@CssClass" style="@Style" role="separator" @attributes="AdditionalAttributes">
+        <span class="sb-divider__content">@ChildContent</span>
+    </div>
+}
+else
+{
+    <hr class="@CssClass" style="@Style" role="separator" @attributes="AdditionalAttributes" />
+}
+
+@code {
+    /// <summary>
+    /// Divider orientation.
+    /// </summary>
+    [Parameter]
+    public SbOrientation Orientation { get; set; } = SbOrientation.Horizontal;
+
+    /// <summary>
+    /// Optional label content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Label alignment when content is provided.
+    /// </summary>
+    [Parameter]
+    public SbAlign LabelAlign { get; set; } = SbAlign.Center;
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-divider" };
+
+            classes.Add($"sb-divider--{Orientation.ToString().ToLowerInvariant()}");
+
+            if (ChildContent != null)
+            {
+                classes.Add("sb-divider--with-label");
+                classes.Add($"sb-divider--label-{GetAlignClass(LabelAlign)}");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    private static string GetAlignClass(SbAlign align) => align switch
+    {
+        SbAlign.Start => "start",
+        SbAlign.End => "end",
+        _ => "center"
+    };
+}

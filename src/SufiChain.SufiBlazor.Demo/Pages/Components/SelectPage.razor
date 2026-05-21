@@ -1,0 +1,176 @@
+@page "/demo/sufi-blazor/select"
+
+<PageTitle>@(L["Menu:Demo:Select"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Select"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:SelectPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:SelectBasic"]" SourceCode="@basicSelectCode" RelatedCode="@basicSelectCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbFormField Label="Country" InputId="country">
+                    <SbSimpleSelect TValue="string" @bind-Value="_selectedCountry" Id="country" Placeholder="Select a country">
+                        <SbSelectOption TValue="string" Value="@("us")">United States</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("uk")">United Kingdom</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("ca")">Canada</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("au")">Australia</SbSelectOption>
+                    </SbSimpleSelect>
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption">Selected: @_selectedCountry</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SelectWithItems"]" SourceCode="@withItemsCode" RelatedCode="@withItemsCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbFormField Label="Status" InputId="status">
+                    <SbSelect TItem="StatusOption" TValue="string"
+                              Items="_statusOptions"
+                              @bind-Value="_selectedStatus"
+                              Id="status"
+                              Placeholder="Select status"
+                              TextField="@(s => s.Label)"
+                              ValueField="@(s => s.Value)" />
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption">Selected: @_selectedStatus</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SelectDisabled"]" SourceCode="@disabledCode">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbFormField Label="Disabled Select" InputId="disabled-select">
+                    <SbSimpleSelect TValue="string" Value="@("option1")" Id="disabled-select" Disabled="true">
+                        <SbSelectOption TValue="string" Value="@("option1")">Option 1</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("option2")">Option 2</SbSelectOption>
+                    </SbSimpleSelect>
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SelectClearable"]" SourceCode="@clearableCode" RelatedCode="@clearableCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbFormField Label="Clearable Select" InputId="clearable-select">
+                    <SbSimpleSelect TValue="string" @bind-Value="_clearableValue" Id="clearable-select" Clearable="true" Placeholder="Select an option">
+                        <SbSelectOption TValue="string" Value="@("red")">Red</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("green")">Green</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("blue")">Blue</SbSelectOption>
+                    </SbSimpleSelect>
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption">Selected: @(_clearableValue ?? "None")</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SelectSearchable"]" SourceCode="@searchableCode" RelatedCode="@searchableCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbFormField Label="Fruit" InputId="searchable-select">
+                    <SbSimpleSelect TValue="string" @bind-Value="_searchableValue" Id="searchable-select" Searchable="true" Placeholder="Type to search...">
+                        <SbSelectOption TValue="string" Value="@("apple")">Apple</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("banana")">Banana</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("cherry")">Cherry</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("date")">Date</SbSelectOption>
+                        <SbSelectOption TValue="string" Value="@("elderberry")">Elderberry</SbSelectOption>
+                    </SbSimpleSelect>
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption">Selected: @(_searchableValue ?? "None")</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbSelect" />
+</DemoLayout>
+
+@code {
+    private string _selectedCountry = "";
+    private string _selectedStatus = "";
+    private string? _clearableValue = "red";
+    private string? _searchableValue;
+
+    private List<StatusOption> _statusOptions = new()
+    {
+        new StatusOption { Value = "active", Label = "Active" },
+        new StatusOption { Value = "pending", Label = "Pending" },
+        new StatusOption { Value = "inactive", Label = "Inactive" },
+        new StatusOption { Value = "archived", Label = "Archived" }
+    };
+
+    private class StatusOption
+    {
+        public string Value { get; set; } = "";
+        public string Label { get; set; } = "";
+    }
+
+    private string basicSelectCodeBehind = @"private string _selectedCountry = """";";
+
+    private string basicSelectCode = @"<SbFormField Label=""Country"" InputId=""country"">
+    <SbSimpleSelect TValue=""string"" @bind-Value=""_selectedCountry"" Id=""country"" Placeholder=""Select a country"">
+        <SbSelectOption TValue=""string"" Value=""us"">United States</SbSelectOption>
+        <SbSelectOption TValue=""string"" Value=""uk"">United Kingdom</SbSelectOption>
+        <SbSelectOption TValue=""string"" Value=""ca"">Canada</SbSelectOption>
+        <SbSelectOption TValue=""string"" Value=""au"">Australia</SbSelectOption>
+    </SbSimpleSelect>
+</SbFormField>";
+
+    private string withItemsCodeBehind = @"private string _selectedStatus = """";
+
+private List<StatusOption> _statusOptions = new()
+{
+    new StatusOption { Value = ""active"", Label = ""Active"" },
+    new StatusOption { Value = ""pending"", Label = ""Pending"" },
+    new StatusOption { Value = ""inactive"", Label = ""Inactive"" }
+};
+
+private class StatusOption
+{
+    public string Value { get; set; } = """";
+    public string Label { get; set; } = """";
+}";
+
+    private string withItemsCode = @"<SbFormField Label=""Status"" InputId=""status"">
+    <SbSelect TItem=""StatusOption"" TValue=""string""
+              Items=""_statusOptions""
+              @bind-Value=""_selectedStatus""
+              Id=""status""
+              Placeholder=""Select status""
+              TextField=""@(s => s.Label)""
+              ValueField=""@(s => s.Value)"" />
+</SbFormField>";
+
+    private string disabledCode = @"<SbFormField Label=""Disabled Select"" InputId=""disabled-select"">
+    <SbSimpleSelect TValue=""string"" Value=""option1"" Id=""disabled-select"" Disabled=""true"">
+        <SbSelectOption TValue=""string"" Value=""option1"">Option 1</SbSelectOption>
+        <SbSelectOption TValue=""string"" Value=""option2"">Option 2</SbSelectOption>
+    </SbSimpleSelect>
+</SbFormField>";
+
+    private string clearableCodeBehind = @"private string? _clearableValue = ""red"";";
+
+    private string clearableCode = @"<SbFormField Label=""Clearable Select"" InputId=""clearable-select"">
+    <SbSimpleSelect TValue=""string"" @bind-Value=""_clearableValue"" Id=""clearable-select"" Clearable=""true"">
+        <SbSelectOption TValue=""string"" Value=""red"">Red</SbSelectOption>
+        <SbSelectOption TValue=""string"" Value=""green"">Green</SbSelectOption>
+        <SbSelectOption TValue=""string"" Value=""blue"">Blue</SbSelectOption>
+    </SbSimpleSelect>
+</SbFormField>";
+
+    private string searchableCodeBehind = @"private string? _searchableValue;";
+
+    private string searchableCode = @"<SbFormField Label=""Fruit"" InputId=""searchable-select"">
+    <SbSimpleSelect TValue=""string"" @bind-Value=""_searchableValue"" Id=""searchable-select"" Searchable=""true"" Placeholder=""Type to search..."">
+        <SbSelectOption TValue=""string"" Value=""apple"">Apple</SbSelectOption>
+        <SbSelectOption TValue=""string"" Value=""banana"">Banana</SbSelectOption>
+        <SbSelectOption TValue=""string"" Value=""cherry"">Cherry</SbSelectOption>
+    </SbSimpleSelect>
+</SbFormField>";
+}

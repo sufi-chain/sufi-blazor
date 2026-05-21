@@ -1,0 +1,74 @@
+@page "/demo/sufi-blazor/badge"
+
+<PageTitle>@(L["Menu:Demo:Badge"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Badge"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:BadgeDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BadgeBasic"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbBadge Value="5" />
+                <SbBadge Value="25" />
+                <SbBadge Value="100" />
+                <SbBadge Value="150" Max="99" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BadgeColors"]" SourceCode="@colorsCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbBadge Value="5" Color="SbColor.Primary" />
+                <SbBadge Value="5" Color="SbColor.Secondary" />
+                <SbBadge Value="5" Color="SbColor.Success" />
+                <SbBadge Value="5" Color="SbColor.Warning" />
+                <SbBadge Value="5" Color="SbColor.Danger" />
+                <SbBadge Value="5" Color="SbColor.Info" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BadgeDotBadges"]" SourceCode="@dotCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbBadge Dot="true" Color="SbColor.Success" />
+                <SbBadge Dot="true" Color="SbColor.Warning" />
+                <SbBadge Dot="true" Color="SbColor.Danger" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BadgeCustomContent"]" SourceCode="@customCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbBadge Color="SbColor.Primary">@L["Demo:BadgeNew"]</SbBadge>
+                <SbBadge Color="SbColor.Success">@L["Demo:BadgePro"]</SbBadge>
+                <SbBadge Color="SbColor.Warning">@L["Demo:BadgeBeta"]</SbBadge>
+                <SbBadge Color="SbColor.Danger">@L["Demo:BadgeHot"]</SbBadge>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbBadge" />
+</DemoLayout>
+
+@code {
+    private const string basicCode = @"<SbBadge Value=""5"" />
+<SbBadge Value=""100"" />
+<SbBadge Value=""150"" Max=""99"" />";
+
+    private const string colorsCode = @"<SbBadge Value=""5"" Color=""SbColor.Primary"" />
+<SbBadge Value=""5"" Color=""SbColor.Success"" />
+<SbBadge Value=""5"" Color=""SbColor.Danger"" />";
+
+    private const string dotCode = @"<SbBadge Dot=""true"" Color=""SbColor.Success"" />
+<SbBadge Dot=""true"" Color=""SbColor.Danger"" />";
+
+    private const string customCode = @"<SbBadge Color=""SbColor.Primary"">New</SbBadge>
+<SbBadge Color=""SbColor.Success"">Pro</SbBadge>";
+}

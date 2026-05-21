@@ -1,0 +1,131 @@
+@page "/demo/sufi-blazor/drawer"
+
+<PageTitle>@(L["Menu:Demo:Drawer"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Drawer"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DrawerDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DrawerBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbButton OnClick="@(() => _basicOpen = true)">@L["Demo:DrawerOpenButton"]</SbButton>
+            
+            <SbDrawer @bind-Open="_basicOpen" Title="@L["Demo:DrawerBasicTitle"]">
+                <SbStack Gap="3">
+                    <SbText>@L["Demo:DrawerBasicContent"]</SbText>
+                    <SbText Color="SbColor.Muted">@L["Demo:DrawerBasicHint"]</SbText>
+                </SbStack>
+            </SbDrawer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DrawerPlacements"]" SourceCode="@placementsCode" RelatedCode="@placementsCodeBehind">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true">
+                <SbButton OnClick="@(() => _startOpen = true)">@L["Demo:DrawerPlacementStart"]</SbButton>
+                <SbButton OnClick="@(() => _endOpen = true)">@L["Demo:DrawerPlacementEnd"]</SbButton>
+                <SbButton OnClick="@(() => _topOpen = true)">@L["Demo:DrawerPlacementTop"]</SbButton>
+                <SbButton OnClick="@(() => _bottomOpen = true)">@L["Demo:DrawerPlacementBottom"]</SbButton>
+            </SbStack>
+            
+            <SbDrawer @bind-Open="_startOpen" Title="@L["Demo:DrawerStartTitle"]" Placement="SbDrawerPlacement.Start">
+                <SbText>@L["Demo:DrawerStartContent"]</SbText>
+            </SbDrawer>
+            
+            <SbDrawer @bind-Open="_endOpen" Title="@L["Demo:DrawerEndTitle"]" Placement="SbDrawerPlacement.End">
+                <SbText>@L["Demo:DrawerEndContent"]</SbText>
+            </SbDrawer>
+            
+            <SbDrawer @bind-Open="_topOpen" Title="@L["Demo:DrawerTopTitle"]" Placement="SbDrawerPlacement.Top" Height="300px">
+                <SbText>@L["Demo:DrawerTopContent"]</SbText>
+            </SbDrawer>
+            
+            <SbDrawer @bind-Open="_bottomOpen" Title="@L["Demo:DrawerBottomTitle"]" Placement="SbDrawerPlacement.Bottom" Height="300px">
+                <SbText>@L["Demo:DrawerBottomContent"]</SbText>
+            </SbDrawer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DrawerWithFooter"]" SourceCode="@footerCode" RelatedCode="@footerCodeBehind">
+        <ExampleContent>
+            <SbButton OnClick="@(() => _footerOpen = true)">@L["Demo:DrawerOpenWithFooter"]</SbButton>
+            
+            <SbDrawer @bind-Open="_footerOpen" Title="@L["Demo:DrawerFormTitle"]">
+                <ChildContent>
+                    <SbStack Gap="4">
+                        <SbTextField TValue="string" @bind-Value="_formName" Label="@L["Demo:DrawerFormName"]" />
+                        <SbTextField TValue="string" @bind-Value="_formEmail" Label="@L["Demo:DrawerFormEmail"]" Type="email" />
+                        <SbTextArea @bind-Value="_formMessage" Label="@L["Demo:DrawerFormMessage"]" Rows="4" />
+                    </SbStack>
+                </ChildContent>
+                <Footer>
+                    <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                        <SbButton Variant="SbButtonVariant.Outline" OnClick="@(() => _footerOpen = false)">@L["Demo:DialogCancel"]</SbButton>
+                        <SbButton OnClick="@(() => _footerOpen = false)">@L["Demo:DrawerSubmit"]</SbButton>
+                    </SbStack>
+                </Footer>
+            </SbDrawer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DrawerCustomWidth"]" SourceCode="@widthCode" RelatedCode="@widthCodeBehind">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3">
+                <SbButton OnClick="@(() => _narrowOpen = true)">@L["Demo:DrawerNarrowButton"]</SbButton>
+                <SbButton OnClick="@(() => _wideOpen = true)">@L["Demo:DrawerWideButton"]</SbButton>
+            </SbStack>
+            
+            <SbDrawer @bind-Open="_narrowOpen" Title="@L["Demo:DrawerNarrowTitle"]" Width="250px">
+                <SbText>@L["Demo:DrawerNarrowContent"]</SbText>
+            </SbDrawer>
+            
+            <SbDrawer @bind-Open="_wideOpen" Title="@L["Demo:DrawerWideTitle"]" Width="600px">
+                <SbText>@L["Demo:DrawerWideContent"]</SbText>
+            </SbDrawer>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDrawer" />
+</DemoLayout>
+
+@code {
+    private bool _basicOpen, _startOpen, _endOpen, _topOpen, _bottomOpen;
+    private bool _footerOpen, _narrowOpen, _wideOpen;
+    private string _formName = "";
+    private string _formEmail = "";
+    private string _formMessage = "";
+
+    private const string basicCodeBehind = "private bool _basicOpen = false;";
+    private const string basicCode = @"<SbButton OnClick=""@(() => _basicOpen = true)"">Open Drawer</SbButton>
+<SbDrawer @bind-Open=""_basicOpen"" Title=""Drawer Title"">
+    <SbText>Drawer content</SbText>
+</SbDrawer>";
+
+    private const string placementsCodeBehind = "private bool _startOpen, _endOpen, _topOpen, _bottomOpen;";
+    private const string placementsCode = @"<SbDrawer @bind-Open=""_startOpen"" Placement=""SbDrawerPlacement.Start"">
+    <SbText>Start drawer</SbText>
+</SbDrawer>
+<SbDrawer @bind-Open=""_topOpen"" Placement=""SbDrawerPlacement.Top"" Height=""300px"">
+    <SbText>Top drawer</SbText>
+</SbDrawer>";
+
+    private const string footerCodeBehind = "private bool _footerOpen;";
+    private const string footerCode = @"<SbDrawer @bind-Open=""_footerOpen"" Title=""Form"">
+    <ChildContent><SbTextField Label=""Name"" /></ChildContent>
+    <Footer>
+        <SbButton OnClick=""@(() => _footerOpen = false)"">Submit</SbButton>
+    </Footer>
+</SbDrawer>";
+
+    private const string widthCodeBehind = "private bool _narrowOpen, _wideOpen;";
+    private const string widthCode = @"<SbDrawer @bind-Open=""_narrowOpen"" Width=""250px"">
+    <SbText>Narrow drawer</SbText>
+</SbDrawer>
+<SbDrawer @bind-Open=""_wideOpen"" Width=""600px"">
+    <SbText>Wide drawer</SbText>
+</SbDrawer>";
+}

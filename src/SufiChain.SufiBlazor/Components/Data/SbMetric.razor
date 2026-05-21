@@ -1,0 +1,114 @@
+@namespace SufiChain.SufiBlazor.Components.Data
+
+<div class="sb-metric sb-metric--@Size.ToString().ToLower() @Class">
+    <div class="sb-metric__value">
+        @if (!string.IsNullOrEmpty(Prefix))
+        {
+            <span class="sb-metric__prefix">@Prefix</span>
+        }
+        <span class="sb-metric__number" style="@GetColorStyle()">@FormattedValue</span>
+        @if (!string.IsNullOrEmpty(Suffix))
+        {
+            <span class="sb-metric__suffix">@Suffix</span>
+        }
+    </div>
+    
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <div class="sb-metric__label">@Label</div>
+    }
+    
+    @if (ShowProgress && Max.HasValue)
+    {
+        var percentage = Value / Max.Value * 100;
+        <div class="sb-metric__progress">
+            <div class="sb-metric__progress-bar" style="width: @percentage.ToString("0")%"></div>
+        </div>
+    }
+    
+    @if (ChildContent != null)
+    {
+        <div class="sb-metric__content">
+            @ChildContent
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Numeric value.
+    /// </summary>
+    [Parameter]
+    public double Value { get; set; }
+    
+    /// <summary>
+    /// Maximum value (for progress).
+    /// </summary>
+    [Parameter]
+    public double? Max { get; set; }
+    
+    /// <summary>
+    /// Metric label.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+    
+    /// <summary>
+    /// Value prefix.
+    /// </summary>
+    [Parameter]
+    public string? Prefix { get; set; }
+    
+    /// <summary>
+    /// Value suffix.
+    /// </summary>
+    [Parameter]
+    public string? Suffix { get; set; }
+    
+    /// <summary>
+    /// Number format string.
+    /// </summary>
+    [Parameter]
+    public string Format { get; set; } = "N0";
+    
+    /// <summary>
+    /// Metric size.
+    /// </summary>
+    [Parameter]
+    public SbMetricSize Size { get; set; } = SbMetricSize.Medium;
+    
+    /// <summary>
+    /// Value color.
+    /// </summary>
+    [Parameter]
+    public string? Color { get; set; }
+    
+    /// <summary>
+    /// Whether to show progress bar.
+    /// </summary>
+    [Parameter]
+    public bool ShowProgress { get; set; }
+    
+    /// <summary>
+    /// Additional content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string FormattedValue => Value.ToString(Format);
+    
+    private string? GetColorStyle() => !string.IsNullOrEmpty(Color) ? $"color: {Color}" : null;
+}
+
+public enum SbMetricSize
+{
+    Small,
+    Medium,
+    Large
+}

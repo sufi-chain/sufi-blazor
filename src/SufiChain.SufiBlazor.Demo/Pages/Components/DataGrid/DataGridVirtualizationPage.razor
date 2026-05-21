@@ -1,0 +1,148 @@
+@page "/demo/sufi-blazor/data-grid/virtualization"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridVirtualization"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridVirtualization"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridVirtualizationDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DataGridVirtualization"]" SourceCode="@virtualizationCode" RelatedCode="@virtualizationCodeBehind">
+        <ExampleContent>
+            <SbAlert Severity="SbAlertSeverity.Info" Class="mb-3">
+                @L["Demo:DataGridVirtualizationAlert"]
+            </SbAlert>
+            @if (_isLargeDatasetLoading)
+            {
+                <div style="display: flex; align-items: center; justify-content: center; padding: var(--sb-space-6); gap: var(--sb-space-2);">
+                    <SbProgress Indeterminate="true" Size="SbSize.Sm" />
+                    <SbText>@L["Demo:DataGridVirtualizationGenerating"]</SbText>
+                </div>
+            }
+            else
+            {
+                <SbDataGrid TItem="Employee"
+                            Items="@_largeDataset"
+                            KeySelector="@(e => e.Id.ToString())"
+                            VirtualizationEnabled="true"
+                            RowHeight="48"
+                            Height="400px"
+                            ShowPagination="false">
+                    <ChildContent>
+                        <SbColumn TItem="Employee" Field="Id" Title="@L["Demo:Id"]" Width="80px" />
+                        <SbColumn TItem="Employee" Field="Name" Title="@L["Demo:Name"]" Width="140px" />
+                        <SbColumn TItem="Employee" Field="Department" Title="@L["Demo:DataGridDepartment"]" Width="120px" />
+                        <SbColumn TItem="Employee" Field="Salary" Title="@L["Demo:Salary"]" Width="100px" Align="SbColumnAlign.End">
+                            <CellTemplate Context="context">
+                                @context.Item.Salary.ToString("N0")
+                            </CellTemplate>
+                        </SbColumn>
+                        <SbColumn TItem="Employee" Field="HireDate" Title="@L["Demo:Date"]" Width="110px">
+                            <CellTemplate Context="context">
+                                @context.Item.HireDate.ToString("MMM dd, yyyy")
+                            </CellTemplate>
+                        </SbColumn>
+                    </ChildContent>
+                </SbDataGrid>
+            }
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<Employee> _largeDataset = new();
+    private bool _isLargeDatasetLoading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_isLargeDatasetLoading)
+            return;
+
+        var data = await Task.Run(() => GenerateEmployees(10000));
+        _largeDataset = data;
+        _isLargeDatasetLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private static List<Employee> GenerateEmployees(int count)
+    {
+        var departments = new[] { "Engineering", "Marketing", "Sales", "HR", "Finance", "Operations" };
+        var firstNames = new[] { "John", "Jane", "Mike", "Sarah", "David", "Emily", "Chris", "Lisa", "Tom", "Anna" };
+        var lastNames = new[] { "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez" };
+        var random = new Random(42);
+        return Enumerable.Range(1, count).Select(i => new Employee
+        {
+            Id = i,
+            Name = $"{firstNames[random.Next(firstNames.Length)]} {lastNames[random.Next(lastNames.Length)]}",
+            Email = $"employee{i}@company.com",
+            Department = departments[random.Next(departments.Length)],
+            Salary = random.Next(50000, 150000),
+            HireDate = DateTime.Today.AddDays(-random.Next(30, 2000)),
+            IsActive = random.Next(10) > 2
+        }).ToList();
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal Salary { get; set; }
+        public DateTime HireDate { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    private const string virtualizationCodeBehind = @"private List<Employee> _largeDataset = new();
+private bool _isLargeDatasetLoading = true;
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (!firstRender || !_isLargeDatasetLoading) return;
+    var data = await Task.Run(() => GenerateEmployees(10000));
+    _largeDataset = data;
+    _isLargeDatasetLoading = false;
+    await InvokeAsync(StateHasChanged);
+}
+
+private static List<Employee> GenerateEmployees(int count) { /* ... */ }
+
+private class Employee
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = """";
+    public string Email { get; set; } = """";
+    public string Department { get; set; } = """";
+    public decimal Salary { get; set; }
+    public DateTime HireDate { get; set; }
+    public bool IsActive { get; set; }
+}";
+
+    private const string virtualizationCode = @"<SbAlert Severity=""SbAlertSeverity.Info"" Class=""mb-3"">
+    This grid contains 10,000 rows but only renders visible rows. Scroll to see smooth performance.
+</SbAlert>
+@if (_isLargeDatasetLoading) { <SbProgress Indeterminate=""true"" /> }
+else
+{
+    <SbDataGrid TItem=""Employee""
+                Items=""@_largeDataset""
+                KeySelector=""@(e => e.Id.ToString())""
+                VirtualizationEnabled=""true""
+                RowHeight=""48""
+                Height=""400px""
+                ShowPagination=""false"">
+        <ChildContent>
+            <SbColumn TItem=""Employee"" Field=""Id"" Title=""ID"" />
+            <SbColumn TItem=""Employee"" Field=""Name"" Title=""Name"" />
+            <SbColumn TItem=""Employee"" Field=""Department"" Title=""Department"" />
+            <SbColumn TItem=""Employee"" Field=""Salary"" Title=""Salary"" />
+            <SbColumn TItem=""Employee"" Field=""HireDate"" Title=""Hire Date"" />
+        </ChildContent>
+    </SbDataGrid>
+}";
+}

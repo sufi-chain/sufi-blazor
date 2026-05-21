@@ -1,0 +1,127 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+@inject NavigationManager NavigationManager
+
+<a href="@Href"
+   class="@CssClass"
+   style="@Style"
+   @attributes="AdditionalAttributes">
+    @if (Icon != null)
+    {
+        <span class="sb-nav-item__icon">@Icon</span>
+    }
+    <span class="sb-nav-item__text">@Text</span>
+    @if (Badge != null)
+    {
+        <span class="sb-nav-item__badge">@Badge</span>
+    }
+</a>
+
+@code {
+    /// <summary>
+    /// Navigation URL.
+    /// </summary>
+    [Parameter]
+    public string? Href { get; set; }
+
+    /// <summary>
+    /// Navigation text.
+    /// </summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// Icon content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+
+    /// <summary>
+    /// Badge content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Badge { get; set; }
+
+    /// <summary>
+    /// URL matching behavior.
+    /// </summary>
+    [Parameter]
+    public NavLinkMatch Match { get; set; } = NavLinkMatch.Prefix;
+
+    /// <summary>
+    /// Whether the item is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool IsActive
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Href)) return false;
+
+            var currentUri = NavigationManager.Uri;
+            var baseUri = NavigationManager.BaseUri;
+            var relativePath = currentUri.StartsWith(baseUri)
+                ? currentUri[baseUri.Length..]
+                : currentUri;
+
+            var hrefPath = Href.TrimStart('/');
+            relativePath = relativePath.TrimStart('/');
+
+            if (Match == NavLinkMatch.All)
+            {
+                return string.Equals(relativePath, hrefPath, StringComparison.OrdinalIgnoreCase);
+            }
+
+            if (string.IsNullOrEmpty(hrefPath))
+            {
+                return string.IsNullOrEmpty(relativePath);
+            }
+
+            return relativePath.StartsWith(hrefPath, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-nav-item" };
+
+            if (IsActive)
+            {
+                classes.Add("sb-nav-item--active");
+            }
+
+            if (Disabled)
+            {
+                classes.Add("sb-nav-item--disabled");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+}

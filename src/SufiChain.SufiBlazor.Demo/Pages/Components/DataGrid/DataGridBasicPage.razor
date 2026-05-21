@@ -1,0 +1,59 @@
+@page "/demo/sufi-blazor/data-grid/basic"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridBasic"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridBasic"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridBasicDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BasicUsage"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="User" Items="@_users">
+                <SbColumn TItem="User" Field="Name" Title="@L["Demo:Name"]" />
+                <SbColumn TItem="User" Field="Email" Title="@L["Demo:Email"]" />
+                <SbColumn TItem="User" Field="Role" Title="@L["Demo:Role"]" />
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<User> _users = new()
+    {
+        new User { Name = "John Doe", Email = "john@example.com", Role = "Admin" },
+        new User { Name = "Jane Smith", Email = "jane@example.com", Role = "User" },
+        new User { Name = "Bob Johnson", Email = "bob@example.com", Role = "User" }
+    };
+
+    private class User
+    {
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Role { get; set; } = "";
+    }
+
+    private const string basicCodeBehind = @"private List<User> _users = new()
+{
+    new User { Name = ""John Doe"", Email = ""john@example.com"", Role = ""Admin"" },
+    new User { Name = ""Jane Smith"", Email = ""jane@example.com"", Role = ""User"" }
+};
+
+private class User
+{
+    public string Name { get; set; } = """";
+    public string Email { get; set; } = """";
+    public string Role { get; set; } = """";
+}";
+
+    private const string basicCode = @"<SbDataGrid TItem=""User"" Items=""@_users"">
+    <SbColumn TItem=""User"" Field=""Name"" Title=""Name"" />
+    <SbColumn TItem=""User"" Field=""Email"" Title=""Email"" />
+    <SbColumn TItem=""User"" Field=""Role"" Title=""Role"" />
+</SbDataGrid>";
+}

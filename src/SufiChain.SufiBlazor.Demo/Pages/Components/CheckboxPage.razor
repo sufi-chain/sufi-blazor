@@ -1,0 +1,142 @@
+@page "/demo/sufi-blazor/checkbox"
+
+<PageTitle>@(L["Menu:Demo:Checkbox"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Checkbox"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:CheckboxPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:CheckboxBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbCheckbox @bind-Value="_checked" Label="@L["Demo:CheckboxAcceptTerms"]" />
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:CheckboxChecked"]: @_checked</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CheckboxMultiple"]" SourceCode="@multipleCode" RelatedCode="@multipleCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="2">
+                <SbCheckbox @bind-Value="_option1" Label="@L["Demo:CheckboxOption1"]" />
+                <SbCheckbox @bind-Value="_option2" Label="@L["Demo:CheckboxOption2"]" />
+                <SbCheckbox @bind-Value="_option3" Label="@L["Demo:CheckboxOption3"]" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CheckboxIndeterminate"]" SourceCode="@indeterminateCode" RelatedCode="@indeterminateCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="2">
+                <SbCheckbox Value="@_selectAll" Indeterminate="@_indeterminate" ValueChanged="OnSelectAllChanged" Label="@L["Demo:CheckboxSelectAll"]" />
+                <SbCheckbox Value="@_item1" ValueChanged="OnItem1Changed" Label="@L["Demo:CheckboxOption1"]" />
+                <SbCheckbox Value="@_item2" ValueChanged="OnItem2Changed" Label="@L["Demo:CheckboxOption2"]" />
+                <SbCheckbox Value="@_item3" ValueChanged="OnItem3Changed" Label="@L["Demo:CheckboxOption3"]" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CheckboxDisabled"]" SourceCode="@disabledCode">
+        <ExampleContent>
+            <SbStack Gap="2">
+                <SbCheckbox Value="true" Label="@L["Demo:CheckboxDisabledChecked"]" Disabled="true" />
+                <SbCheckbox Value="false" Label="@L["Demo:CheckboxDisabledUnchecked"]" Disabled="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CheckboxColors"]" SourceCode="@colorsCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbCheckbox Value="true" Label="@L["Demo:CheckboxColorPrimary"]" Color="SbColor.Primary" />
+                <SbCheckbox Value="true" Label="@L["Demo:CheckboxColorSuccess"]" Color="SbColor.Success" />
+                <SbCheckbox Value="true" Label="@L["Demo:CheckboxColorWarning"]" Color="SbColor.Warning" />
+                <SbCheckbox Value="true" Label="@L["Demo:CheckboxColorDanger"]" Color="SbColor.Danger" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbCheckbox" />
+</DemoLayout>
+
+@code {
+    private bool _checked = false;
+    private bool _option1 = true;
+    private bool _option2 = false;
+    private bool _option3 = true;
+
+    private bool _selectAll;
+    private bool _indeterminate;
+    private bool _item1 = true;
+    private bool _item2 = false;
+    private bool _item3 = true;
+
+    private void OnSelectAllChanged(bool value)
+    {
+        _selectAll = value;
+        _indeterminate = false;
+        _item1 = _item2 = _item3 = value;
+    }
+
+    private void OnItem1Changed(bool value) { _item1 = value; UpdateSelectAllState(); }
+    private void OnItem2Changed(bool value) { _item2 = value; UpdateSelectAllState(); }
+    private void OnItem3Changed(bool value) { _item3 = value; UpdateSelectAllState(); }
+
+    private void UpdateSelectAllState()
+    {
+        var count = (_item1 ? 1 : 0) + (_item2 ? 1 : 0) + (_item3 ? 1 : 0);
+        _selectAll = count == 3;
+        _indeterminate = count > 0 && count < 3;
+    }
+
+    private string basicCodeBehind = @"private bool _checked = false;";
+
+    private string basicCode = @"<SbCheckbox @bind-Value=""_checked"" Label=""Accept terms and conditions"" />";
+
+    private string multipleCodeBehind = @"private bool _option1 = true;
+private bool _option2 = false;
+private bool _option3 = true;";
+
+    private string multipleCode = @"<SbStack Gap=""2"">
+    <SbCheckbox @bind-Value=""_option1"" Label=""Option 1"" />
+    <SbCheckbox @bind-Value=""_option2"" Label=""Option 2"" />
+    <SbCheckbox @bind-Value=""_option3"" Label=""Option 3"" />
+</SbStack>";
+
+    private string indeterminateCodeBehind = @"private bool _selectAll, _indeterminate;
+private bool _item1 = true, _item2 = false, _item3 = true;
+
+private void OnSelectAllChanged(bool value) {
+    _selectAll = value;
+    _indeterminate = false;
+    _item1 = _item2 = _item3 = value;
+}
+private void OnItem1Changed(bool value) { _item1 = value; UpdateSelectAllState(); }
+private void OnItem2Changed(bool value) { _item2 = value; UpdateSelectAllState(); }
+private void OnItem3Changed(bool value) { _item3 = value; UpdateSelectAllState(); }
+private void UpdateSelectAllState() {
+    var count = (_item1 ? 1 : 0) + (_item2 ? 1 : 0) + (_item3 ? 1 : 0);
+    _selectAll = count == 3;
+    _indeterminate = count > 0 && count < 3;
+}";
+
+    private string indeterminateCode = @"<SbCheckbox Value=""@_selectAll"" Indeterminate=""@_indeterminate""
+    ValueChanged=""OnSelectAllChanged"" Label=""Select all"" />
+<SbCheckbox Value=""@_item1"" ValueChanged=""OnItem1Changed"" Label=""Option 1"" />
+<SbCheckbox Value=""@_item2"" ValueChanged=""OnItem2Changed"" Label=""Option 2"" />
+<SbCheckbox Value=""@_item3"" ValueChanged=""OnItem3Changed"" Label=""Option 3"" />";
+
+    private string disabledCode = @"<SbCheckbox Value=""true"" Label=""Disabled checked"" Disabled=""true"" />
+<SbCheckbox Value=""false"" Label=""Disabled unchecked"" Disabled=""true"" />";
+
+    private string colorsCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""4"" Wrap=""true"">
+    <SbCheckbox Value=""true"" Label=""Primary"" Color=""SbColor.Primary"" />
+    <SbCheckbox Value=""true"" Label=""Success"" Color=""SbColor.Success"" />
+    <SbCheckbox Value=""true"" Label=""Warning"" Color=""SbColor.Warning"" />
+    <SbCheckbox Value=""true"" Label=""Danger"" Color=""SbColor.Danger"" />
+</SbStack>";
+}

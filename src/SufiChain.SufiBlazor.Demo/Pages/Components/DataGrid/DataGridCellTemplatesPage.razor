@@ -1,0 +1,178 @@
+@page "/demo/sufi-blazor/data-grid/cell-templates"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridCellTemplates"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridCellTemplates"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridCellTemplatesDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DataGridCellTemplates"]" SourceCode="@cellTemplatesCode" RelatedCode="@cellTemplatesCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="Employee" Items="@_employees" KeySelector="@(e => e.Id.ToString())" PageSize="5">
+                <ChildContent>
+                    <SbColumn TItem="Employee" Field="Name" Title="@L["Demo:DataGridEmployee"]">
+                        <CellTemplate Context="context">
+                            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
+                                <span class="datagrid-demo-avatar">@context.Item.Name[0]</span>
+                                <SbStack Gap="0">
+                                    <span style="font-weight: 500;">@context.Item.Name</span>
+                                    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@context.Item.Email</SbText>
+                                </SbStack>
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="Employee" Field="Department" Title="@L["Demo:DataGridDepartment"]">
+                        <CellTemplate Context="context">
+                            <SbChip Size="SbSize.Sm" Color="@GetDepartmentColor(context.Item.Department)">
+                                @context.Item.Department
+                            </SbChip>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="Employee" Field="IsActive" Title="@L["Demo:Status"]" Align="SbColumnAlign.Center">
+                        <CellTemplate Context="context">
+                            <SbBadge Color="@(context.Item.IsActive ? SbColor.Success : SbColor.Danger)">
+                                @(context.Item.IsActive ? L["Demo:Active"] : L["Demo:Inactive"])
+                            </SbBadge>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="Employee" Title="@L["Demo:Actions"]" Align="SbColumnAlign.Center" Width="120px">
+                        <CellTemplate Context="context">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1" Justify="SbJustify.Center">
+                                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" OnClick="@(() => EditEmployee(context.Item))">✏️</SbButton>
+                                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" Color="SbColor.Danger" OnClick="@(() => DeleteEmployee(context.Item))">🗑️</SbButton>
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
+                </ChildContent>
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<Employee> _employees = new();
+
+    protected override void OnInitialized()
+    {
+        _employees = GenerateEmployees(12);
+    }
+
+    private static SbColor GetDepartmentColor(string department) => department switch
+    {
+        "Engineering" => SbColor.Primary,
+        "Marketing" => SbColor.Success,
+        "Sales" => SbColor.Warning,
+        "HR" => SbColor.Info,
+        "Finance" => SbColor.Secondary,
+        _ => SbColor.Secondary
+    };
+
+    private void EditEmployee(Employee employee)
+    {
+        // Demo: handle edit (e.g. open dialog)
+    }
+
+    private void DeleteEmployee(Employee employee)
+    {
+        // Demo: handle delete (e.g. confirm and remove)
+    }
+
+    private static List<Employee> GenerateEmployees(int count)
+    {
+        var departments = new[] { "Engineering", "Marketing", "Sales", "HR", "Finance", "Operations" };
+        var firstNames = new[] { "John", "Jane", "Mike", "Sarah", "David", "Emily", "Chris", "Lisa", "Tom", "Anna" };
+        var lastNames = new[] { "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez" };
+        var random = new Random(42);
+        return Enumerable.Range(1, count).Select(i => new Employee
+        {
+            Id = i,
+            Name = $"{firstNames[random.Next(firstNames.Length)]} {lastNames[random.Next(lastNames.Length)]}",
+            Email = $"employee{i}@company.com",
+            Department = departments[random.Next(departments.Length)],
+            Salary = random.Next(50000, 150000),
+            HireDate = DateTime.Today.AddDays(-random.Next(30, 1000)),
+            IsActive = random.Next(10) > 2
+        }).ToList();
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal Salary { get; set; }
+        public DateTime HireDate { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    private const string cellTemplatesCodeBehind = @"private List<Employee> _employees = new();
+
+private static SbColor GetDepartmentColor(string department) => department switch
+{
+    ""Engineering"" => SbColor.Primary,
+    ""Marketing"" => SbColor.Success,
+    ""Sales"" => SbColor.Warning,
+    _ => SbColor.Secondary
+};
+
+private void EditEmployee(Employee employee) { /* open edit dialog */ }
+private void DeleteEmployee(Employee employee) { /* confirm and delete */ }
+
+private static List<Employee> GenerateEmployees(int count) { /* ... */ }
+
+private class Employee
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = """";
+    public string Email { get; set; } = """";
+    public string Department { get; set; } = """";
+    public decimal Salary { get; set; }
+    public DateTime HireDate { get; set; }
+    public bool IsActive { get; set; }
+}";
+
+    private const string cellTemplatesCode = @"<SbDataGrid TItem=""Employee"" Items=""@_employees"" KeySelector=""@(e => e.Id.ToString())"" PageSize=""5"">
+    <ChildContent>
+        <SbColumn TItem=""Employee"" Field=""Name"" Title=""Employee"">
+            <CellTemplate Context=""context"">
+                <SbStack Direction=""SbStackDirection.Row"" Gap=""2"" Align=""SbAlign.Center"">
+                    <span class=""datagrid-demo-avatar"">@context.Item.Name[0]</span>
+                    <SbStack Gap=""0"">
+                        <span style=""font-weight: 500;"">@context.Item.Name</span>
+                        <SbText Variant=""SbTextVariant.Caption"" Color=""SbColor.Muted"">@context.Item.Email</SbText>
+                    </SbStack>
+                </SbStack>
+            </CellTemplate>
+        </SbColumn>
+        <SbColumn TItem=""Employee"" Field=""Department"" Title=""Department"">
+            <CellTemplate Context=""context"">
+                <SbChip Size=""SbSize.Sm"" Color=""@GetDepartmentColor(context.Item.Department)"">
+                    @context.Item.Department
+                </SbChip>
+            </CellTemplate>
+        </SbColumn>
+        <SbColumn TItem=""Employee"" Field=""IsActive"" Title=""Status"" Align=""SbColumnAlign.Center"">
+            <CellTemplate Context=""context"">
+                <SbBadge Color=""@(context.Item.IsActive ? SbColor.Success : SbColor.Danger)"">
+                    @(context.Item.IsActive ? ""Active"" : ""Inactive"")
+                </SbBadge>
+            </CellTemplate>
+        </SbColumn>
+        <SbColumn TItem=""Employee"" Title=""Actions"" Align=""SbColumnAlign.Center"">
+            <CellTemplate Context=""context"">
+                <SbStack Direction=""SbStackDirection.Row"" Gap=""1"" Justify=""SbJustify.Center"">
+                    <SbButton Size=""SbSize.Sm"" Variant=""SbButtonVariant.Ghost"" OnClick=""@(() => EditEmployee(context.Item))"">Edit</SbButton>
+                    <SbButton Size=""SbSize.Sm"" Variant=""SbButtonVariant.Ghost"" Color=""SbColor.Danger"" OnClick=""@(() => DeleteEmployee(context.Item))"">Delete</SbButton>
+                </SbStack>
+            </CellTemplate>
+        </SbColumn>
+    </ChildContent>
+</SbDataGrid>";
+}

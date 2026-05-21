@@ -1,0 +1,233 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="sb-file-upload">
+    <label class="@DropzoneCssClass"
+           @ondragenter="HandleDragEnter"
+           @ondragleave="HandleDragLeave"
+           @ondragover="HandleDragOver"
+           @ondrop="HandleDrop">
+        <InputFile @ref="_inputFile"
+                   class="sb-file-upload__input"
+                   OnChange="HandleFilesSelected"
+                   accept="@Accept"
+                   multiple="@Multiple"
+                   disabled="@Disabled" />
+        <span class="sb-file-upload__icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+            </svg>
+        </span>
+        <span class="sb-file-upload__text">
+            @if (DragText != null)
+            {
+                @DragText
+            }
+            else
+            {
+                <span>Drag and drop files here, or <strong>browse</strong></span>
+            }
+        </span>
+        @if (!string.IsNullOrEmpty(Accept) || MaxFileSizeBytes.HasValue)
+        {
+            <span class="sb-file-upload__text" style="font-size: var(--sb-font-size-xs);">
+                @GetConstraintsText()
+            </span>
+        }
+    </label>
+
+    @if (_files.Any())
+    {
+        <div class="sb-file-upload__list">
+            @foreach (var file in _files)
+            {
+                <div class="sb-file-upload__item">
+                    <span class="sb-file-upload__item-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
+                            <path d="M13 2v7h7"/>
+                        </svg>
+                    </span>
+                    <div class="sb-file-upload__item-info">
+                        <div class="sb-file-upload__item-name">@file.Name</div>
+                        <div class="sb-file-upload__item-size">@FormatFileSize(file.Size)</div>
+                    </div>
+                    <button type="button" 
+                            class="sb-file-upload__item-remove"
+                            @onclick="() => RemoveFile(file)"
+                            aria-label="Remove file">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private InputFile? _inputFile;
+    private List<IBrowserFile> _files = new();
+    private bool _isDragging;
+
+    /// <summary>
+    /// Allow multiple file selection.
+    /// </summary>
+    [Parameter]
+    public bool Multiple { get; set; }
+
+    /// <summary>
+    /// Accepted file types (e.g., "image/*,.pdf").
+    /// </summary>
+    [Parameter]
+    public string? Accept { get; set; }
+
+    /// <summary>
+    /// Maximum file size in bytes.
+    /// </summary>
+    [Parameter]
+    public long? MaxFileSizeBytes { get; set; }
+
+    /// <summary>
+    /// Maximum number of files.
+    /// </summary>
+    [Parameter]
+    public int? MaxFiles { get; set; }
+
+    /// <summary>
+    /// Callback when files are selected.
+    /// </summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<IBrowserFile>> OnFilesSelected { get; set; }
+
+    /// <summary>
+    /// Callback when a file is removed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<IBrowserFile> OnFileRemoved { get; set; }
+
+    /// <summary>
+    /// Whether the upload is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Custom drag text.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? DragText { get; set; }
+
+    /// <summary>
+    /// Custom file item template.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<IBrowserFile>? FileItemTemplate { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    private string DropzoneCssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-file-upload__dropzone" };
+            if (_isDragging)
+            {
+                classes.Add("sb-file-upload__dropzone--dragging");
+            }
+            if (Disabled)
+            {
+                classes.Add("sb-file-upload__dropzone--disabled");
+            }
+            return string.Join(" ", classes);
+        }
+    }
+
+    private async Task HandleFilesSelected(InputFileChangeEventArgs args)
+    {
+        var files = Multiple ? args.GetMultipleFiles(MaxFiles ?? 100) : new[] { args.File };
+        
+        foreach (var file in files)
+        {
+            if (MaxFileSizeBytes.HasValue && file.Size > MaxFileSizeBytes.Value)
+            {
+                continue; // Skip files that are too large
+            }
+            
+            if (MaxFiles.HasValue && _files.Count >= MaxFiles.Value)
+            {
+                break;
+            }
+
+            _files.Add(file);
+        }
+
+        await OnFilesSelected.InvokeAsync(_files);
+    }
+
+    private async Task RemoveFile(IBrowserFile file)
+    {
+        _files.Remove(file);
+        await OnFileRemoved.InvokeAsync(file);
+        await OnFilesSelected.InvokeAsync(_files);
+    }
+
+    private void HandleDragEnter()
+    {
+        if (!Disabled)
+        {
+            _isDragging = true;
+        }
+    }
+
+    private void HandleDragLeave()
+    {
+        _isDragging = false;
+    }
+
+    private void HandleDragOver()
+    {
+        // Prevent default to allow drop
+    }
+
+    private void HandleDrop()
+    {
+        _isDragging = false;
+        // Files are handled by InputFile
+    }
+
+    private string GetConstraintsText()
+    {
+        var parts = new List<string>();
+        
+        if (!string.IsNullOrEmpty(Accept))
+        {
+            parts.Add($"Allowed: {Accept}");
+        }
+        
+        if (MaxFileSizeBytes.HasValue)
+        {
+            parts.Add($"Max size: {FormatFileSize(MaxFileSizeBytes.Value)}");
+        }
+
+        return string.Join(" • ", parts);
+    }
+
+    private static string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        double len = bytes;
+        int order = 0;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+        return $"{len:0.##} {sizes[order]}";
+    }
+}

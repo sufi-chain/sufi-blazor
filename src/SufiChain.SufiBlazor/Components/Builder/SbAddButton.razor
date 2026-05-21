@@ -1,0 +1,194 @@
+@namespace SufiChain.SufiBlazor.Components.Builder
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+
+<div class="sb-add-button-container @Class" @ref="_containerRef">
+    <button type="button" 
+            class="sb-add-button @(Variant.ToString().ToLower()) @(Size.ToString().ToLower()) @(_isOpen ? "sb-add-button--active" : "")"
+            @onclick="Toggle"
+            disabled="@Disabled"
+            aria-label="@AriaLabel"
+            aria-expanded="@_isOpen">
+        @if (Icon != null)
+        {
+            @Icon
+        }
+        else
+        {
+            <span class="sb-add-button__icon @(_isOpen ? "sb-add-button__icon--rotated" : "")">+</span>
+        }
+        @if (!string.IsNullOrEmpty(Label))
+        {
+            <span class="sb-add-button__label">@Label</span>
+        }
+    </button>
+    
+    @if (_isOpen && Options.Any())
+    {
+        <div class="sb-add-button__menu">
+            @foreach (var option in Options)
+            {
+                <button type="button"
+                        class="sb-add-button__option"
+                        @onclick="() => SelectOption(option)"
+                        disabled="@option.Disabled">
+                    @if (option.Icon != null)
+                    {
+                        <span class="sb-add-button__option-icon">@option.Icon</span>
+                    }
+                    else if (!string.IsNullOrEmpty(option.IconText))
+                    {
+                        <span class="sb-add-button__option-icon">@option.IconText</span>
+                    }
+                    <span class="sb-add-button__option-label">@option.Label</span>
+                    @if (!string.IsNullOrEmpty(option.Description))
+                    {
+                        <span class="sb-add-button__option-description">@option.Description</span>
+                    }
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _containerRef;
+    private DotNetObjectReference<SbAddButton>? _dotNetRef;
+    private bool _isOpen;
+    
+    /// <summary>
+    /// Button label.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+    
+    /// <summary>
+    /// Custom icon.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+    
+    /// <summary>
+    /// Add options.
+    /// </summary>
+    [Parameter]
+    public List<SbAddOption> Options { get; set; } = new();
+    
+    /// <summary>
+    /// Button variant.
+    /// </summary>
+    [Parameter]
+    public SbAddButtonVariant Variant { get; set; } = SbAddButtonVariant.Default;
+    
+    /// <summary>
+    /// Button size.
+    /// </summary>
+    [Parameter]
+    public SbAddButtonSize Size { get; set; } = SbAddButtonSize.Medium;
+    
+    /// <summary>
+    /// Whether the button is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Accessibility label.
+    /// </summary>
+    [Parameter]
+    public string AriaLabel { get; set; } = "Add item";
+    
+    /// <summary>
+    /// Callback when option is selected.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbAddOption> OnOptionSelected { get; set; }
+    
+    /// <summary>
+    /// Callback for simple add (no options).
+    /// </summary>
+    [Parameter]
+    public EventCallback OnAdd { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private async Task Toggle()
+    {
+        if (Disabled) return;
+        
+        if (!Options.Any())
+        {
+            await OnAdd.InvokeAsync();
+            return;
+        }
+        
+        _isOpen = !_isOpen;
+        
+        if (_isOpen)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _containerRef, _dotNetRef, "OnClickAway");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _containerRef);
+        }
+    }
+    
+    private async Task SelectOption(SbAddOption option)
+    {
+        if (option.Disabled) return;
+        
+        _isOpen = false;
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _containerRef);
+        await OnOptionSelected.InvokeAsync(option);
+    }
+    
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}
+
+/// <summary>
+/// Add option.
+/// </summary>
+public class SbAddOption
+{
+    public string Id { get; set; } = "";
+    public string Label { get; set; } = "";
+    public string? Description { get; set; }
+    public string? IconText { get; set; }
+    public RenderFragment? Icon { get; set; }
+    public bool Disabled { get; set; }
+    public object? Data { get; set; }
+}
+
+public enum SbAddButtonVariant
+{
+    Default,
+    Primary,
+    Outline,
+    Ghost
+}
+
+public enum SbAddButtonSize
+{
+    Small,
+    Medium,
+    Large
+}

@@ -1,0 +1,119 @@
+@namespace SufiChain.SufiBlazor.Components.Builder
+
+<div class="sb-property-grid @Class">
+    @foreach (var property in Properties)
+    {
+        <div class="sb-property-grid__row">
+            <label class="sb-property-grid__label" for="@property.Name">
+                @property.Label
+                @if (property.Required)
+                {
+                    <span class="sb-property-grid__required">*</span>
+                }
+            </label>
+            <div class="sb-property-grid__value">
+                @GetPropertyEditor(property)
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Property definitions.
+    /// </summary>
+    [Parameter]
+    public List<SbPropertyDefinition> Properties { get; set; } = new();
+    
+    /// <summary>
+    /// Callback when property value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbPropertyChangeEventArgs> OnPropertyChanged { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private RenderFragment GetPropertyEditor(SbPropertyDefinition property) => builder =>
+    {
+        switch (property.EditorType)
+        {
+            case SbPropertyEditorType.Text:
+                builder.OpenElement(0, "input");
+                builder.AddAttribute(1, "type", "text");
+                builder.AddAttribute(2, "class", "sb-property-grid__input");
+                builder.AddAttribute(3, "id", property.Name);
+                builder.AddAttribute(4, "value", property.Value?.ToString() ?? "");
+                builder.AddAttribute(5, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, e => OnValueChange(property, e.Value)));
+                builder.CloseElement();
+                break;
+                
+            case SbPropertyEditorType.Number:
+                builder.OpenElement(0, "input");
+                builder.AddAttribute(1, "type", "number");
+                builder.AddAttribute(2, "class", "sb-property-grid__input");
+                builder.AddAttribute(3, "id", property.Name);
+                builder.AddAttribute(4, "value", property.Value?.ToString() ?? "");
+                builder.AddAttribute(5, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, e => OnValueChange(property, e.Value)));
+                builder.CloseElement();
+                break;
+                
+            case SbPropertyEditorType.Checkbox:
+                builder.OpenElement(0, "input");
+                builder.AddAttribute(1, "type", "checkbox");
+                builder.AddAttribute(2, "class", "sb-property-grid__checkbox");
+                builder.AddAttribute(3, "id", property.Name);
+                builder.AddAttribute(4, "checked", property.Value as bool? ?? false);
+                builder.AddAttribute(5, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e => OnValueChange(property, e.Value)));
+                builder.CloseElement();
+                break;
+                
+            case SbPropertyEditorType.Select:
+                builder.OpenElement(0, "select");
+                builder.AddAttribute(1, "class", "sb-property-grid__select");
+                builder.AddAttribute(2, "id", property.Name);
+                builder.AddAttribute(3, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e => OnValueChange(property, e.Value)));
+                
+                foreach (var option in property.Options ?? Array.Empty<SbPropertyOption>())
+                {
+                    builder.OpenElement(4, "option");
+                    builder.AddAttribute(5, "value", option.Value);
+                    builder.AddAttribute(6, "selected", option.Value?.Equals(property.Value?.ToString()) ?? false);
+                    builder.AddContent(7, option.Label);
+                    builder.CloseElement();
+                }
+                
+                builder.CloseElement();
+                break;
+                
+            case SbPropertyEditorType.Color:
+                builder.OpenElement(0, "input");
+                builder.AddAttribute(1, "type", "color");
+                builder.AddAttribute(2, "class", "sb-property-grid__color");
+                builder.AddAttribute(3, "id", property.Name);
+                builder.AddAttribute(4, "value", property.Value?.ToString() ?? "#000000");
+                builder.AddAttribute(5, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, e => OnValueChange(property, e.Value)));
+                builder.CloseElement();
+                break;
+                
+            default:
+                builder.OpenElement(0, "span");
+                builder.AddContent(1, property.Value?.ToString() ?? "-");
+                builder.CloseElement();
+                break;
+        }
+    };
+    
+    private async Task OnValueChange(SbPropertyDefinition property, object? value)
+    {
+        property.Value = value;
+        await OnPropertyChanged.InvokeAsync(new SbPropertyChangeEventArgs
+        {
+            Property = property,
+            NewValue = value
+        });
+    }
+}

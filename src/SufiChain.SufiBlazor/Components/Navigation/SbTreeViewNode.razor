@@ -1,0 +1,128 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+@using SufiChain.SufiBlazor.Components.Common
+@typeparam TItem
+@inject IStringLocalizer<SufiBlazorResource> L
+
+@{
+    var children = ChildSelector(Item).ToList();
+    var hasChildren = children.Any();
+    var isExpanded = IsExpandedSelector?.Invoke(Item) ?? _isExpanded;
+    var isSelected = _parent?.IsSelected(Item) ?? false;
+    var icon = IconSelector?.Invoke(Item);
+}
+
+<div class="sb-treeview-node @(hasChildren && isExpanded ? "sb-treeview-node--expanded" : "")" role="treeitem" aria-level="@(Level + 1)" aria-expanded="@(hasChildren ? isExpanded : null)">
+    <div class="sb-treeview-node__content @(isSelected ? "sb-treeview-node__content--selected" : "")"
+         style="padding-inline-start: calc(@(Level) * var(--sb-space-5) + var(--sb-space-2))"
+         @onclick="Select">
+        
+        @if (hasChildren)
+        {
+            <button type="button" 
+                    class="sb-treeview-node__toggle"
+                    @onclick="Toggle"
+                    @onclick:stopPropagation="true"
+                    aria-label="@(isExpanded ? L["Collapse"] : L["Expand"])">
+                <SbIcon Name="chevron-right" Size="SbSize.Sm" Class="sb-treeview-node__chevron" Mirror="true" />
+            </button>
+        }
+        else
+        {
+            <span class="sb-treeview-node__spacer"></span>
+        }
+        
+        @if (_parent?.ShowCheckboxes == true)
+        {
+            <input type="checkbox"
+                   class="sb-treeview-node__checkbox"
+                   checked="@(_parent.IsChecked(Item))"
+                   @onchange="OnCheckChange"
+                   @onclick:stopPropagation="true" />
+        }
+        
+        @if (!string.IsNullOrEmpty(icon))
+        {
+            <span class="sb-treeview-node__icon">
+                <SbIcon Name="@icon" Size="SbSize.Sm" />
+            </span>
+        }
+        
+        <span class="sb-treeview-node__text">@TextSelector(Item)</span>
+    </div>
+    
+    @if (hasChildren && isExpanded)
+    {
+        <div class="sb-treeview-node__children" role="group">
+            @foreach (var child in children)
+            {
+                <SbTreeViewNode TItem="TItem"
+                                Item="child"
+                                Level="Level + 1"
+                                ChildSelector="ChildSelector"
+                                TextSelector="TextSelector"
+                                IconSelector="IconSelector"
+                                IsExpandedSelector="IsExpandedSelector"
+                                IsSelectedSelector="IsSelectedSelector" />
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private SbTreeView<TItem>? _parent;
+    private bool _isExpanded;
+    
+    [Parameter]
+    public TItem Item { get; set; } = default!;
+    
+    [Parameter]
+    public int Level { get; set; }
+    
+    [Parameter]
+    public Func<TItem, IEnumerable<TItem>> ChildSelector { get; set; } = _ => Enumerable.Empty<TItem>();
+    
+    [Parameter]
+    public Func<TItem, string> TextSelector { get; set; } = item => item?.ToString() ?? "";
+    
+    [Parameter]
+    public Func<TItem, string?>? IconSelector { get; set; }
+    
+    [Parameter]
+    public Func<TItem, bool>? IsExpandedSelector { get; set; }
+    
+    [Parameter]
+    public Func<TItem, bool>? IsSelectedSelector { get; set; }
+    
+    [CascadingParameter]
+    public SbTreeView<TItem>? Parent
+    {
+        get => _parent;
+        set => _parent = value;
+    }
+    
+    private async Task Toggle()
+    {
+        _isExpanded = !_isExpanded;
+        if (_parent != null)
+        {
+            await _parent.ToggleItem(Item);
+        }
+    }
+    
+    private async Task Select()
+    {
+        if (_parent != null)
+        {
+            await _parent.SelectItem(Item);
+        }
+    }
+    
+    private async Task OnCheckChange(ChangeEventArgs e)
+    {
+        var isChecked = (bool)(e.Value ?? false);
+        if (_parent != null)
+        {
+            await _parent.ToggleCheck(Item, isChecked);
+        }
+    }
+}

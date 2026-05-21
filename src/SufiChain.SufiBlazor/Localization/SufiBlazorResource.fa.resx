@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" msdata:Ordinal="5" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Clear" xml:space="preserve"><value>پاک کردن</value></data>
+  <data name="Close" xml:space="preserve"><value>بستن</value></data>
+  <data name="Cancel" xml:space="preserve"><value>انصراف</value></data>
+  <data name="Apply" xml:space="preserve"><value>اعمال</value></data>
+  <data name="Save" xml:space="preserve"><value>ذخیره</value></data>
+  <data name="Expand" xml:space="preserve"><value>باز کردن</value></data>
+  <data name="Collapse" xml:space="preserve"><value>جمع کردن</value></data>
+  <data name="Remove" xml:space="preserve"><value>حذف</value></data>
+  <data name="Yes" xml:space="preserve"><value>بله</value></data>
+  <data name="No" xml:space="preserve"><value>خیر</value></data>
+  <data name="Select_Placeholder" xml:space="preserve"><value>انتخاب...</value></data>
+  <data name="Search_Placeholder" xml:space="preserve"><value>جستجو...</value></data>
+  <data name="SelectDate_Placeholder" xml:space="preserve"><value>انتخاب تاریخ...</value></data>
+  <data name="SelectDateRange_Placeholder" xml:space="preserve"><value>انتخاب بازه تاریخ...</value></data>
+  <data name="SelectTime_Placeholder" xml:space="preserve"><value>انتخاب زمان...</value></data>
+  <data name="SelectColor_Placeholder" xml:space="preserve"><value>انتخاب رنگ...</value></data>
+  <data name="EnterValue_Placeholder" xml:space="preserve"><value>مقدار را وارد کنید...</value></data>
+  <data name="ShowPassword" xml:space="preserve"><value>نمایش رمز</value></data>
+  <data name="HidePassword" xml:space="preserve"><value>مخفی کردن رمز</value></data>
+  <data name="ClearTime" xml:space="preserve"><value>پاک کردن زمان</value></data>
+  <data name="ClearColor" xml:space="preserve"><value>پاک کردن رنگ</value></data>
+  <data name="ClearDate" xml:space="preserve"><value>پاک کردن تاریخ</value></data>
+  <data name="ClearDates" xml:space="preserve"><value>پاک کردن تاریخ‌ها</value></data>
+  <data name="DateRangePreset_QuickRange" xml:space="preserve"><value>بازه سریع...</value></data>
+  <data name="DateRangePreset_Today" xml:space="preserve"><value>امروز</value></data>
+  <data name="DateRangePreset_Last7Days" xml:space="preserve"><value>۷ روز گذشته</value></data>
+  <data name="DateRangePreset_Last30Days" xml:space="preserve"><value>۳۰ روز گذشته</value></data>
+  <data name="DateRangePreset_Last90Days" xml:space="preserve"><value>۹۰ روز گذشته</value></data>
+  <data name="DateRangePreset_ThisMonth" xml:space="preserve"><value>این ماه</value></data>
+  <data name="DateRangePreset_LastMonth" xml:space="preserve"><value>ماه گذشته</value></data>
+  <data name="Hour" xml:space="preserve"><value>ساعت</value></data>
+  <data name="Minute" xml:space="preserve"><value>دقیقه</value></data>
+  <data name="Second" xml:space="preserve"><value>ثانیه</value></data>
+  <data name="Period" xml:space="preserve"><value>بازه</value></data>
+  <data name="Now" xml:space="preserve"><value>اکنون</value></data>
+  <data name="FirstPage" xml:space="preserve"><value>صفحه اول</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>صفحه قبل</value></data>
+  <data name="NextPage" xml:space="preserve"><value>صفحه بعد</value></data>
+  <data name="LastPage" xml:space="preserve"><value>صفحه آخر</value></data>
+  <data name="ItemsPerPage" xml:space="preserve"><value>آیتم در صفحه:</value></data>
+  <data name="NoItems" xml:space="preserve"><value>آیتمی وجود ندارد</value></data>
+  <data name="PageAriaLabelFormat" xml:space="preserve"><value>صفحه {0}</value></data>
+  <data name="PageInfoFormat" xml:space="preserve"><value>{0}-{1} از {2}</value></data>
+  <data name="Previous" xml:space="preserve"><value>قبل</value></data>
+  <data name="Next" xml:space="preserve"><value>بعد</value></data>
+  <data name="Operator" xml:space="preserve"><value>عملگر</value></data>
+  <data name="Value" xml:space="preserve"><value>مقدار</value></data>
+  <data name="And" xml:space="preserve"><value>و</value></data>
+  <data name="FilterBy" xml:space="preserve"><value>فیلتر: {0}</value></data>
+  <data name="FilterOptions" xml:space="preserve"><value>گزینه‌های فیلتر</value></data>
+  <data name="FilterEquals" xml:space="preserve"><value>برابر</value></data>
+  <data name="FilterNotEquals" xml:space="preserve"><value>نامساوی</value></data>
+  <data name="FilterContains" xml:space="preserve"><value>شامل</value></data>
+  <data name="FilterStartsWith" xml:space="preserve"><value>شروع با</value></data>
+  <data name="FilterEndsWith" xml:space="preserve"><value>پایان با</value></data>
+  <data name="FilterGreaterThan" xml:space="preserve"><value>بزرگتر از</value></data>
+  <data name="FilterGreaterThanOrEqual" xml:space="preserve"><value>بزرگتر یا برابر</value></data>
+  <data name="FilterLessThan" xml:space="preserve"><value>کوچکتر از</value></data>
+  <data name="FilterLessThanOrEqual" xml:space="preserve"><value>کوچکتر یا برابر</value></data>
+  <data name="FilterBetween" xml:space="preserve"><value>بین</value></data>
+  <data name="FilterInList" xml:space="preserve"><value>در لیست</value></data>
+  <data name="FilterIsEmpty" xml:space="preserve"><value>خالی است</value></data>
+  <data name="FilterIsNotEmpty" xml:space="preserve"><value>خالی نیست</value></data>
+  <data name="CustomColor" xml:space="preserve"><value>رنگ سفارشی</value></data>
+  <data name="Opacity" xml:space="preserve"><value>شفافیت: {0}٪</value></data>
+  <data name="Preview" xml:space="preserve"><value>پیش‌نمایش:</value></data>
+  <data name="EnterSlug_Placeholder" xml:space="preserve"><value>نامک-را-وارد-کنید</value></data>
+  <data name="GenerateSlug" xml:space="preserve"><value>تولید</value></data>
+  <data name="NoResultsFound" xml:space="preserve"><value>نتیجه‌ای یافت نشد</value></data>
+  <data name="SaveChanges" xml:space="preserve"><value>ذخیره تغییرات</value></data>
+  <data name="CancelEditing" xml:space="preserve"><value>انصراف از ویرایش</value></data>
+  <data name="EditRow" xml:space="preserve"><value>ویرایش ردیف</value></data>
+  <data name="Confirm" xml:space="preserve"><value>تأیید</value></data>
+  <data name="Back" xml:space="preserve"><value>قبلی</value></data>
+  <data name="Finish" xml:space="preserve"><value>پایان</value></data>
+  <data name="Optional" xml:space="preserve"><value>اختیاری</value></data>
+  <data name="ClearAll" xml:space="preserve"><value>پاک کردن همه</value></data>
+  <data name="GenerateFromTitle" xml:space="preserve"><value>تولید از عنوان</value></data>
+  <data name="Demo:TabExample" xml:space="preserve"><value>نمونه</value></data>
+  <data name="Demo:TabViewSource" xml:space="preserve"><value>مشاهده منبع</value></data>
+  <data name="Demo:TabDocs" xml:space="preserve"><value>مستندات</value></data>
+  <data name="Demo:SourceLabelCodeBlock" xml:space="preserve"><value>بلوک کد</value></data>
+  <data name="Demo:SourceLabelMarkup" xml:space="preserve"><value>نشانه‌گذاری</value></data>
+  <data name="Rte:HeaderNormal" xml:space="preserve"><value>متن</value></data>
+  <data name="Rte:Header1" xml:space="preserve"><value>سربرگ ۱</value></data>
+  <data name="Rte:Header2" xml:space="preserve"><value>سربرگ ۲</value></data>
+  <data name="Rte:Header3" xml:space="preserve"><value>سربرگ ۳</value></data>
+  <data name="Rte:Header4" xml:space="preserve"><value>سربرگ ۴</value></data>
+  <data name="Rte:Header5" xml:space="preserve"><value>سربرگ ۵</value></data>
+  <data name="Rte:Header6" xml:space="preserve"><value>سربرگ ۶</value></data>
+  <data name="Rte:FontDefault" xml:space="preserve"><value>فونت پیش فرض</value></data>
+  <data name="Rte:AlignLeft" xml:space="preserve"><value>چپ</value></data>
+  <data name="Rte:AlignCenter" xml:space="preserve"><value>وسط</value></data>
+  <data name="Rte:AlignRight" xml:space="preserve"><value>راست</value></data>
+  <data name="Rte:AlignJustify" xml:space="preserve"><value>یکسان</value></data>
+</root>

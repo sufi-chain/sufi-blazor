@@ -1,0 +1,208 @@
+@page "/demo/sufi-blazor/button"
+@using SufiChain.SufiBlazor.Components.Common
+
+<PageTitle>@(L["Menu:Demo:Button"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Button"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:ButtonDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection 
+        Title="@L["Demo:Variants"]"
+        SourceCode='@variantsCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true">
+                <SbButton Variant="SbButtonVariant.Solid">Solid</SbButton>
+                <SbButton Variant="SbButtonVariant.Outline">Outline</SbButton>
+                <SbButton Variant="SbButtonVariant.Ghost">Ghost</SbButton>
+                <SbButton Variant="SbButtonVariant.Link">Link</SbButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:Colors"]"
+        SourceCode='@colorsCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true">
+                <SbButton Color="SbColor.Primary">Primary</SbButton>
+                <SbButton Color="SbColor.Secondary">Secondary</SbButton>
+                <SbButton Color="SbColor.Success">Success</SbButton>
+                <SbButton Color="SbColor.Warning">Warning</SbButton>
+                <SbButton Color="SbColor.Danger">Danger</SbButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:OutlineVariants"]"
+        SourceCode='@outlineVariantsCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true">
+                <SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Primary">Primary</SbButton>
+                <SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Secondary">Secondary</SbButton>
+                <SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Success">Success</SbButton>
+                <SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Warning">Warning</SbButton>
+                <SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Danger">Danger</SbButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:Sizes"]"
+        SourceCode='@sizesCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                <SbButton Size="SbSize.Sm">Small</SbButton>
+                <SbButton Size="SbSize.Md">Medium</SbButton>
+                <SbButton Size="SbSize.Lg">Large</SbButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:States"]"
+        SourceCode='@statesCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true">
+                <SbButton>@L["Demo:Normal"]</SbButton>
+                <SbButton Disabled="true">@L["Demo:Disabled"]</SbButton>
+                <SbButton Loading="true">@L["Demo:Loading"]</SbButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:FullWidth"]"
+        SourceCode='@fullWidthCode'>
+        <ExampleContent>
+            <SbButton FullWidth="true">@L["Demo:FullWidthButton"]</SbButton>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:WithIcons"]"
+        SourceCode='@withIconsCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3">
+                <SbButton>
+                    <StartIcon><SbIcon Name="plus" Size="SbSize.Sm" /></StartIcon>
+                    <ChildContent>@L["Demo:AddItem"]</ChildContent>
+                </SbButton>
+                <SbButton Variant="SbButtonVariant.Outline">
+                    <ChildContent>@L["Demo:Download"]</ChildContent>
+                    <EndIcon><SbIcon Name="download" Size="SbSize.Sm" /></EndIcon>
+                </SbButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:AsLink"]"
+        SourceCode='@asLinkCode'>
+        <ExampleContent>
+            <SbButton Href="https://github.com" Target="_blank">
+                Go to GitHub
+            </SbButton>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:ButtonType"]"
+        SourceCode='@buttonTypeCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3">
+                <SbButton Type="button">@L["Demo:ButtonTypeButton"]</SbButton>
+                <SbButton Type="submit" Color="SbColor.Success">@L["Demo:ButtonTypeSubmit"]</SbButton>
+                <SbButton Type="reset" Variant="SbButtonVariant.Outline">@L["Demo:ButtonTypeReset"]</SbButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:ClickHandler"]"
+        SourceCode='@clickHandlerCode'>
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                <SbButton OnClick="OnDemoClick">@L["Demo:ClickMe"]</SbButton>
+                <SbText Color="SbColor.Muted">@(clickCount == 0 ? L["Demo:ClickCountNone"] : string.Format(L["Demo:ClickCount"], clickCount))</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbButton" />
+</DemoLayout>
+
+@code {
+    private string variantsCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Wrap=""true"">
+    <SbButton Variant=""SbButtonVariant.Solid"">Solid</SbButton>
+    <SbButton Variant=""SbButtonVariant.Outline"">Outline</SbButton>
+    <SbButton Variant=""SbButtonVariant.Ghost"">Ghost</SbButton>
+    <SbButton Variant=""SbButtonVariant.Link"">Link</SbButton>
+</SbStack>";
+
+    private string colorsCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Wrap=""true"">
+    <SbButton Color=""SbColor.Primary"">Primary</SbButton>
+    <SbButton Color=""SbColor.Secondary"">Secondary</SbButton>
+    <SbButton Color=""SbColor.Success"">Success</SbButton>
+    <SbButton Color=""SbColor.Warning"">Warning</SbButton>
+    <SbButton Color=""SbColor.Danger"">Danger</SbButton>
+</SbStack>";
+
+    private string outlineVariantsCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Wrap=""true"">
+    <SbButton Variant=""SbButtonVariant.Outline"" Color=""SbColor.Primary"">Primary</SbButton>
+    <SbButton Variant=""SbButtonVariant.Outline"" Color=""SbColor.Secondary"">Secondary</SbButton>
+    <SbButton Variant=""SbButtonVariant.Outline"" Color=""SbColor.Success"">Success</SbButton>
+    <SbButton Variant=""SbButtonVariant.Outline"" Color=""SbColor.Warning"">Warning</SbButton>
+    <SbButton Variant=""SbButtonVariant.Outline"" Color=""SbColor.Danger"">Danger</SbButton>
+</SbStack>";
+
+    private string sizesCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Align=""SbAlign.Center"">
+    <SbButton Size=""SbSize.Sm"">Small</SbButton>
+    <SbButton Size=""SbSize.Md"">Medium</SbButton>
+    <SbButton Size=""SbSize.Lg"">Large</SbButton>
+</SbStack>";
+
+    private string statesCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"">
+    <SbButton>Normal</SbButton>
+    <SbButton Disabled=""true"">Disabled</SbButton>
+    <SbButton Loading=""true"">Loading</SbButton>
+</SbStack>";
+
+    private string fullWidthCode = @"<SbButton FullWidth=""true"">Full Width Button</SbButton>";
+
+    private string withIconsCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"">
+    <SbButton>
+        <StartIcon><SbIcon Name=""plus"" Size=""SbSize.Sm"" /></StartIcon>
+        <ChildContent>Add Item</ChildContent>
+    </SbButton>
+    <SbButton Variant=""SbButtonVariant.Outline"">
+        <ChildContent>Download</ChildContent>
+        <EndIcon><SbIcon Name=""download"" Size=""SbSize.Sm"" /></EndIcon>
+    </SbButton>
+</SbStack>";
+
+    private string asLinkCode = @"<SbButton Href=""https://github.com"" Target=""_blank"">
+    Go to GitHub
+</SbButton>";
+
+    private string buttonTypeCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"">
+    <SbButton Type=""button"">Button</SbButton>
+    <SbButton Type=""submit"" Color=""SbColor.Success"">Submit</SbButton>
+    <SbButton Type=""reset"" Variant=""SbButtonVariant.Outline"">Reset</SbButton>
+</SbStack>";
+
+    private string clickHandlerCode = @"<SbButton OnClick=""OnDemoClick"">Click me</SbButton>
+
+@code {
+    private int clickCount;
+    private void OnDemoClick(MouseEventArgs e) => clickCount++;
+}";
+
+    private int clickCount;
+    private void OnDemoClick(MouseEventArgs e) => clickCount++;
+}

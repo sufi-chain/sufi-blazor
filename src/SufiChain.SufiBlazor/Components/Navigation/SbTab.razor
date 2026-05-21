@@ -1,0 +1,80 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+@implements IDisposable
+
+@if (_parent != null && _parent.ShouldRenderTab(this))
+{
+    <div class="sb-tab-panel sb-tabs__panel @(_parent.IsTabActive(this) ? "sb-tab-panel--active" : "")"
+         role="tabpanel"
+         id="@PanelId"
+         hidden="@(!_parent.IsTabActive(this))">
+        @ChildContent
+    </div>
+}
+
+@code {
+    private SbTabs? _parent;
+    
+    /// <summary>
+    /// Unique identifier for this tab. Used with ActiveTab binding on SbTabs.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+    
+    /// <summary>
+    /// Tab label text.
+    /// </summary>
+    [Parameter]
+    public string Label { get; set; } = "";
+    
+    /// <summary>
+    /// Tab icon content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+    
+    /// <summary>
+    /// Badge content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Badge { get; set; }
+    
+    /// <summary>
+    /// Whether the tab is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Tab panel content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Parent tabs container.
+    /// </summary>
+    [CascadingParameter]
+    public SbTabs? Parent 
+    { 
+        get => _parent;
+        set
+        {
+            if (_parent != value)
+            {
+                _parent?.UnregisterTab(this);
+                _parent = value;
+                _parent?.RegisterTab(this);
+            }
+        }
+    }
+    
+    internal string PanelId { get; } = $"tab-panel-{Guid.NewGuid():N}";
+    internal bool HasBeenActivated { get; private set; }
+    
+    internal void MarkActivated() => HasBeenActivated = true;
+    
+    public void Dispose()
+    {
+        _parent?.UnregisterTab(this);
+    }
+}

@@ -1,0 +1,110 @@
+@page "/demo/sufi-blazor/data-grid/column-filter"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridColumnFilter"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridColumnFilter"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridColumnFilterDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DataGridColumnFilter"]" SourceCode="@columnFilterCode" RelatedCode="@columnFilterCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="Employee" 
+                        Items="@_employees" 
+                        KeySelector="@(e => e.Id.ToString())" 
+                        PageSize="5" 
+                        ShowColumnFilters="true">
+                <ChildContent>
+                    <SbColumn TItem="Employee" Field="Id" Title="@L["Demo:Id"]" Width="80px" Sortable="true" Filterable="true" />
+                    <SbColumn TItem="Employee" Field="Name" Title="@L["Demo:Name"]" Sortable="true" Filterable="true" />
+                    <SbColumn TItem="Employee" Field="Department" Title="@L["Demo:DataGridDepartment"]" Sortable="true" Filterable="true" />
+                    <SbColumn TItem="Employee" Field="Salary" Title="@L["Demo:Salary"]" Align="SbColumnAlign.End" Sortable="true" Filterable="true">
+                        <CellTemplate Context="context">
+                            @context.Item.Salary.ToString("N0")
+                        </CellTemplate>
+                    </SbColumn>
+                </ChildContent>
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<Employee> _employees = new();
+
+    protected override void OnInitialized()
+    {
+        _employees = GenerateEmployees(24);
+    }
+
+    private static List<Employee> GenerateEmployees(int count)
+    {
+        var departments = new[] { "Engineering", "Marketing", "Sales", "HR", "Finance", "Operations" };
+        var firstNames = new[] { "John", "Jane", "Mike", "Sarah", "David", "Emily", "Chris", "Lisa", "Tom", "Anna" };
+        var lastNames = new[] { "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez" };
+        var random = new Random(42);
+        return Enumerable.Range(1, count).Select(i => new Employee
+        {
+            Id = i,
+            Name = $"{firstNames[random.Next(firstNames.Length)]} {lastNames[random.Next(lastNames.Length)]}",
+            Email = $"employee{i}@company.com",
+            Department = departments[random.Next(departments.Length)],
+            Salary = random.Next(50000, 150000),
+            HireDate = DateTime.Today.AddDays(-random.Next(30, 1000)),
+            IsActive = random.Next(10) > 2
+        }).ToList();
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal Salary { get; set; }
+        public DateTime HireDate { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    private const string columnFilterCodeBehind = @"private List<Employee> _employees = new();
+
+protected override void OnInitialized()
+{
+    _employees = GenerateEmployees(24);
+}
+
+private static List<Employee> GenerateEmployees(int count) { /* ... */ }
+
+private class Employee
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = """";
+    public string Email { get; set; } = """";
+    public string Department { get; set; } = """";
+    public decimal Salary { get; set; }
+    public DateTime HireDate { get; set; }
+    public bool IsActive { get; set; }
+}";
+
+    private const string columnFilterCode = @"<SbDataGrid TItem=""Employee""
+                Items=""@_employees""
+                KeySelector=""@(e => e.Id.ToString())""
+                PageSize=""5""
+                ShowColumnFilters=""true"">
+    <ChildContent>
+        <SbColumn TItem=""Employee"" Field=""Id"" Title=""ID"" Width=""80px"" Sortable=""true"" Filterable=""true"" />
+        <SbColumn TItem=""Employee"" Field=""Name"" Title=""Name"" Sortable=""true"" Filterable=""true"" />
+        <SbColumn TItem=""Employee"" Field=""Department"" Title=""Department"" Sortable=""true"" Filterable=""true"" />
+        <SbColumn TItem=""Employee"" Field=""Salary"" Title=""Salary"" Align=""SbColumnAlign.End"" Sortable=""true"" Filterable=""true"">
+            <CellTemplate Context=""context"">
+                @context.Item.Salary.ToString(""N0"")
+            </CellTemplate>
+        </SbColumn>
+    </ChildContent>
+</SbDataGrid>";
+}

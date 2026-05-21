@@ -1,0 +1,199 @@
+@page "/demo/sufi-blazor/dialog"
+
+<PageTitle>@(L["Menu:Demo:Dialog"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Dialog"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DialogDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DialogBasic"]" SourceCode="@basicDialog" RelatedCode="@basicDialogCodeBehind">
+        <ExampleContent>
+            <SbButton OnClick="@(() => _basicOpen = true)">@L["Demo:DialogOpenButton"]</SbButton>
+
+            <SbDialog @bind-Open="_basicOpen" Title="@L["Demo:DialogBasicTitle"]">
+                <ChildContent>
+                    <SbText>@L["Demo:DialogBasicContent"]</SbText>
+                    <SbText Color="SbColor.Muted">@L["Demo:DialogBasicHint"]</SbText>
+                </ChildContent>
+                <Footer>
+                    <SbButton Variant="SbButtonVariant.Ghost" OnClick="@(() => _basicOpen = false)">@L["Demo:DialogCancel"]</SbButton>
+                    <SbButton OnClick="@(() => _basicOpen = false)">@L["Demo:DialogConfirm"]</SbButton>
+                </Footer>
+            </SbDialog>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DialogSizes"]" SourceCode="@sizesDialog" RelatedCode="@sizesDialogCodeBehind">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true">
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="@(() => _smOpen = true)">@L["Demo:DialogSizeSmall"]</SbButton>
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="@(() => _mdOpen = true)">@L["Demo:DialogSizeMedium"]</SbButton>
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="@(() => _lgOpen = true)">@L["Demo:DialogSizeLarge"]</SbButton>
+            </SbStack>
+
+            <SbDialog @bind-Open="_smOpen" Title="@L["Demo:DialogSmallTitle"]" Size="SbDialogSize.Sm">
+                <SbText>@L["Demo:DialogSmallContent"]</SbText>
+            </SbDialog>
+
+            <SbDialog @bind-Open="_mdOpen" Title="@L["Demo:DialogMediumTitle"]" Size="SbDialogSize.Md">
+                <SbText>@L["Demo:DialogMediumContent"]</SbText>
+            </SbDialog>
+
+            <SbDialog @bind-Open="_lgOpen" Title="@L["Demo:DialogLargeTitle"]" Size="SbDialogSize.Lg">
+                <SbText>@L["Demo:DialogLargeContent"]</SbText>
+            </SbDialog>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DialogConfirmation"]" SourceCode="@confirmDialog" RelatedCode="@confirmDialogCodeBehind">
+        <ExampleContent>
+            <SbButton Color="SbColor.Danger" OnClick="@(() => _confirmOpen = true)">@L["Demo:DialogDeleteItem"]</SbButton>
+
+            <SbDialog @bind-Open="_confirmOpen" Title="@L["Demo:DialogConfirmDeleteTitle"]" Size="SbDialogSize.Sm">
+                <ChildContent>
+                    <SbAlert Severity="SbAlertSeverity.Warning">
+                        @L["Demo:DialogConfirmDeleteMessage"]
+                    </SbAlert>
+                </ChildContent>
+                <Footer>
+                    <SbButton Variant="SbButtonVariant.Ghost" OnClick="@(() => _confirmOpen = false)">@L["Demo:DialogCancel"]</SbButton>
+                    <SbButton Color="SbColor.Danger" OnClick="@HandleDelete">@L["Demo:DialogDelete"]</SbButton>
+                </Footer>
+            </SbDialog>
+            @if (_deleted)
+            {
+                <SbText Color="SbColor.Success" Class="mt-2">@L["Demo:DialogItemDeleted"]</SbText>
+            }
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DialogForm"]" SourceCode="@formDialog" RelatedCode="@formDialogCodeBehind">
+        <ExampleContent>
+            <SbButton OnClick="@(() => _formOpen = true)">@L["Demo:DialogCreateNewUser"]</SbButton>
+
+            <SbDialog @bind-Open="_formOpen" Title="@L["Demo:DialogCreateUserTitle"]" Size="SbDialogSize.Md">
+                <ChildContent>
+                    <SbStack Gap="4">
+                        <SbFormField Label="@L["Demo:DialogFullName"]" Required="true">
+                            <SbTextField TValue="string" @bind-Value="_userName" Placeholder="@L["Demo:DialogFullNamePlaceholder"]" />
+                        </SbFormField>
+                        <SbFormField Label="@L["Demo:DialogEmail"]" Required="true">
+                            <SbTextField TValue="string" @bind-Value="_userEmail" Placeholder="email@example.com" />
+                        </SbFormField>
+                        <SbCheckbox @bind-Value="_sendWelcome" Label="@L["Demo:DialogSendWelcomeEmail"]" />
+                    </SbStack>
+                </ChildContent>
+                <Footer>
+                    <SbButton Variant="SbButtonVariant.Ghost" OnClick="@(() => _formOpen = false)">@L["Demo:DialogCancel"]</SbButton>
+                    <SbButton OnClick="@HandleCreateUser">@L["Demo:DialogCreateUserButton"]</SbButton>
+                </Footer>
+            </SbDialog>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDialog" />
+</DemoLayout>
+
+@code {
+    private bool _basicOpen;
+    private bool _smOpen;
+    private bool _mdOpen;
+    private bool _lgOpen;
+    private bool _confirmOpen;
+    private bool _formOpen;
+    private bool _deleted;
+
+    private string _userName = "";
+    private string _userEmail = "";
+    private bool _sendWelcome = true;
+
+    private void HandleDelete()
+    {
+        _confirmOpen = false;
+        _deleted = true;
+    }
+
+    private void HandleCreateUser()
+    {
+        _formOpen = false;
+        _userName = "";
+        _userEmail = "";
+    }
+
+    private string basicDialogCodeBehind = @"private bool _basicOpen;";
+
+    private string basicDialog = @"<SbButton OnClick=""@(() => _basicOpen = true)"">Open Dialog</SbButton>
+
+<SbDialog @bind-Open=""_basicOpen"" Title=""Basic Dialog"">
+    <ChildContent>
+        <SbText>This is a basic dialog with a title and content.</SbText>
+    </ChildContent>
+    <Footer>
+        <SbButton Variant=""SbButtonVariant.Ghost"" OnClick=""@(() => _basicOpen = false)"">Cancel</SbButton>
+        <SbButton OnClick=""@(() => _basicOpen = false)"">Confirm</SbButton>
+    </Footer>
+</SbDialog>";
+
+    private string sizesDialogCodeBehind = @"private bool _smOpen, _mdOpen, _lgOpen;";
+
+    private string sizesDialog = @"<SbButton Variant=""SbButtonVariant.Outline"" OnClick=""@(() => _smOpen = true)"">Small</SbButton>
+
+<SbDialog @bind-Open=""_smOpen"" Title=""Small Dialog"" Size=""SbDialogSize.Sm"">
+    <SbText>This is a small dialog.</SbText>
+</SbDialog>";
+
+    private string confirmDialogCodeBehind = @"private bool _confirmOpen;
+private bool _deleted;
+
+private void HandleDelete()
+{
+    _confirmOpen = false;
+    _deleted = true;
+}";
+
+    private string confirmDialog = @"<SbButton Color=""SbColor.Danger"" OnClick=""@(() => _confirmOpen = true)"">Delete Item</SbButton>
+
+<SbDialog @bind-Open=""_confirmOpen"" Title=""Confirm Delete"" Size=""SbDialogSize.Sm"">
+    <ChildContent>
+        <SbAlert Severity=""SbAlertSeverity.Warning"">Are you sure?</SbAlert>
+    </ChildContent>
+    <Footer>
+        <SbButton Variant=""SbButtonVariant.Ghost"" OnClick=""@(() => _confirmOpen = false)"">Cancel</SbButton>
+        <SbButton Color=""SbColor.Danger"" OnClick=""@HandleDelete"">Delete</SbButton>
+    </Footer>
+</SbDialog>";
+
+    private string formDialogCodeBehind = @"private bool _formOpen;
+private string _userName = """", _userEmail = """";
+private bool _sendWelcome = true;
+
+private void HandleCreateUser()
+{
+    _formOpen = false;
+    _userName = """"; _userEmail = """";
+}";
+
+    private string formDialog = @"<SbButton OnClick=""@(() => _formOpen = true)"">Create New User</SbButton>
+
+<SbDialog @bind-Open=""_formOpen"" Title=""Create User"" Size=""SbDialogSize.Md"">
+    <ChildContent>
+        <SbStack Gap=""4"">
+            <SbFormField Label=""Full Name"" Required=""true"">
+                <SbTextField TValue=""string"" @bind-Value=""_userName"" />
+            </SbFormField>
+            <SbFormField Label=""Email"" Required=""true"">
+                <SbTextField TValue=""string"" @bind-Value=""_userEmail"" />
+            </SbFormField>
+            <SbCheckbox @bind-Value=""_sendWelcome"" Label=""Send welcome email"" />
+        </SbStack>
+    </ChildContent>
+    <Footer>
+        <SbButton Variant=""SbButtonVariant.Ghost"" OnClick=""@(() => _formOpen = false)"">Cancel</SbButton>
+        <SbButton OnClick=""@HandleCreateUser"">Create User</SbButton>
+    </Footer>
+</SbDialog>";
+}

@@ -1,0 +1,228 @@
+@page "/demo/sufi-blazor/confirm-dialog"
+
+<PageTitle>@(L["Menu:Demo:ConfirmDialog"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:ConfirmDialog"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:ConfirmDialogDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BasicUsage"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbButton OnClick="ShowBasicDialog">@L["Demo:ConfirmDialogShowButton"]</SbButton>
+                
+                @if (_basicResult != null)
+                {
+                    <SbAlert Severity="@(_basicResult.Value ? SbAlertSeverity.Success : SbAlertSeverity.Info)">
+                        @(_basicResult.Value ? L["Demo:ConfirmDialogUserConfirmed"] : L["Demo:ConfirmDialogUserCancelled"])
+                    </SbAlert>
+                }
+            </SbStack>
+            
+            <SbConfirmDialog @ref="_basicDialog"
+                           Title="@L["Demo:ConfirmAction"]"
+                           Message="@L["Demo:ConfirmDialogProceedMessage"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DangerVariant"]" SourceCode="@dangerCode" RelatedCode="@dangerCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbButton Color="SbColor.Danger" OnClick="ShowDangerDialog">@L["Demo:DeleteItem"]</SbButton>
+                
+                @if (_dangerResult != null)
+                {
+                    <SbAlert Severity="@(_dangerResult.Value ? SbAlertSeverity.Danger : SbAlertSeverity.Info)">
+                        @(_dangerResult.Value ? L["Demo:ConfirmDialogItemDeleted"] : L["Demo:ConfirmDialogDeletionCancelled"])
+                    </SbAlert>
+                }
+            </SbStack>
+            
+            <SbConfirmDialog @ref="_dangerDialog"
+                           Title="@L["Demo:DeleteItem"]"
+                           Message="@L["Demo:ConfirmDialogDangerMessage"]"
+                           Variant="SbConfirmDialogVariant.Danger"
+                           ConfirmText="@L["Demo:DialogDelete"]"
+                           CancelText="@L["Demo:Keep"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WarningVariant"]" SourceCode="@warningCode" RelatedCode="@warningCodeBehind">
+        <ExampleContent>
+            <SbButton Color="SbColor.Warning" OnClick="ShowWarningDialog">
+                @L["Demo:ConfirmDialogUnsavedChangesButton"]
+            </SbButton>
+            
+            <SbConfirmDialog @ref="_warningDialog"
+                           Title="@L["Demo:ConfirmDialogUnsavedChangesTitle"]"
+                           Message="@L["Demo:ConfirmDialogUnsavedChangesMessage"]"
+                           Variant="SbConfirmDialogVariant.Warning"
+                           ConfirmText="@L["Demo:SaveAndLeave"]"
+                           CancelText="@L["Demo:DontSave"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:InfoVariant"]" SourceCode="@infoCode" RelatedCode="@infoCodeBehind">
+        <ExampleContent>
+            <SbButton Color="SbColor.Info" OnClick="ShowInfoDialog">
+                @L["Demo:ConfirmDialogViewDetails"]
+            </SbButton>
+            
+            <SbConfirmDialog @ref="_infoDialog"
+                           Title="@L["Demo:AdditionalInformation"]"
+                           Message="@L["Demo:ConfirmDialogInfoMessage"]"
+                           Variant="SbConfirmDialogVariant.Info"
+                           ConfirmText="@L["Demo:YesNotifyMe"]"
+                           CancelText="@L["Demo:NoThanks"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CustomContent"]" SourceCode="@customCode" RelatedCode="@customCodeBehind">
+        <ExampleContent>
+            <SbButton OnClick="ShowCustomDialog">@L["Demo:ConfirmDialogShowCustomContent"]</SbButton>
+            
+            <SbConfirmDialog @ref="_customDialog"
+                           Title="@L["Demo:TermsAndConditions"]"
+                           ConfirmText="@L["Demo:IAccept"]"
+                           CancelText="@L["Demo:Decline"]">
+                <SbStack Gap="3">
+                    <SbText Weight="SbFontWeight.Semibold">@L["Demo:ConfirmDialogReviewTerms"]</SbText>
+                    <ul style="margin: 0; padding-left: var(--sb-space-5);">
+                        <li>You must be 18 years or older</li>
+                        <li>Data will be stored securely</li>
+                        <li>You can cancel anytime</li>
+                    </ul>
+                    <SbCheckbox Label="@L["Demo:IHaveReadTerms"]" />
+                </SbStack>
+            </SbConfirmDialog>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithoutCancelButton"]" SourceCode="@noCancelCode" RelatedCode="@noCancelCodeBehind">
+        <ExampleContent>
+            <SbButton OnClick="ShowNoCancelDialog">@L["Demo:ConfirmDialogAcknowledge"]</SbButton>
+            
+            <SbConfirmDialog @ref="_noCancelDialog"
+                           Title="@L["Demo:ImportantNotice"]"
+                           Message="@L["Demo:ConfirmDialogSessionExpireMessage"]"
+                           Variant="SbConfirmDialogVariant.Warning"
+                           ConfirmText="@L["Demo:IUnderstand"]"
+                           ShowCancelButton="false" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:PreventBackdropClose"]" SourceCode="@preventCloseCode" RelatedCode="@preventCloseCodeBehind">
+        <ExampleContent>
+            <SbButton OnClick="ShowPreventCloseDialog">@L["Demo:ConfirmDialogForceDecision"]</SbButton>
+            
+            <SbConfirmDialog @ref="_preventCloseDialog"
+                           Title="@L["Demo:RequiredAction"]"
+                           Message="@L["Demo:ConfirmDialogForceDecisionMessage"]"
+                           Variant="SbConfirmDialogVariant.Warning"
+                           CloseOnOverlayClick="false"
+                           ConfirmText="@L["Demo:Proceed"]"
+                           CancelText="@L["Demo:GoBack"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbConfirmDialog" />
+</DemoLayout>
+
+@code {
+    private SbConfirmDialog? _basicDialog, _dangerDialog, _warningDialog, _infoDialog;
+    private SbConfirmDialog? _customDialog, _noCancelDialog, _preventCloseDialog;
+    private bool? _basicResult, _dangerResult;
+
+    private async Task ShowBasicDialog()
+    {
+        _basicResult = await _basicDialog!.ShowAsync();
+    }
+
+    private async Task ShowDangerDialog()
+    {
+        _dangerResult = await _dangerDialog!.ShowAsync();
+    }
+
+    private void ShowWarningDialog() => _warningDialog?.Show();
+    private void ShowInfoDialog() => _infoDialog?.Show();
+    private void ShowCustomDialog() => _customDialog?.Show();
+    private void ShowNoCancelDialog() => _noCancelDialog?.Show();
+    private void ShowPreventCloseDialog() => _preventCloseDialog?.Show();
+
+    private const string basicCodeBehind = @"private SbConfirmDialog? _basicDialog;
+private bool? _basicResult;
+
+private async Task ShowBasicDialog()
+{
+    _basicResult = await _basicDialog!.ShowAsync();
+}";
+
+    private const string basicCode = @"<SbButton OnClick=""ShowBasicDialog"">Show Dialog</SbButton>
+
+<SbConfirmDialog @ref=""_basicDialog""
+               Title=""Confirm Action""
+               Message=""Are you sure?"" />";
+
+    private const string dangerCodeBehind = @"private SbConfirmDialog? _dangerDialog;
+
+private async Task ShowDangerDialog()
+{
+    var result = await _dangerDialog!.ShowAsync();
+}";
+
+    private const string dangerCode = @"<SbButton Color=""SbColor.Danger"" OnClick=""ShowDangerDialog"">Delete</SbButton>
+
+<SbConfirmDialog @ref=""_dangerDialog""
+               Title=""Delete Item""
+               Message=""This action cannot be undone.""
+               Variant=""SbConfirmDialogVariant.Danger""
+               ConfirmText=""Delete"" />";
+
+    private const string warningCodeBehind = @"private SbConfirmDialog? _warningDialog;
+
+private void ShowWarningDialog() => _warningDialog?.Show();";
+
+    private const string warningCode = @"<SbConfirmDialog @ref=""_warningDialog""
+               Title=""Unsaved Changes""
+               Message=""You have unsaved changes.""
+               Variant=""SbConfirmDialogVariant.Warning""
+               ConfirmText=""Save & Leave"" />";
+
+    private const string infoCodeBehind = @"private SbConfirmDialog? _infoDialog;";
+
+    private const string infoCode = @"<SbConfirmDialog @ref=""_infoDialog""
+               Title=""Information""
+               Message=""Would you like notifications?""
+               Variant=""SbConfirmDialogVariant.Info"" />";
+
+    private const string customCodeBehind = @"private SbConfirmDialog? _customDialog;";
+
+    private const string customCode = @"<SbConfirmDialog @ref=""_customDialog""
+               Title=""Terms and Conditions""
+               ConfirmText=""I Accept"">
+    <ul>
+        <li>You must be 18 years or older</li>
+        <li>Data will be stored securely</li>
+    </ul>
+    <SbCheckbox Label=""I agree"" />
+</SbConfirmDialog>";
+
+    private const string noCancelCodeBehind = @"private SbConfirmDialog? _noCancelDialog;";
+
+    private const string noCancelCode = @"<SbConfirmDialog @ref=""_noCancelDialog""
+               Title=""Important Notice""
+               Message=""Your session will expire soon.""
+               ConfirmText=""I Understand""
+               ShowCancelButton=""false"" />";
+
+    private const string preventCloseCodeBehind = @"private SbConfirmDialog? _preventCloseDialog;";
+
+    private const string preventCloseCode = @"<SbConfirmDialog @ref=""_preventCloseDialog""
+               Title=""Required Action""
+               Message=""You must make a selection.""
+               CloseOnOverlayClick=""false"" />";
+}

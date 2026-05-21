@@ -1,0 +1,326 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@typeparam TValue
+@implements IDisposable
+@implements ISbSelectOptionContext<TValue>
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<CascadingValue Value="(ISbSelectOptionContext<TValue>)this">
+    @* Render ChildContent to collect options - hidden from display *@
+    <div style="display: none;">
+        @ChildContent
+    </div>
+</CascadingValue>
+
+<div class="sb-select-anchor @Class" style="@Style" @ref="_anchorRef">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-select-label">@Label</label>
+    }
+    <div class="sb-select-trigger">
+        <button type="button"
+                class="sb-select-trigger__main"
+                @onclick="Toggle"
+                @onkeydown="HandleKeyDown"
+                disabled="@Disabled"
+                aria-haspopup="listbox"
+                aria-expanded="@_isOpen"
+                aria-labelledby="@Id">
+            <span class="@(HasValue ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
+                @(HasValue ? GetDisplayText() : (Placeholder ?? L["Select_Placeholder"]))
+            </span>
+            @if (!(Clearable && HasValue && !Disabled))
+            {
+                <span class="@IconClass"><SbIcon Name="chevron-down" Size="SbSize.Sm" /></span>
+            }
+        </button>
+        @if (Clearable && HasValue && !Disabled)
+        {
+            <button type="button"
+                    class="sb-select-trigger__clear"
+                    aria-label="@(L["Clear"])"
+                    tabindex="-1"
+                    @onclick="HandleClear">
+                <SbIcon Name="x" Size="SbSize.Sm" />
+            </button>
+            <span class="@IconClass"><SbIcon Name="chevron-down" Size="SbSize.Sm" /></span>
+        }
+    </div>
+
+    @if (_isOpen)
+    {
+        <div class="@DropdownClass" role="listbox">
+            @if (Searchable)
+            {
+                <div class="sb-select-search">
+                    <input type="text"
+                           class="sb-select-search__input"
+                           placeholder="@(SearchPlaceholder ?? L["Search_Placeholder"])"
+                           @bind="_searchText"
+                           @bind:event="oninput"
+                           @ref="_searchRef" />
+                </div>
+            }
+            <div class="sb-select-options">
+                @if (FilteredOptions.Any())
+                {
+                    @foreach (var option in FilteredOptions)
+                    {
+                        var isSelected = EqualityComparer<TValue>.Default.Equals(option.Value, Value);
+                        <button type="button"
+                                class="@GetOptionClass(isSelected, option.Disabled)"
+                                role="option"
+                                aria-selected="@isSelected"
+                                disabled="@option.Disabled"
+                                @onclick="() => SelectOption(option)">
+                            @if (option.ChildContent != null)
+                            {
+                                @option.ChildContent
+                            }
+                            else
+                            {
+                                @(option.Text ?? option.Value?.ToString() ?? string.Empty)
+                            }
+                        </button>
+                    }
+                }
+                else
+                {
+                    <div class="sb-select-empty">
+                        @if (NoResultsTemplate != null)
+                        {
+                            @NoResultsTemplate
+                        }
+                        else
+                        {
+                            <span>@(NoResultsText ?? L["NoResultsFound"])</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+
+@code {
+    private ElementReference _anchorRef;
+    private ElementReference _searchRef;
+    private DotNetObjectReference<SbSimpleSelect<TValue>>? _dotNetRef;
+    private bool _isOpen;
+    private string _searchText = "";
+    private bool _shouldFlip;
+    private List<SbSelectOptionInfo<TValue>> _options = new();
+
+    /// <summary>
+    /// Selected value.
+    /// </summary>
+    [Parameter]
+    public TValue? Value { get; set; }
+
+    /// <summary>
+    /// Callback when value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TValue?> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Child content containing SbSelectOption elements.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Label text displayed above the select.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Placeholder text when no selection. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Placeholder text for the search input. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? SearchPlaceholder { get; set; }
+
+    /// <summary>
+    /// Text to display when no results are found. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? NoResultsText { get; set; }
+
+    /// <summary>
+    /// Whether the select is searchable.
+    /// </summary>
+    [Parameter]
+    public bool Searchable { get; set; }
+
+    /// <summary>
+    /// Whether the select allows clearing.
+    /// </summary>
+    [Parameter]
+    public bool Clearable { get; set; }
+
+    /// <summary>
+    /// Whether the select is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Template for no results.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? NoResultsTemplate { get; set; }
+
+    /// <summary>
+    /// Element ID for form association.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    private bool HasValue => Value != null && !EqualityComparer<TValue>.Default.Equals(Value, default);
+
+    private string IconClass => $"sb-select-trigger__icon{(_isOpen ? " sb-select-trigger__icon--open" : "")}";
+
+    private string DropdownClass => _shouldFlip ? "sb-select-dropdown sb-select-dropdown--flip-up" : "sb-select-dropdown";
+
+    void ISbSelectOptionContext<TValue>.RegisterOption(SbSelectOptionInfo<TValue> option)
+    {
+        // Avoid duplicate registrations - options register once and stay registered
+        if (!_options.Any(o => EqualityComparer<TValue>.Default.Equals(o.Value, option.Value)))
+        {
+            _options.Add(option);
+        }
+    }
+
+    private IEnumerable<SbSelectOptionInfo<TValue>> FilteredOptions
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_searchText))
+                return _options;
+
+            return _options.Where(option =>
+            {
+                var displayText = option.Text ?? option.Value?.ToString() ?? "";
+                return displayText.Contains(_searchText, StringComparison.OrdinalIgnoreCase);
+            });
+        }
+    }
+
+    private string GetDisplayText()
+    {
+        if (Value == null) return "";
+
+        var selectedOption = _options.FirstOrDefault(o =>
+            EqualityComparer<TValue>.Default.Equals(o.Value, Value));
+
+        if (selectedOption != null)
+        {
+            return selectedOption.Text ?? selectedOption.Value?.ToString() ?? "";
+        }
+
+        return Value.ToString() ?? "";
+    }
+
+    private string GetOptionClass(bool isSelected, bool isDisabled)
+    {
+        var classes = new List<string> { "sb-select-option" };
+        if (isSelected)
+        {
+            classes.Add("sb-select-option--selected");
+        }
+        if (isDisabled)
+        {
+            classes.Add("sb-select-option--disabled");
+        }
+        return string.Join(" ", classes);
+    }
+
+    private async Task Toggle()
+    {
+        if (Disabled) return;
+
+        _isOpen = !_isOpen;
+        _searchText = "";
+
+        if (_isOpen)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
+
+            // Check if dropdown should flip up
+            _shouldFlip = await JSRuntime.InvokeAsync<bool>("SufiBlazor.select.shouldFlipUp", _anchorRef, 300);
+            StateHasChanged();
+        }
+        else
+        {
+            _shouldFlip = false;
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+        }
+    }
+
+    private async Task SelectOption(SbSelectOptionInfo<TValue> option)
+    {
+        if (option.Disabled) return;
+
+        await ValueChanged.InvokeAsync(option.Value);
+        _isOpen = false;
+        _searchText = "";
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+    }
+
+    private async Task HandleClear()
+    {
+        if (Disabled || !Clearable) return;
+
+        await ValueChanged.InvokeAsync(default);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape" && _isOpen)
+        {
+            _isOpen = false;
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+        }
+        else if (args.Key is "Enter" or " " or "ArrowDown" && !_isOpen)
+        {
+            await Toggle();
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            _searchText = "";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}

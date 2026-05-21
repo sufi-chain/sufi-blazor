@@ -1,0 +1,362 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Common
+@typeparam TItem
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-autocomplete @Class" style="@Style" @ref="_anchorRef">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-autocomplete__label" for="@Id">
+            @Label
+            @if (Required)
+            {
+                <span class="sb-autocomplete__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+    <div class="sb-autocomplete__input-wrapper">
+        <input type="text"
+               class="sb-autocomplete__input"
+               value="@_searchText"
+               @oninput="OnSearchInput"
+               @onfocus="OnFocus"
+               @onkeydown="OnKeyDown"
+               placeholder="@(Placeholder ?? L["Search_Placeholder"])"
+               disabled="@Disabled"
+               autocomplete="off" />
+        
+        @if (_isLoading)
+        {
+            <span class="sb-autocomplete__spinner"></span>
+        }
+        else if (Clearable && HasValue)
+        {
+            <button type="button" 
+                    class="sb-autocomplete__clear"
+                    @onclick="Clear"
+                    aria-label="@L["Clear"]">
+                <SbIcon Name="x" Size="SbSize.Sm" />
+            </button>
+        }
+        <span class="sb-autocomplete__icon">
+            <SbIcon Name="chevron-down" Size="SbSize.Sm" />
+        </span>
+    </div>
+    
+    @if (_isOpen && _filteredItems.Any())
+    {
+        <div class="@DropdownClass">
+            @foreach (var (item, index) in _filteredItems.Select((item, i) => (item, i)))
+            {
+                var isHighlighted = index == _highlightedIndex;
+                <button type="button"
+                        class="sb-autocomplete__option @(isHighlighted ? "sb-autocomplete__option--highlighted" : "") @(IsSelected(item) ? "sb-autocomplete__option--selected" : "")"
+                        @onclick="() => SelectItem(item)">
+                    @if (ItemTemplate != null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else
+                    {
+                        @TextField(item)
+                    }
+                </button>
+            }
+        </div>
+    }
+    else if (_isOpen && !_filteredItems.Any() && !string.IsNullOrEmpty(_searchText))
+    {
+        <div class="@DropdownClass">
+            <div class="sb-autocomplete__no-results">
+                @if (NoResultsTemplate != null)
+                {
+                    @NoResultsTemplate
+                }
+                else
+                {
+                    <span>@L["NoResultsFound"]</span>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _anchorRef;
+    private DotNetObjectReference<SbAutocomplete<TItem>>? _dotNetRef;
+    private bool _isOpen;
+    private bool _isLoading;
+    private string _searchText = "";
+    private List<TItem> _filteredItems = new();
+    private int _highlightedIndex = -1;
+    private System.Timers.Timer? _debounceTimer;
+    private bool _shouldFlip;
+    
+    /// <summary>
+    /// The selected value.
+    /// </summary>
+    [Parameter]
+    public TItem? Value { get; set; }
+    
+    /// <summary>
+    /// Callback when value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TItem?> ValueChanged { get; set; }
+    
+    /// <summary>
+    /// Static items to search from.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<TItem>? Items { get; set; }
+    
+    /// <summary>
+    /// Async function to fetch items based on search text.
+    /// </summary>
+    [Parameter]
+    public Func<string, Task<IEnumerable<TItem>>>? SearchFunc { get; set; }
+    
+    /// <summary>
+    /// Function to get display text from item.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, string> TextField { get; set; } = item => item?.ToString() ?? "";
+    
+    /// <summary>
+    /// Function to get value from item for comparison.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, object> ValueField { get; set; } = item => item!;
+    
+    /// <summary>
+    /// Minimum characters before searching.
+    /// </summary>
+    [Parameter]
+    public int MinLength { get; set; } = 1;
+    
+    /// <summary>
+    /// Debounce delay in milliseconds.
+    /// </summary>
+    [Parameter]
+    public int DebounceMs { get; set; } = 300;
+    
+    /// <summary>
+    /// Maximum number of results to show.
+    /// </summary>
+    [Parameter]
+    public int MaxResults { get; set; } = 10;
+    
+    /// <summary>
+    /// Placeholder text. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+    
+    /// <summary>
+    /// Whether to show clear button.
+    /// </summary>
+    [Parameter]
+    public bool Clearable { get; set; } = true;
+    
+    /// <summary>
+    /// Whether the input is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Element ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Label text displayed above the autocomplete.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Whether the field is required (shows asterisk).
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+    
+    /// <summary>
+    /// Custom item template.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<TItem>? ItemTemplate { get; set; }
+    
+    /// <summary>
+    /// Template for no results.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? NoResultsTemplate { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles for the wrapper element.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+    
+    private bool HasValue => Value != null;
+
+    private string DropdownClass => _shouldFlip ? "sb-autocomplete__dropdown sb-autocomplete__dropdown--flip-up" : "sb-autocomplete__dropdown";
+    
+    protected override void OnParametersSet()
+    {
+        if (Value != null)
+        {
+            _searchText = TextField(Value);
+        }
+    }
+    
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        _searchText = e.Value?.ToString() ?? "";
+        _highlightedIndex = -1;
+        
+        if (_searchText.Length < MinLength)
+        {
+            _filteredItems.Clear();
+            _isOpen = false;
+            return;
+        }
+        
+        _debounceTimer?.Stop();
+        _debounceTimer?.Dispose();
+        
+        if (DebounceMs <= 0)
+        {
+            await PerformSearch();
+            return;
+        }
+        
+        _debounceTimer = new System.Timers.Timer(DebounceMs);
+        _debounceTimer.Elapsed += async (s, args) =>
+        {
+            _debounceTimer?.Stop();
+            await InvokeAsync(async () =>
+            {
+                await PerformSearch();
+                StateHasChanged();
+            });
+        };
+        _debounceTimer.Start();
+    }
+    
+    private async Task PerformSearch()
+    {
+        _isLoading = true;
+        StateHasChanged();
+        
+        try
+        {
+            if (SearchFunc != null)
+            {
+                var results = await SearchFunc(_searchText);
+                _filteredItems = results.Take(MaxResults).ToList();
+            }
+            else if (Items != null)
+            {
+                _filteredItems = Items
+                    .Where(item => TextField(item).Contains(_searchText, StringComparison.OrdinalIgnoreCase))
+                    .Take(MaxResults)
+                    .ToList();
+            }
+            
+            if (!_isOpen)
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
+            }
+            
+            _isOpen = true;
+            
+            // Check if dropdown should flip up
+            _shouldFlip = await JSRuntime.InvokeAsync<bool>("SufiBlazor.select.shouldFlipUp", _anchorRef, 300);
+            StateHasChanged();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+    
+    private async Task OnFocus()
+    {
+        if (_searchText.Length >= MinLength && !_isOpen)
+        {
+            await PerformSearch();
+        }
+    }
+    
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                _highlightedIndex = Math.Min(_highlightedIndex + 1, _filteredItems.Count - 1);
+                break;
+            case "ArrowUp":
+                _highlightedIndex = Math.Max(_highlightedIndex - 1, 0);
+                break;
+            case "Enter":
+                if (_highlightedIndex >= 0 && _highlightedIndex < _filteredItems.Count)
+                {
+                    await SelectItem(_filteredItems[_highlightedIndex]);
+                }
+                break;
+            case "Escape":
+                _isOpen = false;
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+                break;
+        }
+    }
+    
+    private async Task SelectItem(TItem item)
+    {
+        _searchText = TextField(item);
+        await ValueChanged.InvokeAsync(item);
+        _isOpen = false;
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+    }
+    
+    private async Task Clear()
+    {
+        _searchText = "";
+        await ValueChanged.InvokeAsync(default);
+        _filteredItems.Clear();
+    }
+    
+    private bool IsSelected(TItem item)
+    {
+        if (Value == null) return false;
+        return EqualityComparer<object>.Default.Equals(ValueField(item), ValueField(Value));
+    }
+    
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+        _debounceTimer?.Dispose();
+    }
+}

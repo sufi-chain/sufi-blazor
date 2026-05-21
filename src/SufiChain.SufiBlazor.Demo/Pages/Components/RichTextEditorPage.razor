@@ -1,0 +1,113 @@
+@page "/demo/sufi-blazor/rich-text-editor"
+
+<PageTitle>@(L["Menu:Demo:RichTextEditor"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:RichTextEditor"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:RichTextEditorPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:RichTextEditorBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbFormField Label="@L["Demo:RichTextEditorContent"]">
+                    <SbRichTextEditor @bind-Value="_content" 
+                                      UseToolbarContributors="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:RichTextEditorPlaceholder"]" SourceCode="@placeholderCode" RelatedCode="@placeholderCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbFormField Label="@L["Demo:RichTextEditorDescription"]">
+                    <SbRichTextEditor @bind-Value="_description" 
+                                     Placeholder="@L["Demo:RichTextEditorPlaceholderText"]"
+                                     UseToolbarContributors="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:RichTextEditorCustomHeight"]" SourceCode="@heightCode" RelatedCode="@heightCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbFormField Label="@L["Demo:RichTextEditorArticleContent"]">
+                    <SbRichTextEditor @bind-Value="_articleContent" 
+                                     Height="400px"
+                                     UseToolbarContributors="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:RichTextEditorNoToolbar"]" SourceCode="@noToolbarCode" RelatedCode="@noToolbarCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbFormField Label="@L["Demo:RichTextEditorSimpleNote"]">
+                    <SbRichTextEditor @bind-Value="_note" 
+                                  HideToolbar="true"
+                                  Height="200px" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:RichTextEditorReadOnly"]" SourceCode="@readOnlyCode" RelatedCode="@readOnlyCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbFormField Label="@L["Demo:RichTextEditorDisplayContent"]">
+                    <SbRichTextEditor Value="@_displayContent" ReadOnly="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbRichTextEditor" />
+</DemoLayout>
+
+@code {
+    private string? _content;
+    private string? _description;
+    private string? _articleContent;
+    private string? _note;
+    private string _displayContent = "<p>This is <strong>read-only</strong> content that cannot be edited.</p>";
+
+    private const string basicCodeBehind = @"private string? _content;";
+
+    private const string basicCode = @"<SbFormField Label=""Content"">
+    <SbRichTextEditor @bind-Value=""_content"" />
+</SbFormField>";
+
+    private const string placeholderCodeBehind = @"private string? _description;";
+
+    private const string placeholderCode = @"<SbFormField Label=""Description"">
+    <SbRichTextEditor @bind-Value=""_description"" 
+                  Placeholder=""Enter description..."" />
+</SbFormField>";
+
+    private const string heightCodeBehind = @"private string? _articleContent;";
+
+    private const string heightCode = @"<SbFormField Label=""Article Content"">
+    <SbRichTextEditor @bind-Value=""_articleContent"" 
+                  Height=""400px"" />
+</SbFormField>";
+
+    private const string noToolbarCodeBehind = @"private string? _note;";
+
+    private const string noToolbarCode = @"<SbFormField Label=""Simple Note"">
+    <SbRichTextEditor @bind-Value=""_note"" 
+                  HideToolbar=""true""
+                  Height=""200px"" />
+</SbFormField>";
+
+    private const string readOnlyCodeBehind = @"private string _displayContent = ""<p>This is <strong>read-only</strong> content that cannot be edited.</p>"";";
+
+    private const string readOnlyCode = @"<SbFormField Label=""Display Content"">
+    <SbRichTextEditor Value=""@_displayContent"" ReadOnly=""true"" />
+</SbFormField>";
+}

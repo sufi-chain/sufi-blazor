@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" msdata:Ordinal="5" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Expand" xml:space="preserve"><value>Expand</value></data>
+  <data name="Collapse" xml:space="preserve"><value>Collapse</value></data>
+  <data name="Remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="Yes" xml:space="preserve"><value>Yes</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="Select_Placeholder" xml:space="preserve"><value>Select...</value></data>
+  <data name="Search_Placeholder" xml:space="preserve"><value>Search...</value></data>
+  <data name="SelectDate_Placeholder" xml:space="preserve"><value>Select date...</value></data>
+  <data name="SelectDateRange_Placeholder" xml:space="preserve"><value>Select date range...</value></data>
+  <data name="SelectTime_Placeholder" xml:space="preserve"><value>Select time...</value></data>
+  <data name="SelectColor_Placeholder" xml:space="preserve"><value>Select color...</value></data>
+  <data name="EnterValue_Placeholder" xml:space="preserve"><value>Enter value...</value></data>
+  <data name="ShowPassword" xml:space="preserve"><value>Show password</value></data>
+  <data name="HidePassword" xml:space="preserve"><value>Hide password</value></data>
+  <data name="ClearTime" xml:space="preserve"><value>Clear time</value></data>
+  <data name="ClearColor" xml:space="preserve"><value>Clear color</value></data>
+  <data name="ClearDate" xml:space="preserve"><value>Clear date</value></data>
+  <data name="ClearDates" xml:space="preserve"><value>Clear dates</value></data>
+  <data name="DateRangePreset_QuickRange" xml:space="preserve"><value>Quick range...</value></data>
+  <data name="DateRangePreset_Today" xml:space="preserve"><value>Today</value></data>
+  <data name="DateRangePreset_Last7Days" xml:space="preserve"><value>Last 7 days</value></data>
+  <data name="DateRangePreset_Last30Days" xml:space="preserve"><value>Last 30 days</value></data>
+  <data name="DateRangePreset_Last90Days" xml:space="preserve"><value>Last 90 days</value></data>
+  <data name="DateRangePreset_ThisMonth" xml:space="preserve"><value>This month</value></data>
+  <data name="DateRangePreset_LastMonth" xml:space="preserve"><value>Last month</value></data>
+  <data name="Hour" xml:space="preserve"><value>Hour</value></data>
+  <data name="Minute" xml:space="preserve"><value>Minute</value></data>
+  <data name="Second" xml:space="preserve"><value>Second</value></data>
+  <data name="Period" xml:space="preserve"><value>Period</value></data>
+  <data name="Now" xml:space="preserve"><value>Now</value></data>
+  <data name="FirstPage" xml:space="preserve"><value>First page</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Previous page</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Next page</value></data>
+  <data name="LastPage" xml:space="preserve"><value>Last page</value></data>
+  <data name="ItemsPerPage" xml:space="preserve"><value>Items per page:</value></data>
+  <data name="NoItems" xml:space="preserve"><value>No items</value></data>
+  <data name="PageAriaLabelFormat" xml:space="preserve"><value>Page {0}</value></data>
+  <data name="PageInfoFormat" xml:space="preserve"><value>{0}-{1} of {2}</value></data>
+  <data name="Previous" xml:space="preserve"><value>Previous</value></data>
+  <data name="Next" xml:space="preserve"><value>Next</value></data>
+  <data name="Operator" xml:space="preserve"><value>Operator</value></data>
+  <data name="Value" xml:space="preserve"><value>Value</value></data>
+  <data name="And" xml:space="preserve"><value>And</value></data>
+  <data name="FilterBy" xml:space="preserve"><value>Filter: {0}</value></data>
+  <data name="FilterOptions" xml:space="preserve"><value>Filter options</value></data>
+  <data name="FilterEquals" xml:space="preserve"><value>Equals</value></data>
+  <data name="FilterNotEquals" xml:space="preserve"><value>Not equals</value></data>
+  <data name="FilterContains" xml:space="preserve"><value>Contains</value></data>
+  <data name="FilterStartsWith" xml:space="preserve"><value>Starts with</value></data>
+  <data name="FilterEndsWith" xml:space="preserve"><value>Ends with</value></data>
+  <data name="FilterGreaterThan" xml:space="preserve"><value>Greater than</value></data>
+  <data name="FilterGreaterThanOrEqual" xml:space="preserve"><value>Greater than or equal</value></data>
+  <data name="FilterLessThan" xml:space="preserve"><value>Less than</value></data>
+  <data name="FilterLessThanOrEqual" xml:space="preserve"><value>Less than or equal</value></data>
+  <data name="FilterBetween" xml:space="preserve"><value>Between</value></data>
+  <data name="FilterInList" xml:space="preserve"><value>In list</value></data>
+  <data name="FilterIsEmpty" xml:space="preserve"><value>Is empty</value></data>
+  <data name="FilterIsNotEmpty" xml:space="preserve"><value>Is not empty</value></data>
+  <data name="CustomColor" xml:space="preserve"><value>Custom Color</value></data>
+  <data name="Opacity" xml:space="preserve"><value>Opacity: {0}%</value></data>
+  <data name="Preview" xml:space="preserve"><value>Preview:</value></data>
+  <data name="EnterSlug_Placeholder" xml:space="preserve"><value>enter-slug-here</value></data>
+  <data name="GenerateSlug" xml:space="preserve"><value>Generate</value></data>
+  <data name="NoResultsFound" xml:space="preserve"><value>No results found</value></data>
+  <data name="SaveChanges" xml:space="preserve"><value>Save changes</value></data>
+  <data name="CancelEditing" xml:space="preserve"><value>Cancel editing</value></data>
+  <data name="EditRow" xml:space="preserve"><value>Edit row</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirm</value></data>
+  <data name="Back" xml:space="preserve"><value>Back</value></data>
+  <data name="Finish" xml:space="preserve"><value>Finish</value></data>
+  <data name="Optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="ClearAll" xml:space="preserve"><value>Clear all</value></data>
+  <data name="GenerateFromTitle" xml:space="preserve"><value>Generate from title</value></data>
+  <data name="Demo:TabExample" xml:space="preserve"><value>Example</value></data>
+  <data name="Demo:TabViewSource" xml:space="preserve"><value>View source</value></data>
+  <data name="Demo:TabDocs" xml:space="preserve"><value>Docs</value></data>
+  <data name="Demo:SourceLabelCodeBlock" xml:space="preserve"><value>@code block</value></data>
+  <data name="Demo:SourceLabelMarkup" xml:space="preserve"><value>Markup</value></data>
+  <data name="Rte:HeaderNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="Rte:Header1" xml:space="preserve"><value>Heading 1</value></data>
+  <data name="Rte:Header2" xml:space="preserve"><value>Heading 2</value></data>
+  <data name="Rte:Header3" xml:space="preserve"><value>Heading 3</value></data>
+  <data name="Rte:Header4" xml:space="preserve"><value>Heading 4</value></data>
+  <data name="Rte:Header5" xml:space="preserve"><value>Heading 5</value></data>
+  <data name="Rte:Header6" xml:space="preserve"><value>Heading 6</value></data>
+  <data name="Rte:FontDefault" xml:space="preserve"><value>Default</value></data>
+  <data name="Rte:AlignLeft" xml:space="preserve"><value>Left</value></data>
+  <data name="Rte:AlignCenter" xml:space="preserve"><value>Center</value></data>
+  <data name="Rte:AlignRight" xml:space="preserve"><value>Right</value></data>
+  <data name="Rte:AlignJustify" xml:space="preserve"><value>Justify</value></data>
+</root>

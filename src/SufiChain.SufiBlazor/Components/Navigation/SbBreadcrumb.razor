@@ -1,0 +1,57 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+
+<nav class="sb-breadcrumb @Class" aria-label="Breadcrumb">
+    <ol class="sb-breadcrumb__list">
+        @foreach (var (item, index) in Items.Select((item, i) => (item, i)))
+        {
+            var isLast = index == Items.Count - 1;
+            <li class="sb-breadcrumb__item @(isLast ? "sb-breadcrumb__item--current" : "")">
+                @if (!isLast && !string.IsNullOrEmpty(item.Href))
+                {
+                    <a href="@item.Href" class="sb-breadcrumb__link">
+                        @if (item.Icon != null)
+                        {
+                            <span class="sb-breadcrumb__icon">@item.Icon</span>
+                        }
+                        <span>@item.Text</span>
+                    </a>
+                }
+                else
+                {
+                    <span class="sb-breadcrumb__text" aria-current="@(isLast ? "page" : null)">
+                        @if (item.Icon != null)
+                        {
+                            <span class="sb-breadcrumb__icon">@item.Icon</span>
+                        }
+                        <span>@item.Text</span>
+                    </span>
+                }
+                
+                @if (!isLast)
+                {
+                    <span class="sb-breadcrumb__separator" aria-hidden="true">@Separator</span>
+                }
+            </li>
+        }
+    </ol>
+</nav>
+
+@code {
+    /// <summary>
+    /// Breadcrumb items.
+    /// </summary>
+    [Parameter]
+    public List<SbBreadcrumbItem> Items { get; set; } = new();
+    
+    /// <summary>
+    /// Separator between items.
+    /// </summary>
+    [Parameter]
+    public string Separator { get; set; } = "/";
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+}

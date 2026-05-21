@@ -1,0 +1,121 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+@using SufiChain.SufiBlazor.Components.Common
+
+@if (_isVisible)
+{
+    <div class="sb-banner sb-banner--@Severity.ToString().ToLower() @Class" role="alert">
+        @* Row 1: Icon | Title | Close *@
+        <div class="sb-banner__header">
+            <div class="sb-banner__header-start">
+                <div class="sb-banner__icon">
+                    <SbIcon Name="@GetIconName()" Size="SbSize.Sm" />
+                </div>
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <strong class="sb-banner__title">@Title</strong>
+                }
+            </div>
+            @if (Dismissible)
+            {
+                <button type="button" class="sb-banner__close" @onclick="Dismiss" aria-label="Dismiss">
+                    <SbIcon Name="x" Size="SbSize.Sm" />
+                </button>
+            }
+        </div>
+        @* Row 2: Content/Message *@
+        <div class="sb-banner__content">
+            @if (ChildContent != null)
+            {
+                @ChildContent
+            }
+            else
+            {
+                <span class="sb-banner__message">@Message</span>
+            }
+        </div>
+        @* Row 3: Actions (when present) *@
+        @if (Actions != null)
+        {
+            <div class="sb-banner__actions">
+                @Actions
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool _isVisible = true;
+    
+    /// <summary>
+    /// Banner title.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+    
+    /// <summary>
+    /// Banner message.
+    /// </summary>
+    [Parameter]
+    public string? Message { get; set; }
+    
+    /// <summary>
+    /// Banner content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Banner severity.
+    /// </summary>
+    [Parameter]
+    public SbBannerSeverity Severity { get; set; } = SbBannerSeverity.Info;
+    
+    /// <summary>
+    /// Whether the banner is dismissible.
+    /// </summary>
+    [Parameter]
+    public bool Dismissible { get; set; } = true;
+    
+    /// <summary>
+    /// Action buttons.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+    
+    /// <summary>
+    /// Callback when banner is dismissed.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDismiss { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string GetIconName() => Severity switch
+    {
+        SbBannerSeverity.Success => "check",
+        SbBannerSeverity.Error => "x",
+        SbBannerSeverity.Warning => "warning",
+        SbBannerSeverity.Info => "info",
+        _ => "info"
+    };
+    
+    private async Task Dismiss()
+    {
+        _isVisible = false;
+        await OnDismiss.InvokeAsync();
+    }
+    
+    /// <summary>
+    /// Show the banner.
+    /// </summary>
+    public void Show()
+    {
+        _isVisible = true;
+        StateHasChanged();
+    }
+}
+

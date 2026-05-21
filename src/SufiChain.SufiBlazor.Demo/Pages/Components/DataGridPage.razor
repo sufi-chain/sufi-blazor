@@ -1,0 +1,31 @@
+@page "/demo/sufi-blazor/data-grid"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridPageDescription"]</SbText>
+
+    <SbCard Class="my-4">
+        <SbHeading Level="3" Size="5">@L["Demo:DataGridDemos"]</SbHeading>
+        <SbStack Gap="2" Class="mt-2">
+            <SbLink Href="/demo/sufi-blazor/data-grid/basic">@L["Demo:DataGridBasic"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/selection">@L["Demo:DataGridSelection"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/styled">@L["Demo:DataGridStripedBordered"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/compact">@L["Demo:DataGridCompactDensity"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/empty">@L["Demo:DataGridEmptyState"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/detail">@L["Demo:DataGridExpandableRows"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/server">@L["Demo:DataGridServerSide"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/cell-templates">@L["Demo:DataGridCellTemplates"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/virtualization">@L["Demo:DataGridVirtualization"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/column-filter">@L["Demo:DataGridColumnFilter"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/programmatic-filter">@L["Demo:DataGridProgrammaticFilter"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/inline-edit">@L["Demo:DataGridInlineEdit"]</SbLink>
+            <SbLink Href="/demo/sufi-blazor/data-grid/export-csv">@L["Demo:DataGridExportCsv"]</SbLink>
+        </SbStack>
+    </SbCard>
+
+    <SbDivider />
+
+    <DocViewer DocName="DataGridIntro" />
+</DemoLayout>

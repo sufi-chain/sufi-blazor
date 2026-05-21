@@ -1,0 +1,105 @@
+@namespace SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Icons
+
+@if (CustomContent != null)
+{
+    <span class="@CssClass" style="@StyleValue" aria-hidden="@(!string.IsNullOrEmpty(AriaLabel) ? null : "true")" aria-label="@AriaLabel" role="@(string.IsNullOrEmpty(AriaLabel) ? null : "img")" @attributes="AdditionalAttributes">
+        @CustomContent
+    </span>
+}
+else if (!string.IsNullOrEmpty(Name))
+{
+    <span class="@CssClass" style="@StyleValue" aria-hidden="@(!string.IsNullOrEmpty(AriaLabel) ? null : "true")" aria-label="@AriaLabel" role="@(string.IsNullOrEmpty(AriaLabel) ? null : "img")" @attributes="AdditionalAttributes">
+        @((MarkupString)GetIconSvg())
+    </span>
+}
+
+@code {
+    /// <summary>
+    /// Icon name from the Sufi Icons (si) library.
+    /// Supports both formats: "home" or "si-home".
+    /// </summary>
+    [Parameter]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Custom SVG or content to render instead of a built-in icon.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? CustomContent { get; set; }
+
+    /// <summary>
+    /// Icon size. Defaults to Medium (Md).
+    /// </summary>
+    [Parameter]
+    public SbSize Size { get; set; } = SbSize.Md;
+
+    /// <summary>
+    /// Icon color. When not set, inherits from parent via currentColor.
+    /// </summary>
+    [Parameter]
+    public SbColor? Color { get; set; }
+
+    /// <summary>
+    /// Accessible label for the icon. When set, the icon becomes semantic (role="img").
+    /// When not set, the icon is decorative (aria-hidden="true").
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Whether to mirror the icon in RTL layouts (for directional icons like arrows/chevrons).
+    /// </summary>
+    [Parameter]
+    public bool Mirror { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes to apply to the icon container.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles to apply to the icon container.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes to apply to the icon container.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-icon" };
+            classes.Add($"sb-icon--{Size.ToString().ToLowerInvariant()}");
+            if (Color.HasValue)
+            {
+                classes.Add($"sb-icon--{Color.Value.ToString().ToLowerInvariant()}");
+            }
+            if (Mirror)
+            {
+                classes.Add("sb-icon--mirror");
+            }
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(" ", classes);
+        }
+    }
+
+    private string? StyleValue => Style;
+
+    /// <summary>
+    /// Gets the SVG markup for the specified icon name from the Sufi Icons registry.
+    /// </summary>
+    private string GetIconSvg()
+    {
+        return SufiIcons.GetSvg(Name);
+    }
+}

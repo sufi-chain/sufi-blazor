@@ -1,0 +1,333 @@
+@namespace SufiChain.SufiBlazor.Components.Data
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Components.Forms
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+@implements IAsyncDisposable
+
+<nav class="sb-pagination @Class" aria-label="Pagination">
+    <div class="sb-pagination__container">
+        @if (ShowPageSizeSelector)
+        {
+            <div class="sb-pagination__page-size">
+                <span class="sb-pagination__label">@(PageSizeLabel ?? L["ItemsPerPage"])</span>
+                <SbSelect TItem="int" TValue="int"
+                          Items="@PageSizeOptions"
+                          Value="@PageSize"
+                          ValueChanged="OnPageSizeChangedInternal"
+                          TextField="item => item.ToString()"
+                          ValueField="item => item"
+                          Class="sb-pagination__select" />
+            </div>
+        }
+        
+        <div class="sb-pagination__info">
+            @GetPageInfo()
+        </div>
+        
+        <div class="sb-pagination__controls">
+            <SbIconButton Color="SbColor.Default"
+                          Variant="SbButtonVariant.Ghost"
+                          Size="SbSize.Sm"
+                          Disabled="@IsFirstPage"
+                          OnClick="GoToFirstPage"
+                          AriaLabel="@(FirstPageLabel ?? L["FirstPage"])"
+                          Title="@(FirstPageLabel ?? L["FirstPage"])"
+                          Class="sb-pagination__button">
+                <Icon><SbIcon Name="chevrons-left" Mirror="true" /></Icon>
+            </SbIconButton>
+            
+            <SbIconButton Color="SbColor.Default"
+                          Variant="SbButtonVariant.Ghost"
+                          Size="SbSize.Sm"
+                          Disabled="@IsFirstPage"
+                          OnClick="GoToPreviousPage"
+                          AriaLabel="@(PreviousPageLabel ?? L["PreviousPage"])"
+                          Title="@(PreviousPageLabel ?? L["PreviousPage"])"
+                          Class="sb-pagination__button">
+                <Icon><SbIcon Name="chevron-left" Mirror="true" /></Icon>
+            </SbIconButton>
+            
+            @if (ShowPageNumbers)
+            {
+                <div class="sb-pagination__pages">
+                    @foreach (var pageNumber in GetVisiblePageNumbers())
+                    {
+                        @if (pageNumber == -1)
+                        {
+                            <span class="sb-pagination__ellipsis">
+                                <SbIcon Name="more-horizontal" Size="SbSize.Sm" />
+                            </span>
+                        }
+                        else
+                        {
+                            <SbButton Color="@(pageNumber == PageIndex ? SbColor.Primary : SbColor.Default)"
+                                      Variant="@(pageNumber == PageIndex ? SbButtonVariant.Solid : SbButtonVariant.Ghost)"
+                                      Size="SbSize.Sm"
+                                      OnClick="() => GoToPage(pageNumber)"
+                                      AriaLabel="@string.Format(PageAriaLabelFormat ?? L["PageAriaLabelFormat"], pageNumber + 1)"
+                                      Class="sb-pagination__page">
+                                @(pageNumber + 1)
+                            </SbButton>
+                        }
+                    }
+                </div>
+            }
+            
+            <SbIconButton Color="SbColor.Default"
+                          Variant="SbButtonVariant.Ghost"
+                          Size="SbSize.Sm"
+                          Disabled="@IsLastPage"
+                          OnClick="GoToNextPage"
+                          AriaLabel="@(NextPageLabel ?? L["NextPage"])"
+                          Title="@(NextPageLabel ?? L["NextPage"])"
+                          Class="sb-pagination__button">
+                <Icon><SbIcon Name="chevron-right" Mirror="true" /></Icon>
+            </SbIconButton>
+            
+            <SbIconButton Color="SbColor.Default"
+                          Variant="SbButtonVariant.Ghost"
+                          Size="SbSize.Sm"
+                          Disabled="@IsLastPage"
+                          OnClick="GoToLastPage"
+                          AriaLabel="@(LastPageLabel ?? L["LastPage"])"
+                          Title="@(LastPageLabel ?? L["LastPage"])"
+                          Class="sb-pagination__button">
+                <Icon><SbIcon Name="chevrons-right" Mirror="true" /></Icon>
+            </SbIconButton>
+        </div>
+    </div>
+</nav>
+
+@code {
+    /// <summary>
+    /// The current zero-based page index.
+    /// </summary>
+    [Parameter]
+    public int PageIndex { get; set; }
+    
+    /// <summary>
+    /// Callback when page index changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> PageIndexChanged { get; set; }
+    
+    /// <summary>
+    /// The number of items per page.
+    /// </summary>
+    [Parameter]
+    public int PageSize { get; set; } = 10;
+    
+    /// <summary>
+    /// Callback when page size changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> PageSizeChanged { get; set; }
+    
+    /// <summary>
+    /// The total number of items.
+    /// </summary>
+    [Parameter]
+    public long TotalCount { get; set; }
+    
+    /// <summary>
+    /// Whether to show the page size selector.
+    /// </summary>
+    [Parameter]
+    public bool ShowPageSizeSelector { get; set; } = true;
+    
+    /// <summary>
+    /// Available page size options.
+    /// </summary>
+    [Parameter]
+    public int[] PageSizeOptions { get; set; } = { 5, 10, 25, 50, 100 };
+    
+    /// <summary>
+    /// Whether to show page number buttons.
+    /// </summary>
+    [Parameter]
+    public bool ShowPageNumbers { get; set; } = true;
+    
+    /// <summary>
+    /// Maximum number of page buttons to show.
+    /// </summary>
+    [Parameter]
+    public int MaxVisiblePages { get; set; } = 5;
+    
+    /// <summary>
+    /// Maximum number of page buttons to show on narrow viewports (e.g. mobile).
+    /// Uses this value when viewport width is less than 640px.
+    /// </summary>
+    [Parameter]
+    public int MaxVisiblePagesMobile { get; set; } = 3;
+    
+    /// <summary>
+    /// Label for page size selector.
+    /// </summary>
+    [Parameter]
+    public string? PageSizeLabel { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    /// <summary>
+    /// Text for first page button. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? FirstPageLabel { get; set; }
+    
+    /// <summary>
+    /// Text for previous page button. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? PreviousPageLabel { get; set; }
+    
+    /// <summary>
+    /// Text for next page button. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? NextPageLabel { get; set; }
+    
+    /// <summary>
+    /// Text for last page button. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? LastPageLabel { get; set; }
+    
+    /// <summary>
+    /// Aria label format for page buttons. Use {0} for page number. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? PageAriaLabelFormat { get; set; }
+    
+    /// <summary>
+    /// Text shown when there are no items. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? NoItemsText { get; set; }
+    
+    /// <summary>
+    /// Page info format. Use {0} for start, {1} for end, {2} for total. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? PageInfoFormat { get; set; }
+
+    private int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
+    private bool IsFirstPage => PageIndex <= 0;
+    private bool IsLastPage => PageIndex >= TotalPages - 1;
+    private int _effectiveMaxVisiblePages = 5;
+    private string _viewportWatchId = Guid.NewGuid().ToString();
+    private DotNetObjectReference<SbPagination>? _dotNetRef;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                var isCompact = await JSRuntime.InvokeAsync<bool>("SufiBlazor.viewport.watchCompact", _viewportWatchId, _dotNetRef, 640);
+                _effectiveMaxVisiblePages = isCompact ? MaxVisiblePagesMobile : MaxVisiblePages;
+                await InvokeAsync(StateHasChanged);
+            }
+            catch
+            {
+                _effectiveMaxVisiblePages = MaxVisiblePages;
+            }
+        }
+    }
+    
+    [JSInvokable]
+    public async Task OnViewportCompactChanged(bool isCompact)
+    {
+        _effectiveMaxVisiblePages = isCompact ? MaxVisiblePagesMobile : MaxVisiblePages;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.viewport.unwatchCompact", _viewportWatchId);
+        }
+        catch { /* ignore */ }
+        _dotNetRef?.Dispose();
+    }
+    
+    private string GetPageInfo()
+    {
+        if (TotalCount == 0)
+            return NoItemsText ?? L["NoItems"];
+            
+        var start = PageIndex * PageSize + 1;
+        var end = Math.Min((PageIndex + 1) * PageSize, TotalCount);
+        return string.Format(PageInfoFormat ?? L["PageInfoFormat"], start, end, TotalCount);
+    }
+    
+    private IEnumerable<int> GetVisiblePageNumbers()
+    {
+        if (TotalPages <= _effectiveMaxVisiblePages)
+        {
+            // Show all pages
+            for (int i = 0; i < TotalPages; i++)
+                yield return i;
+            yield break;
+        }
+        
+        // Compact view (e.g. mobile): show only first, current, last - max 3 page numbers
+        if (_effectiveMaxVisiblePages <= 3)
+        {
+            yield return 0;
+            if (PageIndex > 0 && PageIndex < TotalPages - 1)
+                yield return PageIndex;
+            if (TotalPages > 1)
+                yield return TotalPages - 1;
+            yield break;
+        }
+        
+        // Standard view: first, range around current, last
+        yield return 0;
+        var halfVisible = (_effectiveMaxVisiblePages - 3) / 2;
+        var rangeStart = Math.Max(1, PageIndex - halfVisible);
+        var rangeEnd = Math.Min(TotalPages - 2, PageIndex + halfVisible);
+        
+        if (PageIndex <= halfVisible + 1)
+            rangeEnd = Math.Min(TotalPages - 2, _effectiveMaxVisiblePages - 2);
+        else if (PageIndex >= TotalPages - halfVisible - 2)
+            rangeStart = Math.Max(1, TotalPages - _effectiveMaxVisiblePages + 1);
+        
+        if (rangeStart > 1) yield return -1;
+        for (int i = rangeStart; i <= rangeEnd; i++)
+            yield return i;
+        if (rangeEnd < TotalPages - 2) yield return -1;
+        if (TotalPages > 1)
+            yield return TotalPages - 1;
+    }
+    
+    private async Task GoToPage(int pageIndex)
+    {
+        if (pageIndex >= 0 && pageIndex < TotalPages && pageIndex != PageIndex)
+        {
+            await PageIndexChanged.InvokeAsync(pageIndex);
+        }
+    }
+    
+    private Task GoToFirstPage() => GoToPage(0);
+    private Task GoToPreviousPage() => GoToPage(PageIndex - 1);
+    private Task GoToNextPage() => GoToPage(PageIndex + 1);
+    private Task GoToLastPage() => GoToPage(TotalPages - 1);
+    
+    private async Task OnPageSizeChangedInternal(int newSize)
+    {
+        if (newSize != PageSize)
+        {
+            // Reset to first page when page size changes
+            await PageSizeChanged.InvokeAsync(newSize);
+            await PageIndexChanged.InvokeAsync(0);
+        }
+    }
+}

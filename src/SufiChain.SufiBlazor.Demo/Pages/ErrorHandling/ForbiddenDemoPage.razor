@@ -1,0 +1,18 @@
+@page "/demo/forbidden-demo"
+@using Microsoft.AspNetCore.Authorization
+@using SufiChain.SufiBlazor.Demo.Localization
+@attribute [Authorize(Roles = "ForbiddenDemoRole")]
+@inherits SufiChain.SufiAbp.UI.Blazor.SufiAbpComponentBase
+
+<PageTitle>@(L["Menu:Demo:ForbiddenDemo"] + " - Demo")</PageTitle>
+
+<DemoLayout>
+    <p>@L["Demo:ForbiddenDemoMessage"]</p>
+</DemoLayout>
+
+@code {
+    protected override void OnInitialized()
+    {
+        LocalizationResource = typeof(SufiBlazorDemoResource);
+    }
+}

@@ -1,0 +1,128 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+@typeparam TItem
+
+<div class="sb-treeview @Class" role="tree">
+    <CascadingValue Value="this">
+        @foreach (var item in Items)
+        {
+            <SbTreeViewNode TItem="TItem"
+                            Item="item"
+                            Level="0"
+                            ChildSelector="ChildSelector"
+                            TextSelector="TextSelector"
+                            IconSelector="IconSelector"
+                            IsExpandedSelector="IsExpandedSelector"
+                            IsSelectedSelector="IsSelectedSelector" />
+        }
+    </CascadingValue>
+</div>
+
+@code {
+    /// <summary>
+    /// Root items.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<TItem> Items { get; set; } = Enumerable.Empty<TItem>();
+    
+    /// <summary>
+    /// Function to get child items.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, IEnumerable<TItem>> ChildSelector { get; set; } = _ => Enumerable.Empty<TItem>();
+    
+    /// <summary>
+    /// Function to get item text.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, string> TextSelector { get; set; } = item => item?.ToString() ?? "";
+    
+    /// <summary>
+    /// Function to get item icon.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, string?>? IconSelector { get; set; }
+    
+    /// <summary>
+    /// Function to check if item is expanded.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, bool>? IsExpandedSelector { get; set; }
+    
+    /// <summary>
+    /// Function to check if item is selected.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, bool>? IsSelectedSelector { get; set; }
+    
+    /// <summary>
+    /// Selected item.
+    /// </summary>
+    [Parameter]
+    public TItem? SelectedItem { get; set; }
+    
+    /// <summary>
+    /// Callback when item is selected.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TItem> SelectedItemChanged { get; set; }
+    
+    /// <summary>
+    /// Callback when item is expanded/collapsed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TItem> OnToggle { get; set; }
+    
+    /// <summary>
+    /// Whether to show checkboxes.
+    /// </summary>
+    [Parameter]
+    public bool ShowCheckboxes { get; set; }
+    
+    /// <summary>
+    /// Checked items.
+    /// </summary>
+    [Parameter]
+    public HashSet<TItem> CheckedItems { get; set; } = new();
+    
+    /// <summary>
+    /// Callback when checked items change.
+    /// </summary>
+    [Parameter]
+    public EventCallback<HashSet<TItem>> CheckedItemsChanged { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    internal async Task SelectItem(TItem item)
+    {
+        SelectedItem = item;
+        await SelectedItemChanged.InvokeAsync(item);
+    }
+    
+    internal async Task ToggleItem(TItem item)
+    {
+        await OnToggle.InvokeAsync(item);
+    }
+    
+    internal bool IsSelected(TItem item)
+    {
+        if (IsSelectedSelector != null) return IsSelectedSelector(item);
+        if (SelectedItem == null) return false;
+        return EqualityComparer<TItem>.Default.Equals(item, SelectedItem);
+    }
+    
+    internal async Task ToggleCheck(TItem item, bool isChecked)
+    {
+        if (isChecked)
+            CheckedItems.Add(item);
+        else
+            CheckedItems.Remove(item);
+            
+        await CheckedItemsChanged.InvokeAsync(CheckedItems);
+    }
+    
+    internal bool IsChecked(TItem item) => CheckedItems.Contains(item);
+}

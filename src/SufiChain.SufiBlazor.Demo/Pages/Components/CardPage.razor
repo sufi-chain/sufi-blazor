@@ -1,0 +1,162 @@
+@page "/demo/sufi-blazor/card"
+
+<PageTitle>@(L["Menu:Demo:Card"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Card"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:CardDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:CardBasic"]" SourceCode="@basicCard">
+        <ExampleContent>
+            <SbCard style="max-width: 400px;">
+                <SbHeading Level="3" Size="5">@L["Demo:CardTitle"]</SbHeading>
+                <SbText>@L["Demo:CardBasicContent"]</SbText>
+            </SbCard>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CardWithHeaderAndFooter"]" SourceCode="@headerFooterCard">
+        <ExampleContent>
+            <SbCard style="max-width: 400px;">
+                <Header>
+                    <SbHeading Level="3" Size="5">@L["Demo:CardFeaturedArticle"]</SbHeading>
+                </Header>
+                <ChildContent>
+                    <SbText>@L["Demo:CardLoremSummary"]</SbText>
+                </ChildContent>
+                <Footer>
+                    <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                        <SbButton Variant="SbButtonVariant.Ghost">@L["Demo:DialogCancel"]</SbButton>
+                        <SbButton>@L["Demo:CardReadMore"]</SbButton>
+                    </SbStack>
+                </Footer>
+            </SbCard>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CardClickable"]" SourceCode="@clickableCard">
+        <ExampleContent>
+            <SbCard Href="/demo/sufi-blazor" style="max-width: 400px;">
+                <SbHeading Level="3" Size="5">@L["Demo:CardClickableTitle"]</SbHeading>
+                <SbText Color="SbColor.Muted">@L["Demo:CardClickToNavigate"]</SbText>
+            </SbCard>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CardGrid"]" SourceCode="@cardGrid">
+        <ExampleContent>
+            <SbGrid Columns="3" Gap="4">
+                <SbCard>
+                    <SbHeading Level="4" Size="6">@L["Demo:CardItem1"]</SbHeading>
+                    <SbText Color="SbColor.Muted">@L["Demo:CardDescriptionItem1"]</SbText>
+                </SbCard>
+                <SbCard>
+                    <SbHeading Level="4" Size="6">@L["Demo:CardItem2"]</SbHeading>
+                    <SbText Color="SbColor.Muted">@L["Demo:CardDescriptionItem2"]</SbText>
+                </SbCard>
+                <SbCard>
+                    <SbHeading Level="4" Size="6">@L["Demo:CardItem3"]</SbHeading>
+                    <SbText Color="SbColor.Muted">@L["Demo:CardDescriptionItem3"]</SbText>
+                </SbCard>
+            </SbGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CardElevation"]" SourceCode="@elevationCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <SbCard Elevation="0" style="min-width: 140px;">
+                    <SbHeading Level="4" Size="6">@L["Demo:CardElevation0"]</SbHeading>
+                    <SbText Color="SbColor.Muted">@L["Demo:CardFlatNoShadow"]</SbText>
+                </SbCard>
+                <SbCard Elevation="1" style="min-width: 140px;">
+                    <SbHeading Level="4" Size="6">@L["Demo:CardElevation1"]</SbHeading>
+                    <SbText Color="SbColor.Muted">@L["Demo:CardDefaultLevel"]</SbText>
+                </SbCard>
+                <SbCard Elevation="2" style="min-width: 140px;">
+                    <SbHeading Level="4" Size="6">@L["Demo:CardElevation2"]</SbHeading>
+                    <SbText Color="SbColor.Muted">@L["Demo:CardSlightlyRaised"]</SbText>
+                </SbCard>
+                <SbCard Elevation="3" style="min-width: 140px;">
+                    <SbHeading Level="4" Size="6">@L["Demo:CardElevation3"]</SbHeading>
+                    <SbText Color="SbColor.Muted">@L["Demo:CardMoreProminent"]</SbText>
+                </SbCard>
+                <SbCard Elevation="5" style="min-width: 140px;">
+                    <SbHeading Level="4" Size="6">@L["Demo:CardElevation5"]</SbHeading>
+                    <SbText Color="SbColor.Muted">@L["Demo:CardHighestShadow"]</SbText>
+                </SbCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbCard" />
+</DemoLayout>
+
+@code {
+    private string basicCard = @"<SbCard>
+    <SbHeading Level=""3"" Size=""5"">Card Title</SbHeading>
+    <SbText>This is a basic card with some content.</SbText>
+</SbCard>";
+
+    private string headerFooterCard = @"<SbCard>
+    <Header>
+        <SbHeading Level=""3"" Size=""5"">Featured Article</SbHeading>
+    </Header>
+    <ChildContent>
+        <SbText>Lorem ipsum dolor sit amet...</SbText>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction=""SbStackDirection.Row"" Gap=""2"" Justify=""SbJustify.End"">
+            <SbButton Variant=""SbButtonVariant.Ghost"">Cancel</SbButton>
+            <SbButton>Read More</SbButton>
+        </SbStack>
+    </Footer>
+</SbCard>";
+
+    private string clickableCard = @"<SbCard Href=""/somewhere"">
+    <SbHeading Level=""3"" Size=""5"">Clickable Card</SbHeading>
+    <SbText Color=""SbColor.Muted"">Click this card to navigate.</SbText>
+</SbCard>";
+
+    private string cardGrid = @"<SbGrid Columns=""3"" Gap=""4"">
+    <SbCard>
+        <SbHeading Level=""4"" Size=""6"">Item 1</SbHeading>
+        <SbText Color=""SbColor.Muted"">Description for item 1.</SbText>
+    </SbCard>
+    <SbCard>
+        <SbHeading Level=""4"" Size=""6"">Item 2</SbHeading>
+        <SbText Color=""SbColor.Muted"">Description for item 2.</SbText>
+    </SbCard>
+    <SbCard>
+        <SbHeading Level=""4"" Size=""6"">Item 3</SbHeading>
+        <SbText Color=""SbColor.Muted"">Description for item 3.</SbText>
+    </SbCard>
+</SbGrid>";
+
+    private string elevationCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""4"" Wrap=""true"">
+    <SbCard Elevation=""0"">
+        <SbHeading Level=""4"" Size=""6"">Elevation 0</SbHeading>
+        <SbText Color=""SbColor.Muted"">Flat, no shadow.</SbText>
+    </SbCard>
+    <SbCard Elevation=""1"">
+        <SbHeading Level=""4"" Size=""6"">Elevation 1</SbHeading>
+        <SbText Color=""SbColor.Muted"">Default level.</SbText>
+    </SbCard>
+    <SbCard Elevation=""2"">
+        <SbHeading Level=""4"" Size=""6"">Elevation 2</SbHeading>
+        <SbText Color=""SbColor.Muted"">Slightly raised.</SbText>
+    </SbCard>
+    <SbCard Elevation=""3"">
+        <SbHeading Level=""4"" Size=""6"">Elevation 3</SbHeading>
+        <SbText Color=""SbColor.Muted"">More prominent.</SbText>
+    </SbCard>
+    <SbCard Elevation=""5"">
+        <SbHeading Level=""4"" Size=""6"">Elevation 5</SbHeading>
+        <SbText Color=""SbColor.Muted"">Highest shadow.</SbText>
+    </SbCard>
+</SbStack>";
+}

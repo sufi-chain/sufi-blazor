@@ -1,0 +1,120 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+
+<div class="@CssClass"
+     style="@Style"
+     role="@Role"
+     @attributes="AdditionalAttributes">
+    <div class="sb-alert__icon">
+        @GetSeverityIcon()
+    </div>
+    <div class="sb-alert__content">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <div class="sb-alert__title">@Title</div>
+        }
+        <div class="sb-alert__message">@ChildContent</div>
+    </div>
+    @if (Dismissible)
+    {
+        <button type="button"
+                class="sb-alert__dismiss"
+                aria-label="Dismiss"
+                @onclick="HandleDismiss">
+            ×
+        </button>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Alert severity.
+    /// </summary>
+    [Parameter]
+    public SbAlertSeverity Severity { get; set; } = SbAlertSeverity.Info;
+
+    /// <summary>
+    /// Alert title.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// Whether the alert can be dismissed.
+    /// </summary>
+    [Parameter]
+    public bool Dismissible { get; set; }
+
+    /// <summary>
+    /// When true, reduces vertical padding for a more compact alert.
+    /// </summary>
+    [Parameter]
+    public bool Dense { get; set; }
+
+    /// <summary>
+    /// Dismiss event callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDismiss { get; set; }
+
+    /// <summary>
+    /// Alert content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string Role => Severity == SbAlertSeverity.Danger ? "alert" : "status";
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-alert" };
+
+            classes.Add($"sb-alert--{Severity.ToString().ToLowerInvariant()}");
+
+            if (Dense)
+            {
+                classes.Add("sb-alert--dense");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    private string GetSeverityIcon() => Severity switch
+    {
+        SbAlertSeverity.Success => "✓",
+        SbAlertSeverity.Warning => "⚠",
+        SbAlertSeverity.Danger => "✕",
+        SbAlertSeverity.Info => "ℹ",
+        _ => "ℹ"
+    };
+
+    private async Task HandleDismiss()
+    {
+        await OnDismiss.InvokeAsync();
+    }
+}

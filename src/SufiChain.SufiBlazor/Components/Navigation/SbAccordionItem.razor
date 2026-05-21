@@ -1,0 +1,113 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+
+<div class="sb-accordion-item @(_isExpanded ? "sb-accordion-item--expanded" : "") @(Disabled ? "sb-accordion-item--disabled" : "")">
+    <button type="button"
+            class="sb-accordion-item__header"
+            @onclick="Toggle"
+            disabled="@Disabled"
+            aria-expanded="@_isExpanded"
+            aria-controls="@_contentId">
+        <span class="sb-accordion-item__header-start">
+            @if (Icon != null)
+            {
+                <span class="sb-accordion-item__icon">@Icon</span>
+            }
+            <span class="sb-accordion-item__header-text">
+                <span class="sb-accordion-item__title">@Title</span>
+                @if (Subtitle != null)
+                {
+                    <span class="sb-accordion-item__subtitle">@Subtitle</span>
+                }
+            </span>
+        </span>
+        <span class="sb-accordion-item__chevron">
+            <SbIcon Name="chevron-down" Size="SbSize.Sm" />
+        </span>
+    </button>
+    
+    <div class="sb-accordion-item__content @(_isExpanded ? "sb-accordion-item__content--expanded" : "")"
+         id="@_contentId"
+         hidden="@(!_isExpanded)">
+        <div class="sb-accordion-item__body">
+            @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _contentId = $"accordion-content-{Guid.NewGuid():N}";
+    private bool _isExpanded;
+    
+    /// <summary>
+    /// Item title.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = "";
+    
+    /// <summary>
+    /// Item subtitle.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Subtitle { get; set; }
+    
+    /// <summary>
+    /// Item icon.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+    
+    /// <summary>
+    /// Item content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Whether the item is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Whether the item is initially expanded.
+    /// </summary>
+    [Parameter]
+    public bool DefaultExpanded { get; set; }
+    
+    /// <summary>
+    /// Parent accordion.
+    /// </summary>
+    [CascadingParameter]
+    public SbAccordion? Parent { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        _isExpanded = DefaultExpanded;
+    }
+    
+    protected override void OnParametersSet()
+    {
+        if (Parent != null)
+        {
+            if (DefaultExpanded)
+                Parent.EnsureDefaultExpanded(this);
+            _isExpanded = Parent.IsExpanded(this);
+        }
+    }
+    
+    private async Task Toggle()
+    {
+        if (Disabled) return;
+        
+        if (Parent != null)
+        {
+            await Parent.ToggleItem(this);
+            _isExpanded = Parent.IsExpanded(this);
+            StateHasChanged();
+        }
+        else
+        {
+            _isExpanded = !_isExpanded;
+        }
+    }
+}

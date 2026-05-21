@@ -1,0 +1,176 @@
+@page "/demo/sufi-blazor/menu"
+
+<PageTitle>@(L["Menu:Demo:Menu"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Menu"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:MenuDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:MenuBasic"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbMenu @bind-Open="_basicOpen">
+                <AnchorContent>
+                    <SbButton OnClick="@(() => _basicOpen = !_basicOpen)">
+                        @L["Demo:MenuOpenButton"]
+                    </SbButton>
+                </AnchorContent>
+                <ChildContent>
+                    <SbMenuItem Text="@L["Demo:MenuNewFile"]" OnClick="@(() => _action = L["Demo:MenuNewFile"].Value)" />
+                    <SbMenuItem Text="@L["Demo:MenuOpen"]" OnClick="@(() => _action = L["Demo:MenuOpen"].Value)" />
+                    <SbMenuItem Text="@L["Save"]" OnClick="@(() => _action = L["Save"].Value)" />
+                </ChildContent>
+            </SbMenu>
+            @if (!string.IsNullOrEmpty(_action))
+            {
+                <SbText Color="SbColor.Muted" style="margin-top: var(--sb-space-2);">
+                    @string.Format(L["Demo:MenuSelectedLabel"], _action)
+                </SbText>
+            }
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithIcons"]" SourceCode="@iconsCode">
+        <ExampleContent>
+            <SbMenu @bind-Open="_iconsOpen">
+                <AnchorContent>
+                    <SbButton OnClick="@(() => _iconsOpen = !_iconsOpen)">
+                        @L["Demo:MenuActions"]
+                    </SbButton>
+                </AnchorContent>
+                <ChildContent>
+                    <SbMenuItem Text="@L["Demo:MenuEdit"]" OnClick="@(() => _action = L["Demo:MenuEdit"].Value)">
+                        <Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
+                    </SbMenuItem>
+                    <SbMenuItem Text="@L["Demo:MenuCopy"]" OnClick="@(() => _action = L["Demo:MenuCopy"].Value)">
+                        <Icon><SbIcon Name="copy" Size="SbSize.Sm" /></Icon>
+                    </SbMenuItem>
+                    <SbMenuItem Text="@L["Demo:DialogDelete"]" OnClick="@(() => _action = L["Demo:DialogDelete"].Value)">
+                        <Icon><SbIcon Name="trash" Size="SbSize.Sm" Color="SbColor.Danger" /></Icon>
+                    </SbMenuItem>
+                </ChildContent>
+            </SbMenu>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MenuWithShortcuts"]" SourceCode="@shortcutsCode">
+        <ExampleContent>
+            <SbMenu @bind-Open="_shortcutsOpen">
+                <AnchorContent>
+                    <SbButton OnClick="@(() => _shortcutsOpen = !_shortcutsOpen)">
+                        @L["Demo:MenuFileMenu"]
+                    </SbButton>
+                </AnchorContent>
+                <ChildContent>
+                    <SbMenuItem Text="@L["Demo:MenuNewFile"]" Shortcut="Ctrl+N" OnClick="@(() => _action = L["Demo:MenuNewFile"].Value)">
+                        <Icon><SbIcon Name="plus" Size="SbSize.Sm" /></Icon>
+                    </SbMenuItem>
+                    <SbMenuItem Text="@L["Demo:MenuOpen"]" Shortcut="Ctrl+O" OnClick="@(() => _action = L["Demo:MenuOpen"].Value)">
+                        <Icon><SbIcon Name="folder-open" Size="SbSize.Sm" /></Icon>
+                    </SbMenuItem>
+                    <SbMenuItem Text="@L["Save"]" Shortcut="Ctrl+S" OnClick="@(() => _action = L["Save"].Value)">
+                        <Icon><SbIcon Name="save" Size="SbSize.Sm" /></Icon>
+                    </SbMenuItem>
+                </ChildContent>
+            </SbMenu>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MenuWithDisabledItems"]" SourceCode="@disabledCode">
+        <ExampleContent>
+            <SbMenu @bind-Open="_disabledOpen">
+                <AnchorContent>
+                    <SbButton OnClick="@(() => _disabledOpen = !_disabledOpen)">
+                        @L["Demo:MenuOptions"]
+                    </SbButton>
+                </AnchorContent>
+                <ChildContent>
+                    <SbMenuItem Text="@L["Demo:MenuCut"]" Shortcut="Ctrl+X" OnClick="@(() => _action = L["Demo:MenuCut"].Value)" />
+                    <SbMenuItem Text="@L["Demo:MenuCopy"]" Shortcut="Ctrl+C" OnClick="@(() => _action = L["Demo:MenuCopy"].Value)" />
+                    <SbMenuItem Text="@L["Demo:MenuPaste"]" Shortcut="Ctrl+V" Disabled="true" />
+                    <SbMenuItem Text="@L["Demo:DialogDelete"]" OnClick="@(() => _action = L["Demo:DialogDelete"].Value)" />
+                </ChildContent>
+            </SbMenu>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MenuPlacementOptions"]" SourceCode="@placementCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4">
+                <SbMenu @bind-Open="_topOpen" Placement="SbPlacement.Top">
+                    <AnchorContent>
+                        <SbButton Size="SbSize.Sm" OnClick="@(() => _topOpen = !_topOpen)">@L["Demo:PopoverPlacementTop"]</SbButton>
+                    </AnchorContent>
+                    <ChildContent>
+                        <SbMenuItem Text="@L["Demo:MenuItem1"]" />
+                        <SbMenuItem Text="@L["Demo:MenuItem2"]" />
+                    </ChildContent>
+                </SbMenu>
+
+                <SbMenu @bind-Open="_bottomOpen" Placement="SbPlacement.BottomStart">
+                    <AnchorContent>
+                        <SbButton Size="SbSize.Sm" OnClick="@(() => _bottomOpen = !_bottomOpen)">@L["Demo:PopoverPlacementBottom"]</SbButton>
+                    </AnchorContent>
+                    <ChildContent>
+                        <SbMenuItem Text="@L["Demo:MenuItem1"]" />
+                        <SbMenuItem Text="@L["Demo:MenuItem2"]" />
+                    </ChildContent>
+                </SbMenu>
+
+                <SbMenu @bind-Open="_endOpen" Placement="SbPlacement.End">
+                    <AnchorContent>
+                        <SbButton Size="SbSize.Sm" OnClick="@(() => _endOpen = !_endOpen)">@L["Demo:PopoverPlacementEnd"]</SbButton>
+                    </AnchorContent>
+                    <ChildContent>
+                        <SbMenuItem Text="@L["Demo:MenuItem1"]" />
+                        <SbMenuItem Text="@L["Demo:MenuItem2"]" />
+                    </ChildContent>
+                </SbMenu>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbMenu" />
+</DemoLayout>
+
+@code {
+    private bool _basicOpen;
+    private bool _iconsOpen;
+    private bool _shortcutsOpen;
+    private bool _disabledOpen;
+    private bool _topOpen;
+    private bool _bottomOpen;
+    private bool _endOpen;
+    private string _action = string.Empty;
+
+    private const string basicCode = @"<SbMenu @bind-Open=""_open"">
+    <AnchorContent>
+        <SbButton OnClick=""@(() => _open = !_open)"">Open Menu</SbButton>
+    </AnchorContent>
+    <ChildContent>
+        <SbMenuItem Text=""New File"" />
+        <SbMenuItem Text=""Open"" />
+        <SbMenuItem Text=""Save"" />
+    </ChildContent>
+</SbMenu>";
+
+    private const string iconsCode = @"<SbMenu @bind-Open=""_open"">
+    <ChildContent>
+        <SbMenuItem Text=""Edit"">
+            <Icon><SbIcon Name=""edit"" /></Icon>
+        </SbMenuItem>
+    </ChildContent>
+</SbMenu>";
+
+    private const string shortcutsCode = @"<SbMenuItem Text=""Save"" Shortcut=""Ctrl+S"">
+    <Icon><SbIcon Name=""save"" /></Icon>
+</SbMenuItem>";
+
+    private const string disabledCode = @"<SbMenuItem Text=""Paste"" Disabled=""true"" />";
+
+    private const string placementCode = @"<SbMenu @bind-Open=""_open"" Placement=""SbPlacement.Top"">
+    ...
+</SbMenu>";
+}

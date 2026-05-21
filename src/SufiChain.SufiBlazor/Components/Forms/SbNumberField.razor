@@ -1,0 +1,342 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using System.Globalization
+@using SufiChain.SufiBlazor.Components.Common
+@typeparam TNumber where TNumber : struct, IComparable<TNumber>
+
+<div class="@CssClass" style="@Style">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-number-field__label" for="@Id">
+            @Label
+            @if (Required)
+            {
+                <span class="sb-number-field__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+    <div class="sb-number-field__input-group">
+        <input type="number"
+               class="sb-number-field__input"
+               id="@Id"
+               value="@CurrentValueAsString"
+               @oninput="HandleInput"
+               @onchange="HandleChange"
+               disabled="@Disabled"
+               readonly="@ReadOnly"
+               min="@MinAsString"
+               max="@MaxAsString"
+               step="@StepAsString"
+               placeholder="@Placeholder"
+               @attributes="AdditionalAttributes" />
+        @if (ShowSpinButtons)
+        {
+            <div class="sb-number-field__spinners">
+                <button type="button"
+                        class="sb-number-field__spinner"
+                        @onclick="Increment"
+                        disabled="@(Disabled || IsAtMax)"
+                        tabindex="-1"
+                        aria-label="@IncreaseAriaLabel">
+                    <SbIcon Name="chevron-up" Size="SbSize.Sm" />
+                </button>
+                <button type="button"
+                        class="sb-number-field__spinner"
+                        @onclick="Decrement"
+                        disabled="@(Disabled || IsAtMin)"
+                        tabindex="-1"
+                        aria-label="@DecreaseAriaLabel">
+                    <SbIcon Name="chevron-down" Size="SbSize.Sm" />
+                </button>
+            </div>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(HelperText))
+    {
+        <div class="sb-number-field__helper">@HelperText</div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Current value.
+    /// </summary>
+    [Parameter]
+    public TNumber Value { get; set; }
+
+    /// <summary>
+    /// Callback when value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TNumber> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Minimum value.
+    /// </summary>
+    [Parameter]
+    public TNumber? Min { get; set; }
+
+    /// <summary>
+    /// Maximum value.
+    /// </summary>
+    [Parameter]
+    public TNumber? Max { get; set; }
+
+    /// <summary>
+    /// Step increment.
+    /// </summary>
+    [Parameter]
+    public TNumber? Step { get; set; }
+
+    /// <summary>
+    /// Whether to show spinner buttons.
+    /// </summary>
+    [Parameter]
+    public bool ShowSpinButtons { get; set; } = true;
+
+    /// <summary>
+    /// Placeholder text.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Whether the field is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Whether the field is read-only.
+    /// </summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    /// <summary>
+    /// Element ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Label text displayed above the input.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Whether the field is required (shows asterisk).
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
+    /// Helper or hint text shown below the input.
+    /// </summary>
+    [Parameter]
+    public string? HelperText { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles for the wrapper element.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+    
+    /// <summary>
+    /// Aria label for increase button.
+    /// </summary>
+    [Parameter]
+    public string IncreaseAriaLabel { get; set; } = "Increase";
+    
+    /// <summary>
+    /// Aria label for decrease button.
+    /// </summary>
+    [Parameter]
+    public string DecreaseAriaLabel { get; set; } = "Decrease";
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-number-field" };
+            if (Disabled)
+            {
+                classes.Add("sb-number-field--disabled");
+            }
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(" ", classes);
+        }
+    }
+
+    private string? CurrentValueAsString => FormatInvariant(Value);
+    private string? MinAsString => Min.HasValue ? FormatInvariant(Min.Value) : null;
+    private string? MaxAsString => Max.HasValue ? FormatInvariant(Max.Value) : null;
+    private string? StepAsString => Step.HasValue ? FormatInvariant(Step.Value) : "1";
+
+    private bool IsAtMin => Min.HasValue && Value.CompareTo(Min.Value) <= 0;
+    private bool IsAtMax => Max.HasValue && Value.CompareTo(Max.Value) >= 0;
+
+    private async Task HandleInput(ChangeEventArgs args)
+    {
+        if (TryParse(args.Value?.ToString(), out var value))
+        {
+            await ValueChanged.InvokeAsync(value);
+        }
+    }
+
+    private async Task HandleChange(ChangeEventArgs args)
+    {
+        if (TryParse(args.Value?.ToString(), out var value))
+        {
+            value = ClampValue(value);
+            await ValueChanged.InvokeAsync(value);
+        }
+        else if (string.IsNullOrWhiteSpace(args.Value?.ToString()))
+        {
+            await ValueChanged.InvokeAsync(default);
+        }
+    }
+
+    private async Task Increment()
+    {
+        if (ReadOnly || Disabled) return;
+
+        var step = Step ?? GetDefaultStep();
+        var newValue = Add(Value, step);
+        var clampedValue = ClampValue(newValue);
+        await ValueChanged.InvokeAsync(clampedValue);
+    }
+
+    private async Task Decrement()
+    {
+        if (ReadOnly || Disabled) return;
+
+        var step = Step ?? GetDefaultStep();
+        var newValue = Subtract(Value, step);
+        var clampedValue = ClampValue(newValue);
+        await ValueChanged.InvokeAsync(clampedValue);
+    }
+
+    private TNumber ClampValue(TNumber value)
+    {
+        if (Min.HasValue && value.CompareTo(Min.Value) < 0)
+            return Min.Value;
+        if (Max.HasValue && value.CompareTo(Max.Value) > 0)
+            return Max.Value;
+        return value;
+    }
+
+    private static string FormatInvariant(TNumber value)
+    {
+        return value is IFormattable formattable
+            ? formattable.ToString(null, CultureInfo.InvariantCulture)
+            : value.ToString() ?? string.Empty;
+    }
+
+    private static bool TryParse(string? text, out TNumber value)
+    {
+        value = default!;
+        if (string.IsNullOrWhiteSpace(text)) return false;
+
+        var type = typeof(TNumber);
+        var culture = CultureInfo.InvariantCulture;
+        var styles = NumberStyles.Any;
+
+        try
+        {
+            if (type == typeof(decimal) && decimal.TryParse(text, styles, culture, out var d))
+            {
+                value = (TNumber)(object)d;
+                return true;
+            }
+            if (type == typeof(double) && double.TryParse(text, styles, culture, out var dbl))
+            {
+                value = (TNumber)(object)dbl;
+                return true;
+            }
+            if (type == typeof(float) && float.TryParse(text, styles, culture, out var f))
+            {
+                value = (TNumber)(object)f;
+                return true;
+            }
+            if (type == typeof(int) && int.TryParse(text, styles, culture, out var i))
+            {
+                value = (TNumber)(object)i;
+                return true;
+            }
+            if (type == typeof(long) && long.TryParse(text, styles, culture, out var l))
+            {
+                value = (TNumber)(object)l;
+                return true;
+            }
+            if (type == typeof(short) && short.TryParse(text, styles, culture, out var s))
+            {
+                value = (TNumber)(object)s;
+                return true;
+            }
+            if (type == typeof(byte) && byte.TryParse(text, styles, culture, out var b))
+            {
+                value = (TNumber)(object)b;
+                return true;
+            }
+
+            var converter = System.ComponentModel.TypeDescriptor.GetConverter(type);
+            if (converter.CanConvertFrom(typeof(string)))
+            {
+                var result = converter.ConvertFrom(null, culture, text);
+                if (result is TNumber parsed)
+                {
+                    value = parsed;
+                    return true;
+                }
+            }
+        }
+        catch
+        {
+            // Parse failed
+        }
+        return false;
+    }
+
+    private static TNumber GetDefaultStep()
+    {
+        var type = typeof(TNumber);
+        if (type == typeof(int) || type == typeof(long) || type == typeof(short) || type == typeof(byte))
+            return (TNumber)(object)1;
+        if (type == typeof(float))
+            return (TNumber)(object)1f;
+        if (type == typeof(double))
+            return (TNumber)(object)1d;
+        if (type == typeof(decimal))
+            return (TNumber)(object)1m;
+        return default!;
+    }
+
+    private static TNumber Add(TNumber a, TNumber b)
+    {
+        dynamic da = a;
+        dynamic db = b;
+        return (TNumber)(da + db);
+    }
+
+    private static TNumber Subtract(TNumber a, TNumber b)
+    {
+        dynamic da = a;
+        dynamic db = b;
+        return (TNumber)(da - db);
+    }
+}

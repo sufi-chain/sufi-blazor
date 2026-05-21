@@ -1,0 +1,87 @@
+@page "/demo/sufi-blazor/data-grid/selection"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridSelection"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridSelection"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridSelectionDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:WithSelection"]" SourceCode="@selectionCode" RelatedCode="@selectionCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbDataGrid TItem="Product" 
+                          Items="@_products"
+                          KeySelector="@(p => p.Name)"
+                          SelectionMode="SbSelectionMode.MultipleRows"
+                          SelectedKeysChanged="OnSelectedKeysChanged"
+                          SelectedItemsChanged="OnSelectedItemsChanged">
+                    <SbColumn TItem="Product" Field="Name" Title="@L["Demo:Name"]" />
+                    <SbColumn TItem="Product" Field="Price" Title="@L["Demo:Price"]" Format="C2" />
+                </SbDataGrid>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:DataGridSelectedCount", _selectedProducts.Count]</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<Product> _products = new()
+    {
+        new Product { Name = "Widget A", Price = 10.00m },
+        new Product { Name = "Widget B", Price = 15.00m },
+        new Product { Name = "Widget C", Price = 20.00m }
+    };
+
+    private IReadOnlyList<Product> _selectedProducts = new List<Product>();
+
+    private void OnSelectedKeysChanged(IReadOnlySet<string> keys)
+    {
+        // Keys updated; selected items come from SelectedItemsChanged.
+    }
+
+    private void OnSelectedItemsChanged(IReadOnlyList<Product> items)
+    {
+        _selectedProducts = items ?? new List<Product>();
+    }
+
+    private class Product
+    {
+        public string Name { get; set; } = "";
+        public decimal Price { get; set; }
+    }
+
+    private const string selectionCodeBehind = @"private List<Product> _products = new()
+{
+    new Product { Name = ""Widget A"", Price = 10.00m },
+    new Product { Name = ""Widget B"", Price = 15.00m }
+};
+
+private IReadOnlyList<Product> _selectedProducts = new List<Product>();
+
+private void OnSelectedItemsChanged(IReadOnlyList<Product> items)
+{
+    _selectedProducts = items ?? new List<Product>();
+}
+
+private class Product
+{
+    public string Name { get; set; } = """";
+    public decimal Price { get; set; }
+}";
+
+    private const string selectionCode = @"<SbDataGrid TItem=""Product"" 
+              Items=""@_products""
+              KeySelector=""@(p => p.Name)""
+              SelectionMode=""SbSelectionMode.MultipleRows""
+              SelectedKeysChanged=""OnSelectedKeysChanged""
+              SelectedItemsChanged=""OnSelectedItemsChanged"">
+    <SbColumn TItem=""Product"" Field=""Name"" Title=""Name"" />
+    <SbColumn TItem=""Product"" Field=""Price"" Title=""Price"" Format=""C2"" />
+</SbDataGrid>";
+}

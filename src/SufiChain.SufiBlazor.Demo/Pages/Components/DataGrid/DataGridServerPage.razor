@@ -1,0 +1,119 @@
+@page "/demo/sufi-blazor/data-grid/server"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridServerSide"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridServerSide"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridServerDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DataGridServerSide"]" SourceCode="@serverCode" RelatedCode="@serverCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="ServerItem"
+                        ItemsProvider="LoadDataAsync"
+                        PageIndex="@_pageIndex"
+                        PageIndexChanged="OnPageIndexChanged"
+                        PageSize="@_pageSize"
+                        PageSizeChanged="OnPageSizeChanged"
+                        TotalCount="@_totalCount">
+                <SbColumn TItem="ServerItem" Field="Id" Title="@L["Demo:Id"]" Sortable="true" />
+                <SbColumn TItem="ServerItem" Field="Name" Title="@L["Demo:Name"]" Sortable="true" />
+                <SbColumn TItem="ServerItem" Field="Created" Title="@L["Demo:Date"]" Format="d" Sortable="true" />
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private int _pageIndex = 0;
+    private int _pageSize = 10;
+    private long _totalCount = 0;
+
+    private static readonly List<ServerItem> _allServerItems = Enumerable.Range(1, 47)
+        .Select(i => new ServerItem
+        {
+            Id = i,
+            Name = "Item " + i,
+            Created = DateTime.Today.AddDays(-i)
+        })
+        .ToList();
+
+    private Task<SbDataResponse<ServerItem>> LoadDataAsync(SbDataRequest request)
+    {
+        var query = _allServerItems.AsEnumerable();
+        var sort = request.Sorts.FirstOrDefault();
+        if (!string.IsNullOrEmpty(sort?.Field))
+        {
+            query = sort.Field switch
+            {
+                "Id" => sort.Direction == SbSortDirection.Ascending ? query.OrderBy(x => x.Id) : query.OrderByDescending(x => x.Id),
+                "Name" => sort.Direction == SbSortDirection.Ascending ? query.OrderBy(x => x.Name) : query.OrderByDescending(x => x.Name),
+                "Created" => sort.Direction == SbSortDirection.Ascending ? query.OrderBy(x => x.Created) : query.OrderByDescending(x => x.Created),
+                _ => query
+            };
+        }
+
+        var total = query.Count();
+        var items = query
+            .Skip(request.PageIndex * request.PageSize)
+            .Take(request.PageSize)
+            .ToList();
+
+        _totalCount = total;
+        return Task.FromResult(new SbDataResponse<ServerItem>(items, total));
+    }
+
+    private async Task OnPageIndexChanged(int newIndex)
+    {
+        _pageIndex = newIndex;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnPageSizeChanged(int newSize)
+    {
+        _pageSize = newSize;
+        _pageIndex = 0;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private class ServerItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public DateTime Created { get; set; }
+    }
+
+    private const string serverCodeBehind = @"private int _pageIndex = 0;
+private int _pageSize = 10;
+private long _totalCount = 0;
+
+private Task<SbDataResponse<ServerItem>> LoadDataAsync(SbDataRequest request)
+{
+    var query = _allServerItems.AsEnumerable();
+    // Apply sort from request.Sorts, then:
+    var total = query.Count();
+    var items = query.Skip(request.PageIndex * request.PageSize).Take(request.PageSize).ToList();
+    _totalCount = total;
+    return Task.FromResult(new SbDataResponse<ServerItem>(items, total));
+}
+
+private async Task OnPageIndexChanged(int newIndex) { _pageIndex = newIndex; await InvokeAsync(StateHasChanged); }
+private async Task OnPageSizeChanged(int newSize) { _pageSize = newSize; _pageIndex = 0; await InvokeAsync(StateHasChanged); }";
+
+    private const string serverCode = @"<SbDataGrid TItem=""ServerItem""
+    ItemsProvider=""LoadDataAsync""
+    PageIndex=""@_pageIndex""
+    PageIndexChanged=""OnPageIndexChanged""
+    PageSize=""@_pageSize""
+    PageSizeChanged=""OnPageSizeChanged""
+    TotalCount=""@_totalCount"">
+    <SbColumn TItem=""ServerItem"" Field=""Id"" Title=""Id"" Sortable=""true"" />
+    <SbColumn TItem=""ServerItem"" Field=""Name"" Title=""Name"" Sortable=""true"" />
+    <SbColumn TItem=""ServerItem"" Field=""Created"" Title=""Date"" Sortable=""true"" />
+</SbDataGrid>";
+}

@@ -1,0 +1,327 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@typeparam TValue
+@inherits Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="@($"sb-text-field-wrapper {Class}".Trim())" style="@Style">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-text-field__label" for="@EffectiveId">
+            @Label
+            @if (Required)
+            {
+                <span class="sb-text-field__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+
+    <div class="@WrapperCssClass">
+        @if (StartAdornment != null)
+        {
+            <span class="sb-text-field__adornment sb-text-field__adornment--start">
+                @StartAdornment
+            </span>
+        }
+
+        <input @ref="_inputRef"
+               type="@InputType"
+               id="@EffectiveId"
+               name="@NameAttributeValue"
+               class="sb-text-field__input"
+               value="@CurrentValueAsString"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               readonly="@ReadOnly"
+               aria-invalid="@(HasError ? "true" : null)"
+               aria-required="@(Required ? "true" : null)"
+               aria-describedby="@EffectiveAriaDescribedBy"
+               inputmode="@InputMode"
+               autocomplete="@EffectiveAutoComplete"
+               @oninput="HandleInput"
+               @onchange="HandleChange"
+               @attributes="AdditionalAttributes" />
+
+        @if (Clearable && !string.IsNullOrEmpty(CurrentValueAsString))
+        {
+            <button type="button"
+                    class="sb-text-field__clear"
+                    aria-label="@(ClearAriaLabel ?? L["Clear"])"
+                    tabindex="-1"
+                    @onclick="HandleClear">
+                <SbIcon Name="x" Size="SbSize.Md" />
+            </button>
+        }
+
+        @if (Type == "password")
+        {
+            <button type="button"
+                    class="sb-text-field__toggle-password"
+                    aria-label="@(_showPassword ? (HidePasswordAriaLabel ?? L["HidePassword"]) : (ShowPasswordAriaLabel ?? L["ShowPassword"]))"
+                    tabindex="-1"
+                    @onclick="TogglePassword">
+                <SbIcon Name="@(_showPassword ? "eye-off" : "eye")" Size="SbSize.Md" />
+            </button>
+        }
+
+        @if (EndAdornment != null)
+        {
+            <span class="sb-text-field__adornment sb-text-field__adornment--end">
+                @EndAdornment
+            </span>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(HelperText) && !HasError)
+    {
+        <div class="sb-text-field__helper" id="@(EffectiveId)-helper">@HelperText</div>
+    }
+</div>
+
+@code {
+    private ElementReference _inputRef;
+    private bool _showPassword;
+    private string _generatedId = $"sb-text-field-{Guid.NewGuid():N}";
+
+    /// <summary>
+    /// Label text displayed above the input.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Whether the field is required (shows asterisk and sets aria-required).
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
+    /// Input type (text, password, email, search, etc.).
+    /// </summary>
+    [Parameter]
+    public string Type { get; set; } = "text";
+
+    /// <summary>
+    /// Placeholder text.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Whether the input is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Whether the input is read-only.
+    /// </summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    /// <summary>
+    /// Whether to show a clear button.
+    /// </summary>
+    [Parameter]
+    public bool Clearable { get; set; }
+
+    /// <summary>
+    /// Clear event callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+
+    /// <summary>
+    /// Content to show at the start of the input.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? StartAdornment { get; set; }
+
+    /// <summary>
+    /// Content to show at the end of the input.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? EndAdornment { get; set; }
+
+    /// <summary>
+    /// Input mode hint.
+    /// </summary>
+    [Parameter]
+    public string? InputMode { get; set; }
+
+    /// <summary>
+    /// Autocomplete attribute.
+    /// </summary>
+    [Parameter]
+    public string? AutoComplete { get; set; }
+
+    /// <summary>
+    /// Input ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Helper or hint text displayed below the input (hidden when there is a validation error).
+    /// </summary>
+    [Parameter]
+    public string? HelperText { get; set; }
+
+    /// <summary>
+    /// ARIA described by IDs.
+    /// </summary>
+    [Parameter]
+    public string? AriaDescribedBy { get; set; }
+    
+    /// <summary>
+    /// Aria label for the clear button. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? ClearAriaLabel { get; set; }
+    
+    /// <summary>
+    /// Aria label for show password button. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? ShowPasswordAriaLabel { get; set; }
+    
+    /// <summary>
+    /// Aria label for hide password button. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? HidePasswordAriaLabel { get; set; }
+    
+    /// <summary>
+    /// Validation error message format. Use {0} for the value placeholder.
+    /// </summary>
+    [Parameter]
+    public string InvalidValueMessage { get; set; } = "The value '{0}' is not valid.";
+
+    /// <summary>
+    /// Additional CSS classes for the wrapper element.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles for the wrapper element.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    private string EffectiveId => Id ?? _generatedId;
+
+    private string? EffectiveAriaDescribedBy
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (!string.IsNullOrEmpty(AriaDescribedBy))
+                parts.Add(AriaDescribedBy);
+            if (!string.IsNullOrEmpty(HelperText) && !HasError)
+                parts.Add($"{EffectiveId}-helper");
+            return parts.Count > 0 ? string.Join(" ", parts) : null;
+        }
+    }
+
+    /// <summary>
+    /// Effective autocomplete value. When Type is "password" and AutoComplete is not set,
+    /// defaults to "new-password" to prevent browsers from autofilling with cached credentials
+    /// (which often cause invalid values in connection strings, API keys, and other sensitive fields).
+    /// Use AutoComplete="current-password" explicitly for login forms where autofill is desired.
+    /// </summary>
+    private string? EffectiveAutoComplete => !string.IsNullOrEmpty(AutoComplete)
+        ? AutoComplete
+        : Type == "password"
+            ? "new-password"
+            : null;
+
+    private string InputType => Type == "password" && _showPassword ? "text" : Type;
+
+    private bool HasError => EditContext?.GetValidationMessages(FieldIdentifier).Any() == true;
+
+    private string WrapperCssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-text-field" };
+
+            if (Disabled)
+            {
+                classes.Add("sb-text-field--disabled");
+            }
+
+            if (ReadOnly)
+            {
+                classes.Add("sb-text-field--readonly");
+            }
+
+            if (HasError)
+            {
+                classes.Add("sb-text-field--error");
+            }
+
+            if (StartAdornment != null)
+            {
+                classes.Add("sb-text-field--has-start");
+            }
+
+            if (EndAdornment != null || Clearable || Type == "password")
+            {
+                classes.Add("sb-text-field--has-end");
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    protected override bool TryParseValueFromString(string? value, out TValue result, out string validationErrorMessage)
+    {
+        if (typeof(TValue) == typeof(string))
+        {
+            result = (TValue)(object)(value ?? string.Empty);
+            validationErrorMessage = null!;
+            return true;
+        }
+
+        // For non-string types, try to use TypeConverter
+        try
+        {
+            var converter = System.ComponentModel.TypeDescriptor.GetConverter(typeof(TValue));
+            if (converter.CanConvertFrom(typeof(string)) && value is not null)
+            {
+                result = (TValue?)converter.ConvertFromString(value) ?? default!;
+                validationErrorMessage = null!;
+                return true;
+            }
+        }
+        catch
+        {
+            // Fall through to error case
+        }
+
+        result = default!;
+        validationErrorMessage = string.Format(InvalidValueMessage, value);
+        return false;
+    }
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        CurrentValueAsString = e.Value?.ToString();
+    }
+
+    private void HandleChange(ChangeEventArgs e)
+    {
+        CurrentValueAsString = e.Value?.ToString();
+    }
+
+    private async Task HandleClear()
+    {
+        CurrentValueAsString = string.Empty;
+        await OnClear.InvokeAsync();
+    }
+
+    private void TogglePassword()
+    {
+        _showPassword = !_showPassword;
+    }
+}

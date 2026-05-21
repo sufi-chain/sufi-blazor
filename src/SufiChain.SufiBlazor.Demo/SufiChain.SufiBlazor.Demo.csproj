@@ -1,0 +1,151 @@
+﻿
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SufiChain.SufiBlazor.Demo</RootNamespace>
+    
+    <!-- Package information -->
+    <PackageId>SufiChain.SufiBlazor.Demo</PackageId>
+    <Description>Sufi Blazor Demo - A reusable component demo library for SufiBlazor.</Description>
+    <PackageTags>blazor;components;demo;documentation</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SufiChain.SufiBlazor.Demo.Localization\SufiChain.SufiBlazor.Demo.Localization.csproj" />
+    <ProjectReference Include="..\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Markdig" Version="1.1.3" />
+    <PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="$(SufiAbpVersion)"  />
+  </ItemGroup>
+
+
+  <PropertyGroup>
+    <DocsSourceRoot>$(MSBuildThisFileDirectory)..\..\docs</DocsSourceRoot>
+    <DocsSourceComponents>$(DocsSourceRoot)\components</DocsSourceComponents>
+  </PropertyGroup>
+  <Target Name="CopyDocsToWwwroot" BeforeTargets="Build">
+    <ItemGroup>
+      <!-- Getting Started / General Docs -->
+      <DocToCopy Include="$(DocsSourceRoot)\installation.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\theming.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\overview.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\components.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\data-grid.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\adding-icons.md" />
+      
+      <!-- Actions -->
+      <DocToCopy Include="$(DocsSourceComponents)\actions\SbButton.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\actions\SbIconButton.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\actions\SbLink.md" />
+      
+      <!-- Common -->
+      <DocToCopy Include="$(DocsSourceComponents)\common\SbIcon.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\common\SbMarkdownViewer.md" />
+      
+      <!-- Data -->
+      <DocToCopy Include="$(DocsSourceComponents)\data\SbColumn.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\data\SbColumnFilterMenu.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\data\SbDataGrid.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\data\DataGridIntro.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\data\SbFilterBar.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\data\SbMetric.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\data\SbPagination.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\data\SbStatCard.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\data\SbTable.md" />
+      
+      <!-- Feedback -->
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbAlert.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbBadge.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbBanner.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbChip.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbEmptyState.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbProgress.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbSkeleton.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbStatusPill.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbToast.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\feedback\SbToastHost.md" />
+      
+      <!-- Forms -->
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbAutocomplete.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbCheckbox.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbColorPicker.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbDatePicker.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbDateRangePicker.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbFieldError.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbFileUpload.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbForm.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbFormField.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbMultiSelect.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbNumberField.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbRadio.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbRadioGroup.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbRichTextEditor.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbSelect.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbSelectOption.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbSimpleSelect.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbSlider.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbSlugEditor.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbSwitch.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbTagInput.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbTextArea.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbTextField.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbTimePicker.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbValidationSummary.md" />
+      
+      <!-- Layout -->
+      <DocToCopy Include="$(DocsSourceComponents)\layout\SbContainer.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\layout\SbGrid.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\layout\SbGridItem.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\layout\SbSpacer.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\layout\SbStack.md" />
+      
+      <!-- Navigation -->
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbAccordion.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbAccordionItem.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbBreadcrumb.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbNavItem.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbNavMenu.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbStep.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbStepper.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbTab.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbTabs.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbTreeView.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\navigation\SbTreeViewNode.md" />
+      
+      <!-- Overlays -->
+      <DocToCopy Include="$(DocsSourceComponents)\overlays\SbConfirmDialog.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\overlays\SbContextMenu.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\overlays\SbDialog.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\overlays\SbDrawer.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\overlays\SbMenu.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\overlays\SbMenuItem.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\overlays\SbPopover.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\overlays\SbTooltip.md" />
+      
+      <!-- Surfaces -->
+      <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbCard.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbDivider.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbSurface.md" />
+      
+      <!-- Theming -->
+      <DocToCopy Include="$(DocsSourceComponents)\theming\SbThemeProvider.md" />
+      
+      <!-- Typography -->
+      <DocToCopy Include="$(DocsSourceComponents)\typography\SbHeading.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\typography\SbText.md" />
+      <DocToCopyFiltered Include="@(DocToCopy)" Condition="Exists('%(DocToCopy.Identity)')" />
+    </ItemGroup>
+    <MakeDir Directories="$(MSBuildThisFileDirectory)wwwroot\docs" Condition="!Exists('$(MSBuildThisFileDirectory)wwwroot\docs')" />
+    <Copy SourceFiles="@(DocToCopyFiltered)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\docs" SkipUnchangedFiles="true" Condition="'@(DocToCopyFiltered)' != ''" />
+  </Target>
+
+</Project>

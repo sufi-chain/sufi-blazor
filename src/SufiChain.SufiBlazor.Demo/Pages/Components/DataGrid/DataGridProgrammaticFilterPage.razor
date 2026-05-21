@@ -1,0 +1,220 @@
+@page "/demo/sufi-blazor/data-grid/programmatic-filter"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridProgrammaticFilter"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridProgrammaticFilter"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridProgrammaticFilterDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DataGridProgrammaticFilter"]" SourceCode="@programmaticFilterCode" RelatedCode="@programmaticFilterCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true">
+                    <SbButton Size="SbSize.Sm"
+                              Variant="@(_activeFilter == "Engineering" ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+                              Color="SbColor.Primary"
+                              OnClick="@(() => FilterByDepartment("Engineering"))">
+                        @L["Demo:DataGridFilterEngineering"]
+                    </SbButton>
+                    <SbButton Size="SbSize.Sm"
+                              Variant="@(_activeFilter == "Sales" ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+                              Color="SbColor.Primary"
+                              OnClick="@(() => FilterByDepartment("Sales"))">
+                        @L["Demo:DataGridFilterSales"]
+                    </SbButton>
+                    <SbButton Size="SbSize.Sm"
+                              Variant="@(_activeFilter == "HighEarners" ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+                              Color="SbColor.Primary"
+                              OnClick="FilterHighEarners">
+                        @L["Demo:DataGridFilterHighEarners"]
+                    </SbButton>
+                    <SbButton Size="SbSize.Sm"
+                              Variant="@(_activeFilter == "ActiveOnly" ? SbButtonVariant.Solid : SbButtonVariant.Outline)"
+                              Color="SbColor.Primary"
+                              OnClick="FilterActiveOnly">
+                        @L["Demo:DataGridFilterActiveOnly"]
+                    </SbButton>
+                    <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" Color="SbColor.Secondary" OnClick="ClearProgrammaticFilters">
+                        @L["Demo:DataGridClearFilters"]
+                    </SbButton>
+                </SbStack>
+                <SbDataGrid @ref="_gridRef"
+                            TItem="Employee"
+                            Items="@_employees"
+                            KeySelector="@(e => e.Id.ToString())"
+                            PageSize="5"
+                            ShowColumnFilters="false"
+                            ShowFilterBar="true"
+                            OnFiltersChanged="OnFiltersChanged">
+                    <ChildContent>
+                        <SbColumn TItem="Employee" Field="Id" Title="@L["Demo:Id"]" Width="80px" Sortable="true" />
+                        <SbColumn TItem="Employee" Field="Name" Title="@L["Demo:Name"]" Sortable="true" />
+                        <SbColumn TItem="Employee" Field="Department" Title="@L["Demo:DataGridDepartment"]" Sortable="true" />
+                        <SbColumn TItem="Employee" Field="Salary" Title="@L["Demo:Salary"]" Align="SbColumnAlign.End" Sortable="true">
+                            <CellTemplate Context="context">
+                                @context.Item.Salary.ToString("N0")
+                            </CellTemplate>
+                        </SbColumn>
+                        <SbColumn TItem="Employee" Field="IsActive" Title="@L["Demo:Status"]" Align="SbColumnAlign.Center">
+                            <CellTemplate Context="context">
+                                <SbBadge Color="@(context.Item.IsActive ? SbColor.Success : SbColor.Danger)">
+                                    @(context.Item.IsActive ? L["Demo:Active"] : L["Demo:Inactive"])
+                                </SbBadge>
+                            </CellTemplate>
+                        </SbColumn>
+                    </ChildContent>
+                </SbDataGrid>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private SbDataGrid<Employee>? _gridRef;
+    private string? _activeFilter;
+    private List<Employee> _employees = new();
+
+    protected override void OnInitialized()
+    {
+        _employees = GenerateEmployees(24);
+    }
+
+    private async Task FilterByDepartment(string department)
+    {
+        if (_gridRef != null)
+        {
+            await _gridRef.SetOnlyFilterAsync("Department", SbFilterOperator.Equals, department);
+            _activeFilter = department;
+        }
+    }
+
+    private async Task FilterHighEarners()
+    {
+        if (_gridRef != null)
+        {
+            await _gridRef.SetOnlyFilterAsync("Salary", SbFilterOperator.GreaterThanOrEqual, 100000m);
+            _activeFilter = "HighEarners";
+        }
+    }
+
+    private async Task FilterActiveOnly()
+    {
+        if (_gridRef != null)
+        {
+            await _gridRef.SetOnlyFilterAsync("IsActive", SbFilterOperator.Equals, true);
+            _activeFilter = "ActiveOnly";
+        }
+    }
+
+    private async Task ClearProgrammaticFilters()
+    {
+        if (_gridRef != null)
+        {
+            await _gridRef.ClearAllFiltersAsync();
+            _activeFilter = null;
+        }
+    }
+
+    private void OnFiltersChanged(IReadOnlyList<SbFilter> filters)
+    {
+        if (filters.Count == 0)
+            _activeFilter = null;
+    }
+
+    private static List<Employee> GenerateEmployees(int count)
+    {
+        var departments = new[] { "Engineering", "Marketing", "Sales", "HR", "Finance", "Operations" };
+        var firstNames = new[] { "John", "Jane", "Mike", "Sarah", "David", "Emily", "Chris", "Lisa", "Tom", "Anna" };
+        var lastNames = new[] { "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez" };
+        var random = new Random(42);
+        return Enumerable.Range(1, count).Select(i => new Employee
+        {
+            Id = i,
+            Name = $"{firstNames[random.Next(firstNames.Length)]} {lastNames[random.Next(lastNames.Length)]}",
+            Email = $"employee{i}@company.com",
+            Department = departments[random.Next(departments.Length)],
+            Salary = random.Next(50000, 150000),
+            HireDate = DateTime.Today.AddDays(-random.Next(30, 1000)),
+            IsActive = random.Next(10) > 2
+        }).ToList();
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal Salary { get; set; }
+        public DateTime HireDate { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    private const string programmaticFilterCodeBehind = @"private SbDataGrid<Employee>? _gridRef;
+private string? _activeFilter;
+private List<Employee> _employees = new();
+
+private async Task FilterByDepartment(string department)
+{
+    if (_gridRef != null)
+    {
+        await _gridRef.SetOnlyFilterAsync(""Department"", SbFilterOperator.Equals, department);
+        _activeFilter = department;
+    }
+}
+
+private async Task FilterHighEarners()
+{
+    if (_gridRef != null)
+        await _gridRef.SetOnlyFilterAsync(""Salary"", SbFilterOperator.GreaterThanOrEqual, 100000m);
+}
+
+private async Task FilterActiveOnly()
+{
+    if (_gridRef != null)
+        await _gridRef.SetOnlyFilterAsync(""IsActive"", SbFilterOperator.Equals, true);
+}
+
+private async Task ClearProgrammaticFilters()
+{
+    if (_gridRef != null)
+        await _gridRef.ClearAllFiltersAsync();
+}
+
+private void OnFiltersChanged(IReadOnlyList<SbFilter> filters)
+{
+    if (filters.Count == 0) _activeFilter = null;
+}";
+
+    private const string programmaticFilterCode = @"<SbStack Gap=""3"">
+    <SbStack Direction=""SbStackDirection.Row"" Gap=""2"" Wrap=""true"">
+        <SbButton OnClick=""@(() => FilterByDepartment(""Engineering""))"">Engineering Only</SbButton>
+        <SbButton OnClick=""@(() => FilterByDepartment(""Sales""))"">Sales Only</SbButton>
+        <SbButton OnClick=""FilterHighEarners"">High Earners ($100K+)</SbButton>
+        <SbButton OnClick=""FilterActiveOnly"">Active Only</SbButton>
+        <SbButton Variant=""SbButtonVariant.Outline"" OnClick=""ClearProgrammaticFilters"">Clear Filters</SbButton>
+    </SbStack>
+    <SbDataGrid @ref=""_gridRef""
+                TItem=""Employee""
+                Items=""@_employees""
+                KeySelector=""@(e => e.Id.ToString())""
+                PageSize=""5""
+                ShowColumnFilters=""false""
+                ShowFilterBar=""true""
+                OnFiltersChanged=""OnFiltersChanged"">
+        <ChildContent>
+            <SbColumn TItem=""Employee"" Field=""Id"" Title=""ID"" />
+            <SbColumn TItem=""Employee"" Field=""Name"" Title=""Name"" />
+            <SbColumn TItem=""Employee"" Field=""Department"" Title=""Department"" />
+            <SbColumn TItem=""Employee"" Field=""Salary"" Title=""Salary"" />
+            <SbColumn TItem=""Employee"" Field=""IsActive"" Title=""Status"" />
+        </ChildContent>
+    </SbDataGrid>
+</SbStack>";
+}

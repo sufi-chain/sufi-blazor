@@ -1,0 +1,117 @@
+@page "/demo/sufi-blazor/time-picker"
+
+<PageTitle>@(L["Menu:Demo:TimePicker"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:TimePicker"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:TimePickerPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:TimePickerBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbTimePicker @bind-Value="_selectedTime" Label="@L["Demo:TimePickerAppointmentTime"]" />
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:TimePickerSelected"]: @(_selectedTime?.ToString("HH:mm") ?? L["Demo:TimePickerNone"])</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TimePicker12Hour"]" SourceCode="@twelveHourCode" RelatedCode="@twelveHourCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbTimePicker @bind-Value="_meetingTime" 
+                            Use24Hour="false"
+                            Label="@L["Demo:TimePickerMeetingTime"]" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TimePickerWithSeconds"]" SourceCode="@withSecondsCode" RelatedCode="@withSecondsCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbTimePicker @bind-Value="_preciseTime" 
+                            ShowSeconds="true"
+                            Label="@L["Demo:TimePickerExactTime"]" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TimePickerMinuteSteps"]" SourceCode="@stepCode" RelatedCode="@stepCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbTimePicker @bind-Value="_appointmentTime" 
+                            MinuteStep="15"
+                            Label="@L["Demo:TimePickerBookAppointment"]" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TimePickerRequired"]" SourceCode="@requiredCode" RelatedCode="@requiredCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbTimePicker @bind-Value="_deadline" 
+                            Label="@L["Demo:TimePickerDeadline"]"
+                            Required="true"
+                            Clearable="false" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TimePickerDisabled"]" SourceCode="@disabledCode" RelatedCode="@disabledCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbTimePicker Value="@TimeOnly.FromTimeSpan(TimeSpan.FromHours(14).Add(TimeSpan.FromMinutes(30)))" 
+                            Label="@L["Demo:TimePickerFixedTime"]"
+                            Disabled="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbTimePicker" />
+</DemoLayout>
+
+@code {
+    private TimeOnly? _selectedTime;
+    private TimeOnly? _meetingTime;
+    private TimeOnly? _preciseTime;
+    private TimeOnly? _appointmentTime;
+    private TimeOnly? _deadline;
+
+    private const string basicCodeBehind = @"private TimeOnly? _selectedTime;";
+
+    private const string basicCode = @"<SbTimePicker @bind-Value=""_selectedTime"" Label=""Appointment Time"" />";
+
+    private const string twelveHourCodeBehind = @"private TimeOnly? _meetingTime;";
+
+    private const string twelveHourCode = @"<SbTimePicker @bind-Value=""_meetingTime"" 
+                Use24Hour=""false""
+                Label=""Meeting Time"" />";
+
+    private const string withSecondsCodeBehind = @"private TimeOnly? _preciseTime;";
+
+    private const string withSecondsCode = @"<SbTimePicker @bind-Value=""_preciseTime"" 
+                ShowSeconds=""true""
+                Label=""Exact Time"" />";
+
+    private const string stepCodeBehind = @"private TimeOnly? _appointmentTime;";
+
+    private const string stepCode = @"<SbTimePicker @bind-Value=""_appointmentTime"" 
+                MinuteStep=""15""
+                Label=""Book Appointment"" />";
+
+    private const string requiredCodeBehind = @"private TimeOnly? _deadline;";
+
+    private const string requiredCode = @"<SbTimePicker @bind-Value=""_deadline"" 
+                Label=""Deadline""
+                Required=""true""
+                Clearable=""false"" />";
+
+    private const string disabledCodeBehind = @"// Fixed value for disabled demo; no binding needed";
+
+    private const string disabledCode = @"<SbTimePicker Value=""@TimeOnly.FromTimeSpan(TimeSpan.FromHours(14).Add(TimeSpan.FromMinutes(30)))"" 
+                Label=""Fixed Time""
+                Disabled=""true"" />";
+}

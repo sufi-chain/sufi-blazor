@@ -1,0 +1,343 @@
+@page "/demo/sufi-blazor/accordion"
+
+<PageTitle>@(L["Menu:Demo:Accordion"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Accordion"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:AccordionDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BasicAccordion"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbAccordion>
+                <SbAccordionItem Title="What is SufiBlazor?">
+                    <SbText>SufiBlazor is a comprehensive component library for Blazor applications, providing a rich set of UI components following modern design principles.</SbText>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="How do I get started?">
+                    <SbText>Install the SufiBlazor NuGet package and add it to your Blazor project. Then you can start using the components in your pages.</SbText>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Is it free to use?">
+                    <SbText>Yes, SufiBlazor is open source and free to use in your projects.</SbText>
+                </SbAccordionItem>
+            </SbAccordion>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MultipleExpanded"]" SourceCode="@multipleCode">
+        <ExampleContent>
+            <SbAccordion Multiple="true">
+                <SbAccordionItem Title="Section 1">
+                    <SbText>This accordion allows multiple sections to be expanded at the same time.</SbText>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Section 2">
+                    <SbText>Try expanding multiple sections simultaneously.</SbText>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Section 3">
+                    <SbText>All sections can remain open together.</SbText>
+                </SbAccordionItem>
+            </SbAccordion>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithIcons"]" SourceCode="@iconsCode">
+        <ExampleContent>
+            <SbAccordion>
+                <SbAccordionItem Title="Personal Information">
+                    <Icon>
+                        <SbIcon Name="user" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbStack Gap="3">
+                            <SbTextField TValue="string" @bind-Value="_accordionFullName" Label="Full Name" />
+                            <SbTextField TValue="string" @bind-Value="_accordionEmail" Label="Email" Type="email" />
+                        </SbStack>
+                    </ChildContent>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Account Settings">
+                    <Icon>
+                        <SbIcon Name="settings" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbStack Gap="3">
+                            <SbSwitch @bind-Value="_accordionNotifications" Label="Enable notifications" />
+                            <SbSwitch @bind-Value="_accordionTwoFactor" Label="Two-factor authentication" />
+                        </SbStack>
+                    </ChildContent>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Security">
+                    <Icon>
+                        <SbIcon Name="lock" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbText>Change your password and manage security settings.</SbText>
+                    </ChildContent>
+                </SbAccordionItem>
+            </SbAccordion>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithSubtitles"]" SourceCode="@subtitlesCode">
+        <ExampleContent>
+            <SbAccordion>
+                <SbAccordionItem Title="Profile">
+                    <Subtitle>
+                        <SbText Size="SbSize.Sm" Color="SbColor.Muted">Manage your personal information</SbText>
+                    </Subtitle>
+                    <ChildContent>
+                        <SbText>Update your profile details including name, email, and avatar.</SbText>
+                    </ChildContent>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Notifications">
+                    <Subtitle>
+                        <SbText Size="SbSize.Sm" Color="SbColor.Muted">Configure notification preferences</SbText>
+                    </Subtitle>
+                    <ChildContent>
+                        <SbText>Choose which notifications you want to receive via email or push.</SbText>
+                    </ChildContent>
+                </SbAccordionItem>
+            </SbAccordion>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DefaultExpanded"]" SourceCode="@defaultExpandedCode">
+        <ExampleContent>
+            <SbAccordion>
+                <SbAccordionItem Title="Introduction" DefaultExpanded="true">
+                    <SbText>This section is expanded by default when the page loads.</SbText>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Details">
+                    <SbText>This section starts collapsed.</SbText>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Conclusion">
+                    <SbText>This section also starts collapsed.</SbText>
+                </SbAccordionItem>
+            </SbAccordion>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DisabledItems"]" SourceCode="@disabledCode">
+        <ExampleContent>
+            <SbAccordion>
+                <SbAccordionItem Title="Available Section">
+                    <SbText>This section can be expanded and collapsed.</SbText>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Disabled Section" Disabled="true">
+                    <SbText>This content is not accessible because the item is disabled.</SbText>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Another Available Section">
+                    <SbText>This section is also interactive.</SbText>
+                </SbAccordionItem>
+            </SbAccordion>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:FAQExample"]" SourceCode="@faqCode">
+        <ExampleContent>
+            <SbAccordion>
+                <SbAccordionItem Title="How do I reset my password?">
+                    <Icon>
+                        <SbIcon Name="help-circle" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbStack Gap="2">
+                            <SbText>To reset your password:</SbText>
+                            <ol style="margin-left: var(--sb-space-4);">
+                                <li>Click on "Forgot Password" on the login page</li>
+                                <li>Enter your email address</li>
+                                <li>Check your email for the reset link</li>
+                                <li>Follow the instructions to create a new password</li>
+                            </ol>
+                        </SbStack>
+                    </ChildContent>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="How do I contact support?">
+                    <Icon>
+                        <SbIcon Name="help-circle" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbText>You can reach our support team via:</SbText>
+                        <ul style="margin-left: var(--sb-space-4);">
+                            <li>Email: support@example.com</li>
+                            <li>Phone: 1-800-123-4567</li>
+                            <li>Live chat (available 9 AM - 5 PM EST)</li>
+                        </ul>
+                    </ChildContent>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="What payment methods do you accept?">
+                    <Icon>
+                        <SbIcon Name="help-circle" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbText>We accept all major credit cards (Visa, MasterCard, American Express), PayPal, and bank transfers.</SbText>
+                    </ChildContent>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Can I cancel my subscription?">
+                    <Icon>
+                        <SbIcon Name="help-circle" Size="SbSize.Sm" />
+                    </Icon>
+                    <ChildContent>
+                        <SbText>Yes, you can cancel your subscription at any time from your account settings. Your access will continue until the end of your current billing period.</SbText>
+                    </ChildContent>
+                </SbAccordionItem>
+            </SbAccordion>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:NestedAccordions"]" SourceCode="@nestedCode">
+        <ExampleContent>
+            <SbAccordion>
+                <SbAccordionItem Title="Category 1">
+                    <SbAccordion>
+                        <SbAccordionItem Title="Subcategory 1.1">
+                            <SbText>Content for subcategory 1.1</SbText>
+                        </SbAccordionItem>
+                        <SbAccordionItem Title="Subcategory 1.2">
+                            <SbText>Content for subcategory 1.2</SbText>
+                        </SbAccordionItem>
+                    </SbAccordion>
+                </SbAccordionItem>
+                
+                <SbAccordionItem Title="Category 2">
+                    <SbText>Content for category 2</SbText>
+                </SbAccordionItem>
+            </SbAccordion>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbAccordion" />
+</DemoLayout>
+
+@code {
+    private string _accordionFullName = "";
+    private string _accordionEmail = "";
+    private bool _accordionNotifications = false;
+    private bool _accordionTwoFactor = false;
+
+    private const string basicCode = @"<SbAccordion>
+    <SbAccordionItem Title=""What is SufiBlazor?"">
+        <SbText>SufiBlazor is a comprehensive component library...</SbText>
+    </SbAccordionItem>
+    
+    <SbAccordionItem Title=""How do I get started?"">
+        <SbText>Install the SufiBlazor NuGet package...</SbText>
+    </SbAccordionItem>
+    
+    <SbAccordionItem Title=""Is it free to use?"">
+        <SbText>Yes, SufiBlazor is open source...</SbText>
+    </SbAccordionItem>
+</SbAccordion>";
+
+    private const string multipleCode = @"<SbAccordion Multiple=""true"">
+    <SbAccordionItem Title=""Section 1"">
+        <SbText>Multiple sections can be expanded...</SbText>
+    </SbAccordionItem>
+    
+    <SbAccordionItem Title=""Section 2"">
+        <SbText>Try expanding multiple sections...</SbText>
+    </SbAccordionItem>
+    
+    <SbAccordionItem Title=""Section 3"">
+        <SbText>All sections can remain open...</SbText>
+    </SbAccordionItem>
+</SbAccordion>";
+
+    private const string iconsCode = @"<SbAccordion>
+    <SbAccordionItem Title=""Personal Information"">
+        <Icon>
+            <SbIcon Name=""user"" Size=""SbSize.Sm"" />
+        </Icon>
+        <ChildContent>
+            <SbTextField Label=""Full Name"" />
+        </ChildContent>
+    </SbAccordionItem>
+    
+    <SbAccordionItem Title=""Account Settings"">
+        <Icon>
+            <SbIcon Name=""settings"" Size=""SbSize.Sm"" />
+        </Icon>
+        <ChildContent>
+            <SbSwitch Label=""Enable notifications"" />
+        </ChildContent>
+    </SbAccordionItem>
+</SbAccordion>";
+
+    private const string subtitlesCode = @"<SbAccordion>
+    <SbAccordionItem Title=""Profile"">
+        <Subtitle>
+            <SbText Size=""SbSize.Sm"" Color=""SbColor.Muted"">
+                Manage your personal information
+            </SbText>
+        </Subtitle>
+        <ChildContent>
+            <SbText>Update your profile details...</SbText>
+        </ChildContent>
+    </SbAccordionItem>
+</SbAccordion>";
+
+    private const string defaultExpandedCode = @"<SbAccordion>
+    <SbAccordionItem Title=""Introduction"" DefaultExpanded=""true"">
+        <SbText>This section is expanded by default...</SbText>
+    </SbAccordionItem>
+    
+    <SbAccordionItem Title=""Details"">
+        <SbText>This section starts collapsed...</SbText>
+    </SbAccordionItem>
+</SbAccordion>";
+
+    private const string disabledCode = @"<SbAccordion>
+    <SbAccordionItem Title=""Available Section"">
+        <SbText>This section can be expanded...</SbText>
+    </SbAccordionItem>
+    
+    <SbAccordionItem Title=""Disabled Section"" Disabled=""true"">
+        <SbText>This content is not accessible...</SbText>
+    </SbAccordionItem>
+</SbAccordion>";
+
+    private const string faqCode = @"<SbAccordion>
+    <SbAccordionItem Title=""How do I reset my password?"">
+        <Icon>
+            <SbIcon Name=""help-circle"" Size=""SbSize.Sm"" />
+        </Icon>
+        <ChildContent>
+            <SbText>To reset your password:</SbText>
+            <ol>
+                <li>Click on ""Forgot Password""</li>
+                <li>Enter your email</li>
+                <li>Check your email for reset link</li>
+            </ol>
+        </ChildContent>
+    </SbAccordionItem>
+    <!-- More FAQ items... -->
+</SbAccordion>";
+
+    private const string nestedCode = @"<SbAccordion>
+    <SbAccordionItem Title=""Category 1"">
+        <SbAccordion>
+            <SbAccordionItem Title=""Subcategory 1.1"">
+                <SbText>Nested content...</SbText>
+            </SbAccordionItem>
+            <SbAccordionItem Title=""Subcategory 1.2"">
+                <SbText>Nested content...</SbText>
+            </SbAccordionItem>
+        </SbAccordion>
+    </SbAccordionItem>
+</SbAccordion>";
+}

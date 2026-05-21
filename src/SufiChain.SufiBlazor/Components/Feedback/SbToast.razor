@@ -1,0 +1,85 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+@using SufiChain.SufiBlazor.Components.Common
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-toast sb-toast--@Severity.ToString().ToLower() @Class" role="alert" aria-live="polite">
+    <div class="sb-toast__icon">
+        <SbIcon Name="@GetIconName()" Size="SbSize.Sm" />
+    </div>
+    <div class="sb-toast__content">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <div class="sb-toast__title">@Title</div>
+        }
+        <div class="sb-toast__message">
+            @if (ChildContent != null)
+            {
+                @ChildContent
+            }
+            else
+            {
+                @Message
+            }
+        </div>
+    </div>
+    @if (ShowCloseButton)
+    {
+        <button type="button" class="sb-toast__close" @onclick="OnClose" aria-label="@L["Close"]">
+            <SbIcon Name="x" Size="SbSize.Sm" />
+        </button>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Toast title.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+    
+    /// <summary>
+    /// Toast message.
+    /// </summary>
+    [Parameter]
+    public string? Message { get; set; }
+    
+    /// <summary>
+    /// Toast content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Toast severity.
+    /// </summary>
+    [Parameter]
+    public SbToastSeverity Severity { get; set; } = SbToastSeverity.Info;
+    
+    /// <summary>
+    /// Whether to show close button.
+    /// </summary>
+    [Parameter]
+    public bool ShowCloseButton { get; set; } = true;
+    
+    /// <summary>
+    /// Callback when toast is closed.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string GetIconName() => Severity switch
+    {
+        SbToastSeverity.Success => "check",
+        SbToastSeverity.Error => "x",
+        SbToastSeverity.Warning => "warning",
+        SbToastSeverity.Info => "info",
+        _ => "info"
+    };
+}
+

@@ -1,0 +1,88 @@
+@page "/demo/sufi-blazor/data-grid/styled"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridStripedBordered"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridStripedBordered"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridStyledDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:Striped"]" SourceCode="@styledCode" RelatedCode="@styledCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="Order" 
+                      Items="@_orders"
+                      Striped="true"
+                      Bordered="true">
+                <SbColumn TItem="Order" Field="Id" Title="@L["Demo:Id"]" />
+                <SbColumn TItem="Order" Field="Date" Title="@L["Demo:Date"]" Format="d" />
+                <SbColumn TItem="Order" Field="Total" Title="@L["Demo:Total"]" Format="C2" />
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:NoBorder"]" SourceCode="@stripedOnlyCode" RelatedCode="@styledCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="Order" 
+                      Items="@_orders"
+                      Striped="false"
+                      Bordered="false">
+                <SbColumn TItem="Order" Field="Id" Title="@L["Demo:Id"]" />
+                <SbColumn TItem="Order" Field="Date" Title="@L["Demo:Date"]" Format="d" />
+                <SbColumn TItem="Order" Field="Total" Title="@L["Demo:Total"]" Format="C2" />
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<Order> _orders = new()
+    {
+        new Order { Id = 1, Date = DateTime.Today.AddDays(-2), Total = 150.00m },
+        new Order { Id = 2, Date = DateTime.Today.AddDays(-1), Total = 75.50m },
+        new Order { Id = 3, Date = DateTime.Today, Total = 200.00m }
+    };
+
+    private class Order
+    {
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public decimal Total { get; set; }
+    }
+
+    private const string styledCodeBehind = @"private List<Order> _orders = new()
+{
+    new Order { Id = 1, Date = DateTime.Today, Total = 150.00m }
+};
+
+private class Order
+{
+    public int Id { get; set; }
+    public DateTime Date { get; set; }
+    public decimal Total { get; set; }
+}";
+
+    private const string styledCode = @"<SbDataGrid TItem=""Order"" 
+              Items=""@_orders""
+              Striped=""true""
+              Bordered=""true"">
+    <SbColumn TItem=""Order"" Field=""Id"" Title=""ID"" />
+    <SbColumn TItem=""Order"" Field=""Date"" Title=""Date"" Format=""d"" />
+    <SbColumn TItem=""Order"" Field=""Total"" Title=""Total"" Format=""C2"" />
+</SbDataGrid>";
+
+    private const string stripedOnlyCode = @"<SbDataGrid TItem=""Order"" 
+              Items=""@_orders""
+              Striped=""false""
+              Bordered=""false"">
+    <SbColumn TItem=""Order"" Field=""Id"" Title=""ID"" />
+    <SbColumn TItem=""Order"" Field=""Date"" Title=""Date"" Format=""d"" />
+    <SbColumn TItem=""Order"" Field=""Total"" Title=""Total"" Format=""C2"" />
+</SbDataGrid>";
+}

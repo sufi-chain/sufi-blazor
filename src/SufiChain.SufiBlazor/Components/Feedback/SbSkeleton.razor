@@ -1,0 +1,58 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+
+<div class="sb-skeleton sb-skeleton--@Variant.ToString().ToLower() @(Animation ? "sb-skeleton--animated" : "") @Class"
+     style="@GetStyle()"
+     aria-hidden="true">
+</div>
+
+@code {
+    /// <summary>
+    /// Skeleton variant.
+    /// </summary>
+    [Parameter]
+    public SbSkeletonVariant Variant { get; set; } = SbSkeletonVariant.Text;
+    
+    /// <summary>
+    /// Whether to animate.
+    /// </summary>
+    [Parameter]
+    public bool Animation { get; set; } = true;
+    
+    /// <summary>
+    /// Width (CSS value).
+    /// </summary>
+    [Parameter]
+    public string? Width { get; set; }
+    
+    /// <summary>
+    /// Height (CSS value).
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; }
+    
+    /// <summary>
+    /// Border radius (CSS value).
+    /// </summary>
+    [Parameter]
+    public string? BorderRadius { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string GetStyle()
+    {
+        var styles = new List<string>();
+        
+        if (!string.IsNullOrEmpty(Width))
+            styles.Add($"width: {Width}");
+        if (!string.IsNullOrEmpty(Height))
+            styles.Add($"height: {Height}");
+        if (!string.IsNullOrEmpty(BorderRadius))
+            styles.Add($"border-radius: {BorderRadius}");
+            
+        return string.Join("; ", styles);
+    }
+}

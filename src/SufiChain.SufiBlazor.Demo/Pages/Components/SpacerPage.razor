@@ -1,0 +1,173 @@
+@page "/demo/sufi-blazor/spacer"
+
+<PageTitle>@(L["Menu:Demo:Spacer"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Spacer"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:SpacerDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:SpacerBasic"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbHeading Level="2">Title</SbHeading>
+            <SbSpacer />
+            <SbText>Some content with default spacing above.</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SpacerSizes"]" SourceCode="@sizesCode">
+        <ExampleContent>
+            <SbStack Gap="2">
+                <div style="background: var(--sb-color-primary-50); padding: var(--sb-space-2); border-radius: var(--sb-radius-md);">
+                    <SbText Weight="SbFontWeight.Semibold">Content 1</SbText>
+                </div>
+                <SbSpacer Size="SbSpacerSize.ExtraSmall" />
+                <div style="background: var(--sb-color-primary-50); padding: var(--sb-space-2); border-radius: var(--sb-radius-md);">
+                    <SbText Weight="SbFontWeight.Semibold">Content 2 (4px gap)</SbText>
+                </div>
+                <SbSpacer Size="SbSpacerSize.Small" />
+                <div style="background: var(--sb-color-success-50); padding: var(--sb-space-2); border-radius: var(--sb-radius-md);">
+                    <SbText Weight="SbFontWeight.Semibold">Content 3 (8px gap)</SbText>
+                </div>
+                <SbSpacer Size="SbSpacerSize.Medium" />
+                <div style="background: var(--sb-color-info-50); padding: var(--sb-space-2); border-radius: var(--sb-radius-md);">
+                    <SbText Weight="SbFontWeight.Semibold">Content 4 (16px gap)</SbText>
+                </div>
+                <SbSpacer Size="SbSpacerSize.Large" />
+                <div style="background: var(--sb-color-warning-50); padding: var(--sb-space-2); border-radius: var(--sb-radius-md);">
+                    <SbText Weight="SbFontWeight.Semibold">Content 5 (24px gap)</SbText>
+                </div>
+                <SbSpacer Size="SbSpacerSize.ExtraLarge" />
+                <div style="background: var(--sb-color-danger-50); padding: var(--sb-space-2); border-radius: var(--sb-radius-md);">
+                    <SbText Weight="SbFontWeight.Semibold">Content 6 (32px gap)</SbText>
+                </div>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SpacerCustomHeight"]" SourceCode="@customHeightCode">
+        <ExampleContent>
+            <SbCard Elevation="2">First Card</SbCard>
+            <SbSpacer Height="3rem" />
+            <SbCard Elevation="2">Second Card with custom 3rem gap</SbCard>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SpacerHorizontal"]" SourceCode="@horizontalCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row">
+                <SbButton>Button 1</SbButton>
+                <SbSpacer Width="2rem" />
+                <SbButton>Button 2</SbButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SpacerGrow"]" SourceCode="@growCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Style="width: 100%;">
+                <SbText Weight="SbFontWeight.Semibold">Left Content</SbText>
+                <SbSpacer Grow="true" />
+                <SbButton Variant="SbButtonVariant.Solid">Right Button</SbButton>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SpacerSectionDividers"]" SourceCode="@dividersCode">
+        <ExampleContent>
+            <SbStack Gap="2">
+                <SbHeading Level="2">Section 1</SbHeading>
+                <SbText>Content for section 1...</SbText>
+
+                <SbSpacer Size="SbSpacerSize.Large" />
+
+                <SbHeading Level="2">Section 2</SbHeading>
+                <SbText>Content for section 2...</SbText>
+
+                <SbSpacer Size="SbSpacerSize.Large" />
+
+                <SbHeading Level="2">Section 3</SbHeading>
+                <SbText>Content for section 3...</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SpacerFooterPush"]" SourceCode="@footerCode">
+        <ExampleContent>
+            <SbStack Style="min-height: 200px; border: 1px solid var(--sb-color-border); border-radius: var(--sb-radius-md); overflow: hidden;">
+                <div style="padding: var(--sb-space-4); background: var(--sb-color-surface-variant);">
+                    <SbText Weight="SbFontWeight.Semibold">Header</SbText>
+                </div>
+                <div style="padding: var(--sb-space-4); flex: 0;">
+                    <SbText Color="SbColor.Muted">Main Content</SbText>
+                </div>
+                <SbSpacer Grow="true" />
+                <div style="padding: var(--sb-space-4); background: var(--sb-color-surface-variant);">
+                    <SbText Weight="SbFontWeight.Semibold">Footer pushed to bottom</SbText>
+                </div>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbSpacer" />
+</DemoLayout>
+
+@code {
+    private const string basicCode = @"<SbHeading Level=""2"">Title</SbHeading>
+<SbSpacer />
+<SbText>Some content with default spacing above.</SbText>";
+
+    private const string sizesCode = @"<div>Content 1</div>
+<SbSpacer Size=""SbSpacerSize.ExtraSmall"" />
+<div>Content 2 (4px gap)</div>
+
+<SbSpacer Size=""SbSpacerSize.Small"" />
+<div>Content 3 (8px gap)</div>
+
+<SbSpacer Size=""SbSpacerSize.Large"" />
+<div>Content 4 (24px gap)</div>
+
+<SbSpacer Size=""SbSpacerSize.ExtraLarge"" />
+<div>Content 5 (32px gap)</div>";
+
+    private const string customHeightCode = @"<SbCard>First Card</SbCard>
+<SbSpacer Height=""3rem"" />
+<SbCard>Second Card with custom 3rem gap</SbCard>";
+
+    private const string horizontalCode = @"<SbStack Direction=""SbStackDirection.Row"">
+    <SbButton>Button 1</SbButton>
+    <SbSpacer Width=""2rem"" />
+    <SbButton>Button 2</SbButton>
+</SbStack>";
+
+    private const string growCode = @"<SbStack Direction=""SbStackDirection.Row"" Style=""width: 100%;"">
+    <SbText>Left Content</SbText>
+    <SbSpacer Grow=""true"" />
+    <SbButton>Right Button</SbButton>
+</SbStack>";
+
+    private const string dividersCode = @"<SbStack Gap=""2"">
+    <SbHeading Level=""2"">Section 1</SbHeading>
+    <SbText>Content for section 1...</SbText>
+
+    <SbSpacer Size=""SbSpacerSize.Large"" />
+
+    <SbHeading Level=""2"">Section 2</SbHeading>
+    <SbText>Content for section 2...</SbText>
+
+    <SbSpacer Size=""SbSpacerSize.Large"" />
+
+    <SbHeading Level=""2"">Section 3</SbHeading>
+    <SbText>Content for section 3...</SbText>
+</SbStack>";
+
+    private const string footerCode = @"<SbStack Style=""min-height: 100vh;"">
+    <header>Header</header>
+    <main>Main Content</main>
+    <SbSpacer Grow=""true"" />
+    <footer>Footer pushed to bottom</footer>
+</SbStack>";
+}

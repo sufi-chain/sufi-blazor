@@ -1,0 +1,255 @@
+@page "/demo/sufi-blazor/breadcrumb"
+
+<PageTitle>@(L["Menu:Demo:Breadcrumb"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Breadcrumb"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:BreadcrumbDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BreadcrumbBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbBreadcrumb Items="@_basicItems" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BreadcrumbWithHomeLink"]" SourceCode="@homeCode" RelatedCode="@homeCodeBehind">
+        <ExampleContent>
+            <SbBreadcrumb Items="@_homeItems" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BreadcrumbDeepNavigation"]" SourceCode="@deepCode" RelatedCode="@deepCodeBehind">
+        <ExampleContent>
+            <SbBreadcrumb Items="@_deepItems" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BreadcrumbCustomSeparator"]" SourceCode="@separatorCode" RelatedCode="@separatorCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <div>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted" style="margin-bottom: var(--sb-space-2);">@L["Demo:BreadcrumbSeparatorArrow"]</SbText>
+                    <SbBreadcrumb Items="@_basicItems" Separator="→" />
+                </div>
+                
+                <div>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted" style="margin-bottom: var(--sb-space-2);">@L["Demo:BreadcrumbSeparatorChevron"]</SbText>
+                    <SbBreadcrumb Items="@_basicItems" Separator="›" />
+                </div>
+                
+                <div>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted" style="margin-bottom: var(--sb-space-2);">@L["Demo:BreadcrumbSeparatorPipe"]</SbText>
+                    <SbBreadcrumb Items="@_basicItems" Separator="|" />
+                </div>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BreadcrumbEcommerce"]" SourceCode="@ecommerceCode" RelatedCode="@ecommerceCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbCard>
+                    <SbBreadcrumb Items="@_ecommerceItems" />
+                    <SbDivider />
+                    <SbHeading Level="3">Wireless Mouse</SbHeading>
+                    <SbText>Ergonomic wireless mouse with precision tracking.</SbText>
+                </SbCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BreadcrumbDocumentation"]" SourceCode="@docsCode" RelatedCode="@docsCodeBehind">
+        <ExampleContent>
+            <SbCard>
+                <SbBreadcrumb Items="@_docsItems" />
+                <SbDivider />
+                <SbHeading Level="2">Button Component</SbHeading>
+                <SbText Color="SbColor.Muted">Interactive button component with multiple variants and sizes.</SbText>
+            </SbCard>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BreadcrumbAdminPanel"]" SourceCode="@adminCode" RelatedCode="@adminCodeBehind">
+        <ExampleContent>
+            <SbCard>
+                <SbBreadcrumb Items="@_adminItems" />
+                <SbDivider />
+                <SbHeading Level="2">Edit User Profile</SbHeading>
+                <SbText Color="SbColor.Muted">Modify user information and settings.</SbText>
+            </SbCard>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:BreadcrumbWithoutLinks"]" SourceCode="@noLinksCode" RelatedCode="@noLinksCodeBehind">
+        <ExampleContent>
+            <SbBreadcrumb Items="@_noLinksItems" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbBreadcrumb" />
+</DemoLayout>
+
+@code {
+    private List<SbBreadcrumbItem> _basicItems = new()
+    {
+        new SbBreadcrumbItem("Home", "/"),
+        new SbBreadcrumbItem("Products", "/products"),
+        new SbBreadcrumbItem("Electronics")
+    };
+
+    private List<SbBreadcrumbItem> _homeItems = new()
+    {
+        new SbBreadcrumbItem("Home", "/"),
+        new SbBreadcrumbItem("Library", "/library"),
+        new SbBreadcrumbItem("Data", "/library/data"),
+        new SbBreadcrumbItem("Bootstrap")
+    };
+
+    private List<SbBreadcrumbItem> _deepItems = new()
+    {
+        new SbBreadcrumbItem("Home", "/"),
+        new SbBreadcrumbItem("Categories", "/categories"),
+        new SbBreadcrumbItem("Electronics", "/categories/electronics"),
+        new SbBreadcrumbItem("Computers", "/categories/electronics/computers"),
+        new SbBreadcrumbItem("Laptops", "/categories/electronics/computers/laptops"),
+        new SbBreadcrumbItem("Gaming Laptops")
+    };
+
+    private List<SbBreadcrumbItem> _ecommerceItems = new()
+    {
+        new SbBreadcrumbItem("Home", "/"),
+        new SbBreadcrumbItem("Electronics", "/electronics"),
+        new SbBreadcrumbItem("Computer Accessories", "/electronics/accessories"),
+        new SbBreadcrumbItem("Mice", "/electronics/accessories/mice"),
+        new SbBreadcrumbItem("Wireless Mouse")
+    };
+
+    private List<SbBreadcrumbItem> _docsItems = new()
+    {
+        new SbBreadcrumbItem("Docs", "/docs"),
+        new SbBreadcrumbItem("Components", "/docs/components"),
+        new SbBreadcrumbItem("Actions", "/docs/components/actions"),
+        new SbBreadcrumbItem("Button")
+    };
+
+    private List<SbBreadcrumbItem> _adminItems = new()
+    {
+        new SbBreadcrumbItem("Dashboard", "/admin"),
+        new SbBreadcrumbItem("Users", "/admin/users"),
+        new SbBreadcrumbItem("User List", "/admin/users/list"),
+        new SbBreadcrumbItem("Edit User")
+    };
+
+    private List<SbBreadcrumbItem> _noLinksItems = new()
+    {
+        new SbBreadcrumbItem("Level 1"),
+        new SbBreadcrumbItem("Level 2"),
+        new SbBreadcrumbItem("Level 3"),
+        new SbBreadcrumbItem("Current Page")
+    };
+
+    private const string basicCodeBehind = @"private List<SbBreadcrumbItem> _basicItems = new()
+{
+    new SbBreadcrumbItem(""Home"", ""/""),
+    new SbBreadcrumbItem(""Products"", ""/products""),
+    new SbBreadcrumbItem(""Electronics"")
+};";
+
+    private const string basicCode = @"<SbBreadcrumb Items=""@_basicItems"" />";
+
+    private const string homeCodeBehind = @"private List<SbBreadcrumbItem> _homeItems = new()
+{
+    new SbBreadcrumbItem(""Home"", ""/""),
+    new SbBreadcrumbItem(""Library"", ""/library""),
+    new SbBreadcrumbItem(""Data"", ""/library/data""),
+    new SbBreadcrumbItem(""Bootstrap"")
+};";
+
+    private const string homeCode = @"<SbBreadcrumb Items=""@_homeItems"" />";
+
+    private const string deepCodeBehind = @"private List<SbBreadcrumbItem> _deepItems = new()
+{
+    new SbBreadcrumbItem(""Home"", ""/""),
+    new SbBreadcrumbItem(""Categories"", ""/categories""),
+    new SbBreadcrumbItem(""Electronics"", ""/categories/electronics""),
+    new SbBreadcrumbItem(""Computers"", ""/categories/electronics/computers""),
+    new SbBreadcrumbItem(""Laptops"", ""/categories/electronics/computers/laptops""),
+    new SbBreadcrumbItem(""Gaming Laptops"")
+};";
+
+    private const string deepCode = @"<SbBreadcrumb Items=""@_deepItems"" />";
+
+    private const string separatorCodeBehind = @"private List<SbBreadcrumbItem> _items = new()
+{
+    new SbBreadcrumbItem(""Home"", ""/""),
+    new SbBreadcrumbItem(""Products"", ""/products""),
+    new SbBreadcrumbItem(""Current"")
+};";
+
+    private const string separatorCode = @"<!-- Arrow separator -->
+<SbBreadcrumb Items=""@_items"" Separator=""→"" />
+
+<!-- Chevron separator -->
+<SbBreadcrumb Items=""@_items"" Separator=""›"" />
+
+<!-- Pipe separator -->
+<SbBreadcrumb Items=""@_items"" Separator=""|"" />";
+
+    private const string ecommerceCodeBehind = @"private List<SbBreadcrumbItem> _ecommerceItems = new()
+{
+    new SbBreadcrumbItem(""Home"", ""/""),
+    new SbBreadcrumbItem(""Electronics"", ""/electronics""),
+    new SbBreadcrumbItem(""Computer Accessories"", ""/electronics/accessories""),
+    new SbBreadcrumbItem(""Mice"", ""/electronics/accessories/mice""),
+    new SbBreadcrumbItem(""Wireless Mouse"")
+};";
+
+    private const string ecommerceCode = @"<SbCard>
+    <SbBreadcrumb Items=""@_ecommerceItems"" />
+    <SbDivider />
+    <SbHeading Level=""3"">Wireless Mouse</SbHeading>
+    <SbText>Product description...</SbText>
+</SbCard>";
+
+    private const string docsCodeBehind = @"private List<SbBreadcrumbItem> _docsItems = new()
+{
+    new SbBreadcrumbItem(""Docs"", ""/docs""),
+    new SbBreadcrumbItem(""Components"", ""/docs/components""),
+    new SbBreadcrumbItem(""Actions"", ""/docs/components/actions""),
+    new SbBreadcrumbItem(""Button"")
+};";
+
+    private const string docsCode = @"<SbCard>
+    <SbBreadcrumb Items=""@_docsItems"" />
+    <SbDivider />
+    <SbHeading Level=""2"">Button Component</SbHeading>
+</SbCard>";
+
+    private const string adminCodeBehind = @"private List<SbBreadcrumbItem> _adminItems = new()
+{
+    new SbBreadcrumbItem(""Dashboard"", ""/admin""),
+    new SbBreadcrumbItem(""Users"", ""/admin/users""),
+    new SbBreadcrumbItem(""User List"", ""/admin/users/list""),
+    new SbBreadcrumbItem(""Edit User"")
+};";
+
+    private const string adminCode = @"<SbCard>
+    <SbBreadcrumb Items=""@_adminItems"" />
+    <SbDivider />
+    <SbHeading Level=""2"">Edit User Profile</SbHeading>
+</SbCard>";
+
+    private const string noLinksCodeBehind = @"private List<SbBreadcrumbItem> _noLinksItems = new()
+{
+    new SbBreadcrumbItem(""Level 1""),
+    new SbBreadcrumbItem(""Level 2""),
+    new SbBreadcrumbItem(""Level 3""),
+    new SbBreadcrumbItem(""Current Page"")
+};";
+
+    private const string noLinksCode = @"<SbBreadcrumb Items=""@_noLinksItems"" />";
+}

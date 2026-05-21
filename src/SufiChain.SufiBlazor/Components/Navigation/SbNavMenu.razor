@@ -1,0 +1,78 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+
+<nav class="@CssClass" style="@Style" aria-label="@AriaLabel" @attributes="AdditionalAttributes">
+    @ChildContent
+</nav>
+
+@code {
+    /// <summary>
+    /// Whether the menu is collapsed.
+    /// </summary>
+    [Parameter]
+    public bool Collapsed { get; set; }
+
+    /// <summary>
+    /// Collapsed state changed callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> CollapsedChanged { get; set; }
+
+    /// <summary>
+    /// Accessible label for the navigation.
+    /// </summary>
+    [Parameter]
+    public string AriaLabel { get; set; } = "Navigation";
+
+    /// <summary>
+    /// Navigation content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-nav-menu" };
+
+            if (Collapsed)
+            {
+                classes.Add("sb-nav-menu--collapsed");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    /// <summary>
+    /// Toggle the collapsed state.
+    /// </summary>
+    public async Task ToggleAsync()
+    {
+        Collapsed = !Collapsed;
+        await CollapsedChanged.InvokeAsync(Collapsed);
+    }
+}

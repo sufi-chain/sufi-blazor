@@ -1,0 +1,103 @@
+@page "/demo/sufi-blazor"
+
+<PageTitle>@(L["Menu:Demo:Introduction"] + " - " + L["Demo:PageTitle"])</PageTitle>
+
+<DemoLayout>
+	<div class="docs-home">
+		<section class="docs-hero">
+			<h1 class="docs-hero-title">@L["Demo:HeroTitle"]</h1>
+			<p class="docs-hero-tagline">@L["Demo:IntroTagline"]</p>
+			<p class="docs-hero-lead">@L["Demo:IntroLead"]</p>
+			<div class="docs-hero-badges">
+				<span class="docs-badge docs-badge--primary">v0.1.0-alpha</span>
+				<span class="docs-badge docs-badge--secondary">.NET 10</span>
+				<span class="docs-badge docs-badge--secondary">Blazor</span>
+				<span class="docs-badge docs-badge--secondary">@L["Demo:IntroComponentsCount"]</span>
+			</div>
+			<NavLink href="/demo/sufi-blazor/getting-started" class="docs-hero-cta">
+				@L["Menu:Demo:GettingStarted"]
+			</NavLink>
+		</section>
+
+		<section class="docs-capabilities">
+			<h2 class="docs-section-title">@L["Demo:IntroCapabilitiesTitle"]</h2>
+			<p class="docs-section-lead">@L["Demo:IntroCapabilitiesLead"]</p>
+			<div class="docs-capabilities-grid">
+				<a href="/demo/sufi-blazor/button" class="demo-category-card">
+					<h3>@L["Menu:Demo:Actions"]</h3>
+					<p>@L["Demo:IntroCapabilityActions"]</p>
+				</a>
+				<a href="/demo/sufi-blazor/text-field" class="demo-category-card">
+					<h3>@L["Menu:Demo:Forms"]</h3>
+					<p>@L["Demo:IntroCapabilityForms"]</p>
+				</a>
+				<a href="/demo/sufi-blazor/data-grid" class="demo-category-card">
+					<h3>@L["Menu:Demo:Data"]</h3>
+					<p>@L["Demo:IntroCapabilityData"]</p>
+				</a>
+				<a href="/demo/sufi-blazor/stack" class="demo-category-card">
+					<h3>@L["Menu:Demo:Layout"]</h3>
+					<p>@L["Demo:IntroCapabilityLayout"]</p>
+				</a>
+				<a href="/demo/sufi-blazor/tabs" class="demo-category-card">
+					<h3>@L["Menu:Demo:Navigation"]</h3>
+					<p>@L["Demo:IntroCapabilityNavigation"]</p>
+				</a>
+				<a href="/demo/sufi-blazor/dialog" class="demo-category-card">
+					<h3>@L["Menu:Demo:Overlays"]</h3>
+					<p>@L["Demo:IntroCapabilityOverlays"]</p>
+				</a>
+				<a href="/demo/sufi-blazor/alert" class="demo-category-card">
+					<h3>@L["Menu:Demo:Feedback"]</h3>
+					<p>@L["Demo:IntroCapabilityFeedback"]</p>
+				</a>
+				<a href="/demo/sufi-blazor/card" class="demo-category-card">
+					<h3>@L["Menu:Demo:Surfaces"]</h3>
+					<p>@L["Demo:IntroCapabilitySurfaces"]</p>
+				</a>
+				<a href="/demo/sufi-blazor/text" class="demo-category-card">
+					<h3>@L["Menu:Demo:Typography"]</h3>
+					<p>@L["Demo:IntroCapabilityTypography"]</p>
+				</a>
+			</div>
+		</section>
+
+		<section class="docs-features">
+			<h2 class="docs-section-title">@L["Demo:IntroWhyTitle"]</h2>
+			<p class="docs-section-lead">@L["Demo:IntroWhyLead"]</p>
+			<div class="docs-features-grid">
+				<div class="docs-feature-card">
+					<div class="docs-feature-icon"><SbIcon Name="palette" Size="SbSize.Xl" Class="docs-feature-icon__svg" /></div>
+					<h3>@L["Demo:FeatureTheming"]</h3>
+					<p>@L["Demo:FeatureThemingDesc"]</p>
+				</div>
+				<div class="docs-feature-card">
+					<div class="docs-feature-icon"><SbIcon Name="globe" Size="SbSize.Xl" Class="docs-feature-icon__svg" /></div>
+					<h3>@L["Demo:FeatureRtl"]</h3>
+					<p>@L["Demo:FeatureRtlDesc"]</p>
+				</div>
+				<div class="docs-feature-card">
+					<div class="docs-feature-icon"><SbIcon Name="shield-check" Size="SbSize.Xl" Class="docs-feature-icon__svg" /></div>
+					<h3>@L["Demo:FeatureA11y"]</h3>
+					<p>@L["Demo:FeatureA11yDesc"]</p>
+				</div>
+				<div class="docs-feature-card">
+					<div class="docs-feature-icon"><SbIcon Name="package" Size="SbSize.Xl" Class="docs-feature-icon__svg" /></div>
+					<h3>@L["Demo:FeatureSelfContained"]</h3>
+					<p>@L["Demo:FeatureSelfContainedDesc"]</p>
+				</div>
+				<div class="docs-feature-card">
+					<div class="docs-feature-icon"><SbIcon Name="clipboard-check" Size="SbSize.Xl" Class="docs-feature-icon__svg" /></div>
+					<h3>@L["Demo:FeatureTested"]</h3>
+					<p>@L["Demo:FeatureTestedDesc"]</p>
+				</div>
+				<div class="docs-feature-card">
+					<div class="docs-feature-icon"><SbIcon Name="smartphone" Size="SbSize.Xl" Class="docs-feature-icon__svg" /></div>
+					<h3>@L["Demo:FeatureResponsive"]</h3>
+					<p>@L["Demo:FeatureResponsiveDesc"]</p>
+				</div>
+			</div>
+		</section>
+
+	</div>
+</DemoLayout>

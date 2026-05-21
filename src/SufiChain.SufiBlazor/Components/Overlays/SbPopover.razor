@@ -1,0 +1,228 @@
+@namespace SufiChain.SufiBlazor.Components.Overlays
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+
+<div class="sb-popover-anchor" @ref="_anchorRef">
+    @AnchorContent
+    @if (Open)
+    {
+        <div class="@PopoverCssClass"
+             style="@PopoverStyle"
+             @ref="_popoverRef"
+             @onclick:stopPropagation="true"
+             @attributes="AdditionalAttributes">
+            @ChildContent
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _anchorRef;
+    private ElementReference _popoverRef;
+    private DotNetObjectReference<SbPopover>? _dotNetRef;
+    private bool _flipUp;
+    private int _constrainShiftX;
+    private int _constrainShiftY;
+
+    /// <summary>
+    /// Whether the popover is open.
+    /// </summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>
+    /// Callback when open state changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>
+    /// Content that triggers the popover.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? AnchorContent { get; set; }
+
+    /// <summary>
+    /// Popover content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Popover placement.
+    /// </summary>
+    [Parameter]
+    public SbPlacement Placement { get; set; } = SbPlacement.Bottom;
+
+    /// <summary>
+    /// Offset from anchor in pixels.
+    /// </summary>
+    [Parameter]
+    public int Offset { get; set; } = 8;
+
+    /// <summary>
+    /// When true, popover is shifted so it stays within the viewport (avoids overflow when anchor is near edges).
+    /// </summary>
+    [Parameter]
+    public bool ConstrainToViewport { get; set; } = true;
+
+    /// <summary>
+    /// When true, popover flips above the anchor when there isn't enough space below (e.g. near bottom of viewport).
+    /// </summary>
+    [Parameter]
+    public bool FlipBehavior { get; set; } = true;
+
+    /// <summary>
+    /// Estimated popover height in pixels used to decide whether to flip. Used when FlipBehavior is true.
+    /// </summary>
+    [Parameter]
+    public int FlipPreferredHeight { get; set; } = 300;
+
+    /// <summary>
+    /// Close when clicking outside.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnClickAway { get; set; } = true;
+
+    /// <summary>
+    /// Close on Escape key.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnEscape { get; set; } = true;
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private SbPlacement EffectivePlacement
+    {
+        get
+        {
+            if (!_flipUp) return Placement;
+            return Placement switch
+            {
+                SbPlacement.Bottom => SbPlacement.Top,
+                SbPlacement.BottomStart => SbPlacement.TopStart,
+                SbPlacement.BottomEnd => SbPlacement.TopEnd,
+                SbPlacement.Top => SbPlacement.Bottom,
+                SbPlacement.TopStart => SbPlacement.BottomStart,
+                SbPlacement.TopEnd => SbPlacement.BottomEnd,
+                _ => Placement
+            };
+        }
+    }
+
+    private string PopoverCssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-popover" };
+            classes.Add($"sb-popover--{EffectivePlacement.ToCssClass()}");
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(" ", classes);
+        }
+    }
+
+    private string PopoverStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            parts.Add($"--sb-popover-shift-x: {_constrainShiftX}px");
+            parts.Add($"--sb-popover-shift-y: {_constrainShiftY}px");
+            if (!string.IsNullOrWhiteSpace(Style))
+            {
+                parts.Add(Style);
+            }
+            return string.Join("; ", parts);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+        }
+
+        if (Open)
+        {
+            if (FlipBehavior && IsBottomPlacement(Placement))
+            {
+                _flipUp = await JSRuntime.InvokeAsync<bool>("SufiBlazor.select.shouldFlipUp", _anchorRef, FlipPreferredHeight);
+            }
+            else
+            {
+                _flipUp = false;
+            }
+
+            if (ConstrainToViewport)
+            {
+                try
+                {
+                    var result = await JSRuntime.InvokeAsync<PopoverConstraintResult>("SufiBlazor.popover.constrainToViewport", _anchorRef, _popoverRef, Offset);
+                    _constrainShiftX = result?.ShiftX ?? 0;
+                    _constrainShiftY = result?.ShiftY ?? 0;
+                }
+                catch
+                {
+                    _constrainShiftX = 0;
+                    _constrainShiftY = 0;
+                }
+            }
+            else
+            {
+                _constrainShiftX = 0;
+                _constrainShiftY = 0;
+            }
+
+            if (CloseOnClickAway)
+            {
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
+            }
+
+            StateHasChanged();
+        }
+        else
+        {
+            _flipUp = false;
+            _constrainShiftX = 0;
+            _constrainShiftY = 0;
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+        }
+    }
+
+    private static bool IsBottomPlacement(SbPlacement placement) =>
+        placement is SbPlacement.Bottom or SbPlacement.BottomStart or SbPlacement.BottomEnd;
+
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (CloseOnClickAway && Open)
+        {
+            await OpenChanged.InvokeAsync(false);
+        }
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}

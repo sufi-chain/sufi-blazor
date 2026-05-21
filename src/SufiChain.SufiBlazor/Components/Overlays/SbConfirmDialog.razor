@@ -1,0 +1,196 @@
+@namespace SufiChain.SufiBlazor.Components.Overlays
+@using SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Components.Actions
+@inject IStringLocalizer<SufiBlazorResource> L
+@inject IStringLocalizer<SufiBlazorResource> L
+
+@if (_isOpen)
+{
+    <div class="sb-confirm-dialog-overlay" @onclick="OnOverlayClick">
+        <div class="sb-confirm-dialog sb-confirm-dialog--@Variant.ToString().ToLower() @Class" @onclick:stopPropagation="true" role="alertdialog" aria-modal="true">
+            @if (Icon != null)
+            {
+                <div class="sb-confirm-dialog__icon sb-confirm-dialog__icon--@Variant.ToString().ToLower()">
+                    @Icon
+                </div>
+            }
+            else
+            {
+                <div class="sb-confirm-dialog__icon sb-confirm-dialog__icon--@Variant.ToString().ToLower()">
+                    <SbIcon Name="@GetDefaultIconName()" Size="SbSize.Lg" />
+                </div>
+            }
+            
+            <div class="sb-confirm-dialog__content">
+                <h3 class="sb-confirm-dialog__title">@Title</h3>
+                @if (!string.IsNullOrEmpty(Message))
+                {
+                    <p class="sb-confirm-dialog__message">@Message</p>
+                }
+                @if (ChildContent != null)
+                {
+                    <div class="sb-confirm-dialog__body">
+                        @ChildContent
+                    </div>
+                }
+            </div>
+            
+            <div class="sb-confirm-dialog__actions">
+                @if (ShowCancelButton)
+                {
+                    <SbButton Variant="SbButtonVariant.Ghost" OnClick="Cancel">@(CancelText ?? L["Cancel"])</SbButton>
+                }
+                <SbButton Variant="SbButtonVariant.Solid"
+                          Color="@GetConfirmButtonColor()"
+                          OnClick="Confirm">
+                    @(ConfirmText ?? L["Confirm"])
+                </SbButton>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isOpen;
+    private TaskCompletionSource<bool>? _tcs;
+    
+    /// <summary>
+    /// Dialog title.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = "Confirm";
+    
+    /// <summary>
+    /// Dialog message.
+    /// </summary>
+    [Parameter]
+    public string? Message { get; set; }
+    
+    /// <summary>
+    /// Dialog content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Custom icon.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+    
+    /// <summary>
+    /// Dialog variant.
+    /// </summary>
+    [Parameter]
+    public SbConfirmDialogVariant Variant { get; set; } = SbConfirmDialogVariant.Default;
+    
+    /// <summary>
+    /// Confirm button text.
+    /// </summary>
+    [Parameter]
+    public string? ConfirmText { get; set; }
+    
+    /// <summary>
+    /// Cancel button text.
+    /// </summary>
+    [Parameter]
+    public string? CancelText { get; set; }
+    
+    /// <summary>
+    /// Whether to show cancel button.
+    /// </summary>
+    [Parameter]
+    public bool ShowCancelButton { get; set; } = true;
+    
+    /// <summary>
+    /// Whether clicking outside closes the dialog.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnOverlayClick { get; set; } = true;
+    
+    /// <summary>
+    /// Callback when confirmed.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnConfirm { get; set; }
+    
+    /// <summary>
+    /// Callback when cancelled.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string GetDefaultIconName() => Variant switch
+    {
+        SbConfirmDialogVariant.Danger => "warning",
+        SbConfirmDialogVariant.Warning => "warning",
+        SbConfirmDialogVariant.Info => "info",
+        _ => "help-circle"
+    };
+
+    private SbColor GetConfirmButtonColor() => Variant switch
+    {
+        SbConfirmDialogVariant.Danger => SbColor.Danger,
+        SbConfirmDialogVariant.Warning => SbColor.Warning,
+        SbConfirmDialogVariant.Info => SbColor.Info,
+        _ => SbColor.Primary
+    };
+    
+    /// <summary>
+    /// Show the dialog and wait for result.
+    /// </summary>
+    public Task<bool> ShowAsync()
+    {
+        _tcs = new TaskCompletionSource<bool>();
+        _isOpen = true;
+        StateHasChanged();
+        return _tcs.Task;
+    }
+    
+    /// <summary>
+    /// Show the dialog.
+    /// </summary>
+    public void Show()
+    {
+        _isOpen = true;
+        StateHasChanged();
+    }
+    
+    /// <summary>
+    /// Close the dialog.
+    /// </summary>
+    public void Close()
+    {
+        _isOpen = false;
+        StateHasChanged();
+    }
+    
+    private async Task Confirm()
+    {
+        _isOpen = false;
+        _tcs?.TrySetResult(true);
+        await OnConfirm.InvokeAsync();
+    }
+    
+    private async Task Cancel()
+    {
+        _isOpen = false;
+        _tcs?.TrySetResult(false);
+        await OnCancel.InvokeAsync();
+    }
+    
+    private async Task OnOverlayClick()
+    {
+        if (CloseOnOverlayClick)
+        {
+            await Cancel();
+        }
+    }
+}
+

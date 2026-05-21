@@ -1,0 +1,338 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Common
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-timepicker @Class" @ref="_anchorRef">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-timepicker__label" for="@Id">
+            @Label
+            @if (Required)
+            {
+                <span class="sb-timepicker__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+    <div class="sb-timepicker__trigger @(Disabled ? "sb-timepicker__trigger--disabled" : "")" @onclick="Toggle">
+        <span class="@(HasValue ? "sb-timepicker__value" : "sb-timepicker__placeholder")">
+            @(HasValue ? GetDisplayText() : (Placeholder ?? L["SelectTime_Placeholder"]))
+        </span>
+        @if (Clearable && HasValue && !Disabled)
+        {
+            <button type="button" 
+                    class="sb-timepicker__clear" 
+                    @onclick="Clear" 
+                    @onclick:stopPropagation="true"
+                    aria-label="@L["ClearTime"]">
+                <SbIcon Name="x" Size="SbSize.Sm" />
+            </button>
+        }
+        <span class="sb-timepicker__icon"><SbIcon Name="clock" Size="SbSize.Sm" /></span>
+    </div>
+    
+    @if (_isOpen)
+    {
+        <div class="@DropdownClass">
+            <div class="sb-timepicker__selectors">
+                <div class="sb-timepicker__column">
+                    <div class="sb-timepicker__column-header">@L["Hour"]</div>
+                    <div class="sb-timepicker__scroll">
+                        @foreach (var hour in GetHours())
+                        {
+                            <button type="button"
+                                    class="sb-timepicker__option @(hour == _selectedHour ? "sb-timepicker__option--selected" : "")"
+                                    @onclick="() => SelectHour(hour)">
+                                @hour.ToString("D2")
+                            </button>
+                        }
+                    </div>
+                </div>
+                
+                <div class="sb-timepicker__separator">:</div>
+                
+                <div class="sb-timepicker__column">
+                    <div class="sb-timepicker__column-header">@L["Minute"]</div>
+                    <div class="sb-timepicker__scroll">
+                        @foreach (var minute in GetMinutes())
+                        {
+                            <button type="button"
+                                    class="sb-timepicker__option @(minute == _selectedMinute ? "sb-timepicker__option--selected" : "")"
+                                    @onclick="() => SelectMinute(minute)">
+                                @minute.ToString("D2")
+                            </button>
+                        }
+                    </div>
+                </div>
+                
+                @if (ShowSeconds)
+                {
+                    <div class="sb-timepicker__separator">:</div>
+                    
+                    <div class="sb-timepicker__column">
+                        <div class="sb-timepicker__column-header">@L["Second"]</div>
+                        <div class="sb-timepicker__scroll">
+                            @foreach (var second in GetSeconds())
+                            {
+                                <button type="button"
+                                        class="sb-timepicker__option @(second == _selectedSecond ? "sb-timepicker__option--selected" : "")"
+                                        @onclick="() => SelectSecond(second)">
+                                    @second.ToString("D2")
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+                
+                @if (!Use24Hour)
+                {
+                    <div class="sb-timepicker__column sb-timepicker__column--period">
+                        <div class="sb-timepicker__column-header">@L["Period"]</div>
+                        <div class="sb-timepicker__scroll">
+                            <button type="button"
+                                    class="sb-timepicker__option @(_isPM == false ? "sb-timepicker__option--selected" : "")"
+                                    @onclick="() => SelectPeriod(false)">
+                                AM
+                            </button>
+                            <button type="button"
+                                    class="sb-timepicker__option @(_isPM == true ? "sb-timepicker__option--selected" : "")"
+                                    @onclick="() => SelectPeriod(true)">
+                                PM
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="sb-timepicker__footer">
+                <button type="button" class="sb-timepicker__now-btn" @onclick="SelectNow">
+                    @L["Now"]
+                </button>
+                <button type="button" class="sb-timepicker__apply-btn" @onclick="Apply">
+                    @L["Apply"]
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _anchorRef;
+    private DotNetObjectReference<SbTimePicker>? _dotNetRef;
+    private bool _isOpen;
+    private int _selectedHour;
+    private int _selectedMinute;
+    private int _selectedSecond;
+    private bool _isPM;
+    private bool _shouldFlip;
+    
+    /// <summary>
+    /// The selected time value.
+    /// </summary>
+    [Parameter]
+    public TimeOnly? Value { get; set; }
+    
+    /// <summary>
+    /// Callback when the time changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TimeOnly?> ValueChanged { get; set; }
+    
+    /// <summary>
+    /// Whether to use 24-hour format.
+    /// </summary>
+    [Parameter]
+    public bool Use24Hour { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to show seconds.
+    /// </summary>
+    [Parameter]
+    public bool ShowSeconds { get; set; }
+    
+    /// <summary>
+    /// Minute step interval.
+    /// </summary>
+    [Parameter]
+    public int MinuteStep { get; set; } = 1;
+    
+    /// <summary>
+    /// Second step interval.
+    /// </summary>
+    [Parameter]
+    public int SecondStep { get; set; } = 1;
+    
+    /// <summary>
+    /// Placeholder text. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+    
+    /// <summary>
+    /// Whether to show clear button.
+    /// </summary>
+    [Parameter]
+    public bool Clearable { get; set; } = true;
+    
+    /// <summary>
+    /// Whether the picker is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Element ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Label text displayed above the picker.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Whether the field is required (shows asterisk).
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private bool HasValue => Value.HasValue;
+    
+    private string DropdownClass => _shouldFlip 
+        ? "sb-timepicker__dropdown sb-timepicker__dropdown--flip-up" 
+        : "sb-timepicker__dropdown";
+    
+    protected override void OnParametersSet()
+    {
+        if (Value.HasValue)
+        {
+            var time = Value.Value;
+            _selectedHour = Use24Hour ? time.Hour : (time.Hour % 12 == 0 ? 12 : time.Hour % 12);
+            _selectedMinute = time.Minute;
+            _selectedSecond = time.Second;
+            _isPM = time.Hour >= 12;
+        }
+        else
+        {
+            var now = DateTime.Now;
+            _selectedHour = Use24Hour ? now.Hour : (now.Hour % 12 == 0 ? 12 : now.Hour % 12);
+            _selectedMinute = now.Minute;
+            _selectedSecond = now.Second;
+            _isPM = now.Hour >= 12;
+        }
+    }
+    
+    private string GetDisplayText()
+    {
+        if (!Value.HasValue) return "";
+        
+        var format = ShowSeconds 
+            ? (Use24Hour ? "HH:mm:ss" : "hh:mm:ss tt")
+            : (Use24Hour ? "HH:mm" : "hh:mm tt");
+            
+        return Value.Value.ToString(format);
+    }
+    
+    private IEnumerable<int> GetHours()
+    {
+        var max = Use24Hour ? 24 : 13;
+        var start = Use24Hour ? 0 : 1;
+        for (int i = start; i < max; i++)
+            yield return i;
+    }
+    
+    private IEnumerable<int> GetMinutes()
+    {
+        for (int i = 0; i < 60; i += MinuteStep)
+            yield return i;
+    }
+    
+    private IEnumerable<int> GetSeconds()
+    {
+        for (int i = 0; i < 60; i += SecondStep)
+            yield return i;
+    }
+    
+    private async Task Toggle()
+    {
+        if (Disabled) return;
+        
+        _isOpen = !_isOpen;
+        
+        if (_isOpen)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
+            
+            // Check if dropdown should flip upward
+            _shouldFlip = await JSRuntime.InvokeAsync<bool>("SufiBlazor.select.shouldFlipUp", _anchorRef, 300);
+            StateHasChanged();
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+        }
+    }
+    
+    private void SelectHour(int hour) => _selectedHour = hour;
+    private void SelectMinute(int minute) => _selectedMinute = minute;
+    private void SelectSecond(int second) => _selectedSecond = second;
+    private void SelectPeriod(bool isPM) => _isPM = isPM;
+    
+    private async Task SelectNow()
+    {
+        var now = DateTime.Now;
+        _selectedHour = Use24Hour ? now.Hour : (now.Hour % 12 == 0 ? 12 : now.Hour % 12);
+        _selectedMinute = now.Minute;
+        _selectedSecond = now.Second;
+        _isPM = now.Hour >= 12;
+        await Apply();
+    }
+    
+    private async Task Apply()
+    {
+        int hour24 = _selectedHour;
+        if (!Use24Hour)
+        {
+            if (_isPM && _selectedHour != 12)
+                hour24 = _selectedHour + 12;
+            else if (!_isPM && _selectedHour == 12)
+                hour24 = 0;
+        }
+        
+        var time = new TimeOnly(hour24, _selectedMinute, ShowSeconds ? _selectedSecond : 0);
+        await ValueChanged.InvokeAsync(time);
+        
+        _isOpen = false;
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+    }
+    
+    private async Task Clear()
+    {
+        await ValueChanged.InvokeAsync(null);
+    }
+    
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}

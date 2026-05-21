@@ -1,0 +1,165 @@
+@page "/demo/sufi-blazor/date-picker"
+
+<PageTitle>@(L["Menu:Demo:DatePicker"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DatePicker"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DatePickerPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DatePickerBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbDatePicker @bind-Value="_selectedDate" Label="@L["Demo:DatePickerBirthDate"]" />
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:DatePickerSelected"]: @(_selectedDate?.ToString("yyyy-MM-dd") ?? L["Demo:DatePickerNone"])</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DatePickerConstraints"]" SourceCode="@constraintsCode" RelatedCode="@constraintsCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbDatePicker @bind-Value="_checkInDate" 
+                            Label="@L["Demo:DatePickerCheckInDate"]"
+                            Min="@DateOnly.FromDateTime(DateTime.Today)"
+                            Max="@DateOnly.FromDateTime(DateTime.Today.AddMonths(6))" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DatePickerDisableWeekends"]" SourceCode="@disableWeekendsCode" RelatedCode="@disableWeekendsCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbDatePicker @bind-Value="_appointmentDate" 
+                            Label="@L["Demo:DatePickerAppointmentDate"]"
+                            DisableWeekends="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DatePickerCustomFormat"]" SourceCode="@customFormatCode" RelatedCode="@customFormatCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbDatePicker @bind-Value="_eventDate" 
+                            Label="@L["Demo:DatePickerEventDate"]"
+                            Format="MMMM dd, yyyy" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DatePickerRequired"]" SourceCode="@requiredCode" RelatedCode="@requiredCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbDatePicker @bind-Value="_dueDate" 
+                            Label="@L["Demo:DatePickerDueDate"]"
+                            Clearable="false"
+                            Placeholder="@L["Demo:DatePickerDueDatePlaceholder"]" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DatePickerDisabled"]" SourceCode="@disabledCode" RelatedCode="@disabledCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbDatePicker Value="@DateOnly.FromDateTime(DateTime.Today)" 
+                            Label="@L["Demo:DatePickerRegistrationDate"]"
+                            Disabled="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <SbHeading Level="2" Size="4">@L["Demo:DateRangePickerTitle"]</SbHeading>
+    <SbText Color="SbColor.Muted" Style="margin-bottom: var(--sb-space-2);">@L["Demo:DateRangePickerDescription"]</SbText>
+
+    <DemoSection Title="@L["Demo:DateRangeBasic"]" SourceCode="@dateRangeCode" RelatedCode="@dateRangeCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbDateRangePicker @bind-Value="_dateRange" Label="@L["Demo:DateRangeTripDates"]" />
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                    @if (_dateRange?.Start.HasValue == true || _dateRange?.End.HasValue == true)
+                    {
+                        <text>@L["Demo:DateRangeFrom"] @(_dateRange.Start?.ToString("yyyy-MM-dd") ?? "…") @L["Demo:DateRangeTo"] @(_dateRange.End?.ToString("yyyy-MM-dd") ?? "…")</text>
+                    }
+                    else
+                    {
+                        <text>@L["Demo:DateRangeNoSelection"]</text>
+                    }
+                </SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DateRangeNoPresets"]" SourceCode="@dateRangeNoPresetsCode" RelatedCode="@dateRangeNoPresetsCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbDateRangePicker @bind-Value="_dateRangeNoPresets" 
+                                   Label="@L["Demo:DateRangeCustomRange"]"
+                                   ShowPresets="false" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDatePicker" />
+    <DocViewer DocName="SbDateRangePicker" />
+</DemoLayout>
+
+@code {
+    private DateOnly? _selectedDate;
+    private DateOnly? _checkInDate;
+    private DateOnly? _appointmentDate;
+    private DateOnly? _eventDate;
+    private DateOnly? _dueDate;
+    private SbDateRange? _dateRange;
+    private SbDateRange? _dateRangeNoPresets;
+
+    private const string basicCodeBehind = @"private DateOnly? _selectedDate;";
+
+    private const string basicCode = @"<SbDatePicker @bind-Value=""_selectedDate"" Label=""Birth Date"" />";
+
+    private const string constraintsCodeBehind = @"private DateOnly? _checkInDate;";
+
+    private const string constraintsCode = @"<SbDatePicker @bind-Value=""_checkInDate"" 
+                Label=""Check-in Date""
+                Min=""@DateOnly.FromDateTime(DateTime.Today)""
+                Max=""@DateOnly.FromDateTime(DateTime.Today.AddMonths(6))"" />";
+
+    private const string disableWeekendsCodeBehind = @"private DateOnly? _appointmentDate;";
+
+    private const string disableWeekendsCode = @"<SbDatePicker @bind-Value=""_appointmentDate"" 
+                Label=""Appointment Date""
+                DisableWeekends=""true"" />";
+
+    private const string customFormatCodeBehind = @"private DateOnly? _eventDate;";
+
+    private const string customFormatCode = @"<SbDatePicker @bind-Value=""_eventDate"" 
+                Label=""Event Date""
+                Format=""MMMM dd, yyyy"" />";
+
+    private const string requiredCodeBehind = @"private DateOnly? _dueDate;";
+
+    private const string requiredCode = @"<SbDatePicker @bind-Value=""_dueDate"" 
+                Label=""Due Date""
+                Clearable=""false""
+                Placeholder=""Select due date (required)"" />";
+
+    private const string disabledCodeBehind = @"// Fixed value for disabled demo; no binding needed";
+
+    private const string disabledCode = @"<SbDatePicker Value=""@DateOnly.FromDateTime(DateTime.Today)"" 
+                Label=""Registration Date""
+                Disabled=""true"" />";
+
+    private const string dateRangeCodeBehind = @"private SbDateRange? _dateRange;";
+
+    private const string dateRangeCode = @"<SbDateRangePicker @bind-Value=""_dateRange"" Label=""Trip Dates"" />";
+
+    private const string dateRangeNoPresetsCodeBehind = @"private SbDateRange? _dateRangeNoPresets;";
+
+    private const string dateRangeNoPresetsCode = @"<SbDateRangePicker @bind-Value=""_dateRangeNoPresets"" 
+                Label=""Custom Range""
+                ShowPresets=""false"" />";
+}

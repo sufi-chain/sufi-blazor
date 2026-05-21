@@ -1,0 +1,214 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-stepper @(Orientation == SbStepperOrientation.Vertical ? "sb-stepper--vertical" : "sb-stepper--horizontal") @Class">
+    <div class="sb-stepper__steps">
+        @foreach (var (step, index) in _steps.Select((s, i) => (s, i)))
+        {
+            var status = GetStepStatus(index);
+            <div class="sb-stepper__step @($"sb-stepper__step--{status}") @(step.Optional ? "sb-stepper__step--optional" : "")">
+                <button type="button"
+                        class="sb-stepper__step-button"
+                        disabled="@(Linear && index > ActiveIndex)"
+                        @onclick="() => GoToStep(index)">
+                    <span class="sb-stepper__step-indicator">
+                        @if (status == "completed")
+                        {
+                            <span>✓</span>
+                        }
+                        else if (step.Icon != null)
+                        {
+                            @step.Icon
+                        }
+                        else
+                        {
+                            <span>@(index + 1)</span>
+                        }
+                    </span>
+                    <span class="sb-stepper__step-labels">
+                        <span class="sb-stepper__step-label">@step.Label</span>
+                        @if (step.Optional)
+                        {
+                            <span class="sb-stepper__step-optional">@(OptionalText ?? L["Optional"])</span>
+                        }
+                        @if (!string.IsNullOrEmpty(step.Description))
+                        {
+                            <span class="sb-stepper__step-description">@step.Description</span>
+                        }
+                    </span>
+                </button>
+                
+                @if (index < _steps.Count - 1)
+                {
+                    <div class="sb-stepper__connector @(index < ActiveIndex ? "sb-stepper__connector--completed" : "")"></div>
+                }
+            </div>
+        }
+    </div>
+    
+    <div class="sb-stepper__content">
+        <CascadingValue Value="this">
+            @ChildContent
+        </CascadingValue>
+    </div>
+    
+    @if (ShowNavigation)
+    {
+        <div class="sb-stepper__navigation">
+            <button type="button"
+                    class="sb-stepper__back"
+                    disabled="@(ActiveIndex == 0)"
+                    @onclick="Previous">
+                @(BackText ?? L["Previous"])
+            </button>
+            
+            @if (ActiveIndex < _steps.Count - 1)
+            {
+                <button type="button"
+                        class="sb-stepper__next"
+                        @onclick="Next">
+                    @(NextText ?? L["Next"])
+                </button>
+            }
+            else
+            {
+                <button type="button"
+                        class="sb-stepper__finish"
+                        @onclick="Finish">
+                    @(FinishText ?? L["Finish"])
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<SbStep> _steps = new();
+    
+    /// <summary>
+    /// Step content (SbStep components).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Current active step index.
+    /// </summary>
+    [Parameter]
+    public int ActiveIndex { get; set; }
+    
+    /// <summary>
+    /// Callback when active step changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> ActiveIndexChanged { get; set; }
+    
+    /// <summary>
+    /// Whether steps must be completed in order.
+    /// </summary>
+    [Parameter]
+    public bool Linear { get; set; } = true;
+    
+    /// <summary>
+    /// Stepper orientation.
+    /// </summary>
+    [Parameter]
+    public SbStepperOrientation Orientation { get; set; } = SbStepperOrientation.Horizontal;
+    
+    /// <summary>
+    /// Whether to show navigation buttons.
+    /// </summary>
+    [Parameter]
+    public bool ShowNavigation { get; set; } = true;
+    
+    /// <summary>
+    /// Callback when stepper is completed.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnFinish { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    /// <summary>
+    /// Text for the Back button.
+    /// </summary>
+    [Parameter]
+    public string? BackText { get; set; }
+
+    /// <summary>
+    /// Text for the Next button. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? NextText { get; set; }
+
+    /// <summary>
+    /// Text for the Finish button. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? FinishText { get; set; }
+
+    /// <summary>
+    /// Text for optional steps label. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? OptionalText { get; set; }
+    
+    internal void RegisterStep(SbStep step)
+    {
+        if (!_steps.Contains(step))
+        {
+            _steps.Add(step);
+            StateHasChanged();
+        }
+    }
+    
+    internal void UnregisterStep(SbStep step)
+    {
+        _steps.Remove(step);
+        StateHasChanged();
+    }
+    
+    internal bool IsStepActive(SbStep step) => _steps.IndexOf(step) == ActiveIndex;
+    
+    private string GetStepStatus(int index)
+    {
+        if (index < ActiveIndex) return "completed";
+        if (index == ActiveIndex) return "active";
+        return "pending";
+    }
+    
+    private async Task GoToStep(int index)
+    {
+        if (Linear && index > ActiveIndex) return;
+        
+        ActiveIndex = index;
+        await ActiveIndexChanged.InvokeAsync(ActiveIndex);
+    }
+    
+    private async Task Previous()
+    {
+        if (ActiveIndex > 0)
+        {
+            ActiveIndex--;
+            await ActiveIndexChanged.InvokeAsync(ActiveIndex);
+        }
+    }
+    
+    private async Task Next()
+    {
+        if (ActiveIndex < _steps.Count - 1)
+        {
+            ActiveIndex++;
+            await ActiveIndexChanged.InvokeAsync(ActiveIndex);
+        }
+    }
+    
+    private async Task Finish()
+    {
+        await OnFinish.InvokeAsync();
+    }
+}

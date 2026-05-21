@@ -1,0 +1,148 @@
+@page "/demo/sufi-blazor/file-upload"
+
+<PageTitle>@(L["Menu:Demo:FileUpload"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:FileUpload"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:FileUploadPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:FileUploadBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 500px;">
+                <SbFileUpload OnFilesSelected="HandleFiles" />
+                @if (_selectedFiles.Any())
+                {
+                    <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:FileUploadSelectedCount", _selectedFiles.Count]</SbText>
+                }
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:FileUploadImage"]" SourceCode="@imageCode" RelatedCode="@imageCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 500px;">
+                <SbFileUpload Accept="image/*"
+                            MaxFileSizeBytes="@(5 * 1024 * 1024)"
+                            OnFilesSelected="HandleImages">
+                    <DragText>
+                        <SbStack Direction="SbStackDirection.Column" Gap="2" Align="SbAlign.Center">
+                            <SbIcon Name="image" Size="SbSize.Xl" />
+                            <SbText>@L["Demo:FileUploadDragImages"]</SbText>
+                            <SbText Size="SbSize.Sm" Color="SbColor.Muted">
+                                @L["Demo:FileUploadBrowseMax5MB"]
+                            </SbText>
+                        </SbStack>
+                    </DragText>
+                </SbFileUpload>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:FileUploadMultiple"]" SourceCode="@multipleCode" RelatedCode="@multipleCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 500px;">
+                <SbFileUpload Multiple="true"
+                            MaxFiles="10"
+                            Accept=".pdf,.doc,.docx"
+                            OnFilesSelected="HandleDocuments">
+                    <DragText>
+                        <SbText>@L["Demo:FileUploadDocumentsUpTo10"]</SbText>
+                    </DragText>
+                </SbFileUpload>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:FileUploadDisabled"]" SourceCode="@disabledCode" RelatedCode="@disabledCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 500px;">
+                <SbFileUpload Disabled="true">
+                    <DragText>
+                        <SbText>@L["Demo:FileUploadUploadDisabled"]</SbText>
+                    </DragText>
+                </SbFileUpload>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbFileUpload" />
+</DemoLayout>
+
+@code {
+    private List<IBrowserFile> _selectedFiles = new();
+    private List<IBrowserFile> _selectedImages = new();
+    private List<IBrowserFile> _selectedDocuments = new();
+
+    private void HandleFiles(IReadOnlyList<IBrowserFile> files)
+    {
+        _selectedFiles = files.ToList();
+    }
+
+    private void HandleImages(IReadOnlyList<IBrowserFile> files)
+    {
+        _selectedImages = files.ToList();
+    }
+
+    private void HandleDocuments(IReadOnlyList<IBrowserFile> files)
+    {
+        _selectedDocuments = files.ToList();
+    }
+
+    private const string basicCodeBehind = @"private List<IBrowserFile> _selectedFiles = new();
+
+private void HandleFiles(IReadOnlyList<IBrowserFile> files)
+{
+    _selectedFiles = files.ToList();
+}";
+
+    private const string basicCode = @"<SbFileUpload OnFilesSelected=""HandleFiles"" />";
+
+    private const string imageCodeBehind = @"private List<IBrowserFile> _selectedImages = new();
+
+private void HandleImages(IReadOnlyList<IBrowserFile> files)
+{
+    _selectedImages = files.ToList();
+}";
+
+    private const string imageCode = @"<SbFileUpload Accept=""image/*""
+            MaxFileSizeBytes=""@(5 * 1024 * 1024)""
+            OnFilesSelected=""HandleImages"">
+    <DragText>
+        <SbStack Direction=""SbStackDirection.Column"" Gap=""2"" Align=""SbAlign.Center"">
+            <SbIcon Name=""image"" Size=""SbSize.Xl"" />
+            <SbText>Drag & drop images here</SbText>
+            <SbText Size=""SbSize.Sm"" Color=""SbColor.Muted"">
+                or click to browse (max 5MB)
+            </SbText>
+        </SbStack>
+    </DragText>
+</SbFileUpload>";
+
+    private const string multipleCodeBehind = @"private List<IBrowserFile> _selectedDocuments = new();
+
+private void HandleDocuments(IReadOnlyList<IBrowserFile> files)
+{
+    _selectedDocuments = files.ToList();
+}";
+
+    private const string multipleCode = @"<SbFileUpload Multiple=""true""
+            MaxFiles=""10""
+            Accept="".pdf,.doc,.docx""
+            OnFilesSelected=""HandleDocuments"">
+    <DragText>
+        <SbText>Upload documents (up to 10 files)</SbText>
+    </DragText>
+</SbFileUpload>";
+
+    private const string disabledCodeBehind = @"// No binding; disabled display only";
+
+    private const string disabledCode = @"<SbFileUpload Disabled=""true"">
+    <DragText>
+        <SbText>Upload disabled</SbText>
+    </DragText>
+</SbFileUpload>";
+}

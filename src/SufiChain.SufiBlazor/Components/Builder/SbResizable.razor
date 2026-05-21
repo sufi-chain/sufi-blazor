@@ -1,0 +1,201 @@
+@namespace SufiChain.SufiBlazor.Components.Builder
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+
+<div class="sb-resizable @(_isResizing ? "sb-resizable--resizing" : "") @Class" 
+     style="@GetStyle()"
+     @ref="_containerRef">
+    @ChildContent
+    
+    @if (EnableTop)
+    {
+        <div class="sb-resizable__handle sb-resizable__handle--top" 
+             @onmousedown="e => StartResize(e, SbResizeDirection.Top)"></div>
+    }
+    @if (EnableRight)
+    {
+        <div class="sb-resizable__handle sb-resizable__handle--right" 
+             @onmousedown="e => StartResize(e, SbResizeDirection.Right)"></div>
+    }
+    @if (EnableBottom)
+    {
+        <div class="sb-resizable__handle sb-resizable__handle--bottom" 
+             @onmousedown="e => StartResize(e, SbResizeDirection.Bottom)"></div>
+    }
+    @if (EnableLeft)
+    {
+        <div class="sb-resizable__handle sb-resizable__handle--left" 
+             @onmousedown="e => StartResize(e, SbResizeDirection.Left)"></div>
+    }
+    @if (EnableTop && EnableRight)
+    {
+        <div class="sb-resizable__handle sb-resizable__handle--top-right" 
+             @onmousedown="e => StartResize(e, SbResizeDirection.TopRight)"></div>
+    }
+    @if (EnableBottom && EnableRight)
+    {
+        <div class="sb-resizable__handle sb-resizable__handle--bottom-right" 
+             @onmousedown="e => StartResize(e, SbResizeDirection.BottomRight)"></div>
+    }
+    @if (EnableBottom && EnableLeft)
+    {
+        <div class="sb-resizable__handle sb-resizable__handle--bottom-left" 
+             @onmousedown="e => StartResize(e, SbResizeDirection.BottomLeft)"></div>
+    }
+    @if (EnableTop && EnableLeft)
+    {
+        <div class="sb-resizable__handle sb-resizable__handle--top-left" 
+             @onmousedown="e => StartResize(e, SbResizeDirection.TopLeft)"></div>
+    }
+</div>
+
+@code {
+    private ElementReference _containerRef;
+    private bool _isResizing;
+    private SbResizeDirection _resizeDirection;
+    private double _startX, _startY;
+    private double _startWidth, _startHeight;
+    
+    /// <summary>
+    /// Content to resize.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Current width.
+    /// </summary>
+    [Parameter]
+    public double Width { get; set; }
+    
+    /// <summary>
+    /// Callback when width changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<double> WidthChanged { get; set; }
+    
+    /// <summary>
+    /// Current height.
+    /// </summary>
+    [Parameter]
+    public double Height { get; set; }
+    
+    /// <summary>
+    /// Callback when height changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<double> HeightChanged { get; set; }
+    
+    /// <summary>
+    /// Minimum width.
+    /// </summary>
+    [Parameter]
+    public double MinWidth { get; set; } = 50;
+    
+    /// <summary>
+    /// Minimum height.
+    /// </summary>
+    [Parameter]
+    public double MinHeight { get; set; } = 50;
+    
+    /// <summary>
+    /// Maximum width.
+    /// </summary>
+    [Parameter]
+    public double? MaxWidth { get; set; }
+    
+    /// <summary>
+    /// Maximum height.
+    /// </summary>
+    [Parameter]
+    public double? MaxHeight { get; set; }
+    
+    /// <summary>
+    /// Enable top resize.
+    /// </summary>
+    [Parameter]
+    public bool EnableTop { get; set; }
+    
+    /// <summary>
+    /// Enable right resize.
+    /// </summary>
+    [Parameter]
+    public bool EnableRight { get; set; } = true;
+    
+    /// <summary>
+    /// Enable bottom resize.
+    /// </summary>
+    [Parameter]
+    public bool EnableBottom { get; set; } = true;
+    
+    /// <summary>
+    /// Enable left resize.
+    /// </summary>
+    [Parameter]
+    public bool EnableLeft { get; set; }
+    
+    /// <summary>
+    /// Callback when resize starts.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnResizeStart { get; set; }
+    
+    /// <summary>
+    /// Callback when resize ends.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnResizeEnd { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string GetStyle()
+    {
+        var styles = new List<string>();
+        
+        if (Width > 0)
+            styles.Add($"width: {Width}px");
+        if (Height > 0)
+            styles.Add($"height: {Height}px");
+            
+        return string.Join("; ", styles);
+    }
+    
+    private async Task StartResize(MouseEventArgs e, SbResizeDirection direction)
+    {
+        _isResizing = true;
+        _resizeDirection = direction;
+        _startX = e.ClientX;
+        _startY = e.ClientY;
+        _startWidth = Width;
+        _startHeight = Height;
+        
+        await OnResizeStart.InvokeAsync();
+    }
+    
+    /// <summary>
+    /// Indicates if the component is currently being resized.
+    /// </summary>
+    public bool IsResizing => _isResizing;
+    
+    /// <summary>
+    /// Stops the resize operation.
+    /// </summary>
+    public async Task StopResize()
+    {
+        if (_isResizing)
+        {
+            _isResizing = false;
+            await OnResizeEnd.InvokeAsync();
+            StateHasChanged();
+        }
+    }
+    
+    public void Dispose()
+    {
+        // Cleanup
+    }
+}

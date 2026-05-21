@@ -1,0 +1,133 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+
+@if (Type == SbProgressType.Linear)
+{
+    <div class="@CssClass"
+         style="@Style"
+         role="progressbar"
+         aria-valuenow="@(Indeterminate ? null : Value)"
+         aria-valuemin="0"
+         aria-valuemax="100"
+         @attributes="AdditionalAttributes">
+        <div class="sb-progress__track">
+            <div class="sb-progress__bar" style="@BarStyle"></div>
+        </div>
+        @if (ShowLabel && !Indeterminate)
+        {
+            <span class="sb-progress__label">@Value%</span>
+        }
+    </div>
+}
+else
+{
+    <svg class="@CssClass"
+         style="@Style"
+         viewBox="0 0 48 48"
+         role="progressbar"
+         aria-valuenow="@(Indeterminate ? null : Value)"
+         aria-valuemin="0"
+         aria-valuemax="100"
+         @attributes="AdditionalAttributes">
+        <circle class="sb-progress__track-circle"
+                cx="24" cy="24" r="20"
+                fill="none"
+                stroke-width="@StrokeWidth" />
+        <circle class="sb-progress__bar-circle"
+                cx="24" cy="24" r="20"
+                fill="none"
+                stroke-width="@StrokeWidth"
+                stroke-dasharray="@Circumference"
+                stroke-dashoffset="@DashOffset"
+                transform="rotate(-90 24 24)" />
+        @if (ShowLabel && !Indeterminate)
+        {
+            @((MarkupString)$"<text x=\"24\" y=\"24\" class=\"sb-progress__label-text\" text-anchor=\"middle\" dominant-baseline=\"central\">{Value}%</text>")
+        }
+    </svg>
+}
+
+@code {
+    /// <summary>
+    /// Progress type.
+    /// </summary>
+    [Parameter]
+    public SbProgressType Type { get; set; } = SbProgressType.Linear;
+
+    /// <summary>
+    /// Progress value (0-100).
+    /// </summary>
+    [Parameter]
+    public double Value { get; set; }
+
+    /// <summary>
+    /// Whether the progress is indeterminate.
+    /// </summary>
+    [Parameter]
+    public bool Indeterminate { get; set; }
+
+    /// <summary>
+    /// Progress color.
+    /// </summary>
+    [Parameter]
+    public SbColor Color { get; set; } = SbColor.Primary;
+
+    /// <summary>
+    /// Size (for circular).
+    /// </summary>
+    [Parameter]
+    public SbSize Size { get; set; } = SbSize.Md;
+
+    /// <summary>
+    /// Whether to show the value label.
+    /// </summary>
+    [Parameter]
+    public bool ShowLabel { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private const double Circumference = 2 * Math.PI * 20; // r=20
+    private double DashOffset => Circumference - (Value / 100 * Circumference);
+    private int StrokeWidth => Size == SbSize.Sm ? 3 : Size == SbSize.Lg ? 5 : 4;
+
+    private string BarStyle => Indeterminate ? "" : $"width: {Math.Clamp(Value, 0, 100)}%";
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-progress" };
+
+            classes.Add($"sb-progress--{Type.ToString().ToLowerInvariant()}");
+            classes.Add($"sb-progress--{Size.ToString().ToLowerInvariant()}");
+            classes.Add($"sb-progress--{Color.ToString().ToLowerInvariant()}");
+
+            if (Indeterminate)
+            {
+                classes.Add("sb-progress--indeterminate");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+}

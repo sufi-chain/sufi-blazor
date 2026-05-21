@@ -1,0 +1,178 @@
+@page "/demo/sufi-blazor/text-area"
+
+<PageTitle>@(L["Menu:Demo:TextArea"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:TextArea"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:TextAreaPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection 
+        Title="@L["Demo:TextAreaBasicUsage"]"
+        SourceCode='@basicCode'>
+        <ExampleContent>
+            <SbTextArea 
+                @bind-Value="basicValue"
+                Placeholder="Enter your message..." 
+                Rows="4" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:TextAreaWithLabel"]"
+        SourceCode='@labelCode'>
+        <ExampleContent>
+            <SbTextArea 
+                @bind-Value="labelValue"
+                Label="Description"
+                Placeholder="Enter description..." 
+                Rows="5" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:TextAreaRequired"]"
+        SourceCode='@requiredCode'>
+        <ExampleContent>
+            <SbTextArea 
+                @bind-Value="requiredValue"
+                Label="Message"
+                Required="true"
+                Placeholder="This field is required..." 
+                Rows="4" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:TextAreaDisabled"]"
+        SourceCode='@disabledCode'>
+        <ExampleContent>
+            <SbTextArea 
+                Value="This field is disabled"
+                Label="Disabled"
+                Disabled="true" 
+                Rows="3" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:TextAreaWithHelperText"]"
+        SourceCode='@helperCode'>
+        <ExampleContent>
+            <SbTextArea 
+                @bind-Value="helperValue"
+                Label="Comments"
+                HelperText="Maximum 500 characters"
+                Placeholder="Enter comments..." 
+                Rows="4" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:TextAreaError"]"
+        SourceCode='@errorCode'>
+        <ExampleContent>
+            <SbTextArea 
+                @bind-Value="errorValue"
+                Label="Feedback"
+                Error="true"
+                ErrorMessage="This field contains invalid content"
+                Placeholder="Enter feedback..." 
+                Rows="4" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:TextAreaCharacterCount"]"
+        SourceCode='@characterCountCode'>
+        <ExampleContent>
+            <SbTextArea 
+                @bind-Value="characterCountValue"
+                Label="Bio"
+                MaxLength="500"
+                ShowCharacterCount="true"
+                Placeholder="Tell us about yourself..." 
+                Rows="4" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:TextAreaReadOnly"]"
+        SourceCode='@readOnlyCode'>
+        <ExampleContent>
+            <SbTextArea 
+                @bind-Value="readOnlyValue"
+                Label="View Only"
+                ReadOnly="true"
+                Rows="3" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbTextArea" />
+</DemoLayout>
+
+@code {
+    private string basicValue = "";
+    private string labelValue = "";
+    private string requiredValue = "";
+    private string helperValue = "";
+    private string errorValue = "";
+    private string characterCountValue = "";
+    private string readOnlyValue = "This content is read-only and cannot be edited.";
+
+    private string basicCode = @"<SbTextArea 
+    @bind-Value=""basicValue""
+    Placeholder=""Enter your message..."" 
+    Rows=""4"" />";
+
+    private string labelCode = @"<SbTextArea 
+    @bind-Value=""labelValue""
+    Label=""Description""
+    Placeholder=""Enter description..."" 
+    Rows=""5"" />";
+
+    private string requiredCode = @"<SbTextArea 
+    @bind-Value=""requiredValue""
+    Label=""Message""
+    Required=""true""
+    Placeholder=""This field is required..."" 
+    Rows=""4"" />";
+
+    private string disabledCode = @"<SbTextArea 
+    Value=""This field is disabled""
+    Label=""Disabled""
+    Disabled=""true"" 
+    Rows=""3"" />";
+
+    private string helperCode = @"<SbTextArea 
+    @bind-Value=""helperValue""
+    Label=""Comments""
+    HelperText=""Maximum 500 characters""
+    Placeholder=""Enter comments..."" 
+    Rows=""4"" />";
+
+    private string errorCode = @"<SbTextArea 
+    @bind-Value=""errorValue""
+    Label=""Feedback""
+    Error=""true""
+    ErrorMessage=""This field contains invalid content""
+    Placeholder=""Enter feedback..."" 
+    Rows=""4"" />";
+
+    private string characterCountCode = @"<SbTextArea 
+    @bind-Value=""characterCountValue""
+    Label=""Bio""
+    MaxLength=""500""
+    ShowCharacterCount=""true""
+    Placeholder=""Tell us about yourself..."" 
+    Rows=""4"" />";
+
+    private string readOnlyCode = @"<SbTextArea 
+    @bind-Value=""readOnlyValue""
+    Label=""View Only""
+    ReadOnly=""true""
+    Rows=""3"" />";
+}

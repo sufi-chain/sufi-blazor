@@ -1,0 +1,145 @@
+@page "/demo/sufi-blazor/number-field"
+
+<PageTitle>@(L["Menu:Demo:NumberField"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:NumberField"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:NumberFieldPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection 
+        Title="@L["Demo:BasicUsage"]"
+        SourceCode='@basicCode'>
+        <ExampleContent>
+            <SbNumberField 
+                @bind-Value="basicValue"
+                Placeholder="@L["Demo:EnterNumber"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:WithLabel"]"
+        SourceCode='@labelCode'>
+        <ExampleContent>
+            <SbNumberField 
+                @bind-Value="labelValue"
+                Label="@L["Demo:Quantity"]"
+                Placeholder="0" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:MinMaxValues"]"
+        SourceCode='@minMaxCode'>
+        <ExampleContent>
+            <SbNumberField 
+                @bind-Value="minMaxValue"
+                Label="@L["Demo:Age"]"
+                Min="0"
+                Max="120"
+                HelperText="@L["Demo:HelperAge"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:StepIncrement"]"
+        SourceCode='@stepCode'>
+        <ExampleContent>
+            <SbNumberField 
+                @bind-Value="stepValue"
+                Label="@L["Demo:Price"]"
+                Step="0.5m"
+                Placeholder="0.00" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:DisabledState"]"
+        SourceCode='@disabledCode'>
+        <ExampleContent>
+            <SbNumberField 
+                Value="100"
+                Label="@L["Demo:Disabled"]"
+                Disabled="true" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:WithoutSpinButtons"]"
+        SourceCode='@noSpinButtonsCode'>
+        <ExampleContent>
+            <SbNumberField 
+                @bind-Value="yearValue"
+                Label="@L["Demo:Year"]"
+                ShowSpinButtons="false"
+                Min="1900"
+                Max="2100"
+                Placeholder="e.g. 2025" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:ReadOnlyState"]"
+        SourceCode='@readOnlyCode'>
+        <ExampleContent>
+            <SbNumberField 
+                @bind-Value="readOnlyValue"
+                Label="@L["Demo:FixedValue"]"
+                ReadOnly="true" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbNumberField" />
+</DemoLayout>
+
+@code {
+    private decimal basicValue = 0;
+    private decimal labelValue = 0;
+    private int minMaxValue = 0;
+    private decimal stepValue = 0;
+    private int yearValue = 2025;
+    private decimal readOnlyValue = 42;
+
+    private string basicCode = @"<SbNumberField 
+    @bind-Value=""basicValue""
+    Placeholder=""Enter a number"" />";
+
+    private string labelCode = @"<SbNumberField 
+    @bind-Value=""labelValue""
+    Label=""Quantity""
+    Placeholder=""0"" />";
+
+    private string minMaxCode = @"<SbNumberField 
+    @bind-Value=""minMaxValue""
+    Label=""Age""
+    Min=""0""
+    Max=""120""
+    HelperText=""Enter age between 0 and 120"" />";
+
+    private string stepCode = @"<SbNumberField 
+    @bind-Value=""stepValue""
+    Label=""Price""
+    Step=""0.5m""
+    Placeholder=""0.00"" />";
+
+    private string disabledCode = @"<SbNumberField 
+    Value=""100""
+    Label=""Disabled""
+    Disabled=""true"" />";
+
+    private string noSpinButtonsCode = @"<SbNumberField 
+    @bind-Value=""yearValue""
+    Label=""Year""
+    ShowSpinButtons=""false""
+    Min=""1900""
+    Max=""2100""
+    Placeholder=""e.g. 2025"" />";
+
+    private string readOnlyCode = @"<SbNumberField 
+    @bind-Value=""readOnlyValue""
+    Label=""Fixed Value""
+    ReadOnly=""true"" />";
+}

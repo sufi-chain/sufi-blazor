@@ -1,0 +1,185 @@
+@namespace SufiChain.SufiBlazor.Components.Layout
+
+<div class="@CssClass" style="@ComputedStyle" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Stack direction (row or column). Base/mobile-first value.
+    /// </summary>
+    [Parameter]
+    public SbStackDirection Direction { get; set; } = SbStackDirection.Column;
+
+    /// <summary>
+    /// Direction at sm breakpoint (640px+).
+    /// </summary>
+    [Parameter]
+    public SbStackDirection? DirectionSm { get; set; }
+
+    /// <summary>
+    /// Direction at md breakpoint (768px+).
+    /// </summary>
+    [Parameter]
+    public SbStackDirection? DirectionMd { get; set; }
+
+    /// <summary>
+    /// Direction at lg breakpoint (1024px+).
+    /// </summary>
+    [Parameter]
+    public SbStackDirection? DirectionLg { get; set; }
+
+    /// <summary>
+    /// Direction at xl breakpoint (1280px+).
+    /// </summary>
+    [Parameter]
+    public SbStackDirection? DirectionXl { get; set; }
+
+    /// <summary>
+    /// Gap between items (uses spacing scale 0-16).
+    /// </summary>
+    [Parameter]
+    public int Gap { get; set; } = 2;
+
+    /// <summary>
+    /// Cross-axis alignment. Base/mobile-first value.
+    /// </summary>
+    [Parameter]
+    public SbAlign Align { get; set; } = SbAlign.Stretch;
+
+    /// <summary>
+    /// Alignment at sm breakpoint (640px+).
+    /// </summary>
+    [Parameter]
+    public SbAlign? AlignSm { get; set; }
+
+    /// <summary>
+    /// Alignment at md breakpoint (768px+).
+    /// </summary>
+    [Parameter]
+    public SbAlign? AlignMd { get; set; }
+
+    /// <summary>
+    /// Alignment at lg breakpoint (1024px+).
+    /// </summary>
+    [Parameter]
+    public SbAlign? AlignLg { get; set; }
+
+    /// <summary>
+    /// Alignment at xl breakpoint (1280px+).
+    /// </summary>
+    [Parameter]
+    public SbAlign? AlignXl { get; set; }
+
+    /// <summary>
+    /// Main-axis justification.
+    /// </summary>
+    [Parameter]
+    public SbJustify Justify { get; set; } = SbJustify.Start;
+
+    /// <summary>
+    /// Whether items should wrap.
+    /// </summary>
+    [Parameter]
+    public bool Wrap { get; set; }
+
+    /// <summary>
+    /// The content to render inside the stack.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-stack" };
+
+            classes.Add($"sb-stack--{Direction.ToString().ToLowerInvariant()}");
+            if (DirectionSm.HasValue)
+                classes.Add($"sb-stack--sm-{DirectionSm.Value.ToString().ToLowerInvariant()}");
+            if (DirectionMd.HasValue)
+                classes.Add($"sb-stack--md-{DirectionMd.Value.ToString().ToLowerInvariant()}");
+            if (DirectionLg.HasValue)
+                classes.Add($"sb-stack--lg-{DirectionLg.Value.ToString().ToLowerInvariant()}");
+            if (DirectionXl.HasValue)
+                classes.Add($"sb-stack--xl-{DirectionXl.Value.ToString().ToLowerInvariant()}");
+            classes.Add($"sb-stack--align-{GetAlignClass(Align)}");
+            if (AlignSm.HasValue)
+                classes.Add($"sb-stack--sm-align-{GetAlignClass(AlignSm.Value)}");
+            if (AlignMd.HasValue)
+                classes.Add($"sb-stack--md-align-{GetAlignClass(AlignMd.Value)}");
+            if (AlignLg.HasValue)
+                classes.Add($"sb-stack--lg-align-{GetAlignClass(AlignLg.Value)}");
+            if (AlignXl.HasValue)
+                classes.Add($"sb-stack--xl-align-{GetAlignClass(AlignXl.Value)}");
+            classes.Add($"sb-stack--justify-{GetJustifyClass(Justify)}");
+
+            if (Wrap)
+            {
+                classes.Add("sb-stack--wrap");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    private string ComputedStyle
+    {
+        get
+        {
+            var styles = new List<string> { $"gap: var(--sb-space-{Gap})" };
+
+            if (!string.IsNullOrWhiteSpace(Style))
+            {
+                styles.Add(Style);
+            }
+
+            return string.Join("; ", styles);
+        }
+    }
+
+    private static string GetAlignClass(SbAlign align) => align switch
+    {
+        SbAlign.Start => "start",
+        SbAlign.Center => "center",
+        SbAlign.End => "end",
+        SbAlign.Stretch => "stretch",
+        SbAlign.Baseline => "baseline",
+        _ => "stretch"
+    };
+
+    private static string GetJustifyClass(SbJustify justify) => justify switch
+    {
+        SbJustify.Start => "start",
+        SbJustify.Center => "center",
+        SbJustify.End => "end",
+        SbJustify.SpaceBetween => "between",
+        SbJustify.SpaceAround => "around",
+        SbJustify.SpaceEvenly => "evenly",
+        _ => "start"
+    };
+}

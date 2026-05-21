@@ -1,0 +1,88 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using System.Linq.Expressions
+
+@if (_errors.Any())
+{
+    @if (Template != null)
+    {
+        @foreach (var error in _errors)
+        {
+            @Template(error)
+        }
+    }
+    else
+    {
+        @foreach (var error in _errors)
+        {
+            <span class="sb-field-error">@error</span>
+        }
+    }
+}
+
+@code {
+    private IEnumerable<string> _errors = Enumerable.Empty<string>();
+
+    /// <summary>
+    /// The EditContext from EditForm.
+    /// </summary>
+    [CascadingParameter]
+    private EditContext? EditContext { get; set; }
+
+    /// <summary>
+    /// Expression for the field to display errors for.
+    /// </summary>
+    [Parameter]
+    public Expression<Func<object>>? For { get; set; }
+
+    /// <summary>
+    /// Custom error template.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<string>? Template { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (EditContext != null)
+        {
+            EditContext.OnValidationStateChanged += HandleValidationStateChanged;
+            UpdateErrors();
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        UpdateErrors();
+    }
+
+    private void HandleValidationStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        UpdateErrors();
+        StateHasChanged();
+    }
+
+    private void UpdateErrors()
+    {
+        if (EditContext == null || For == null)
+        {
+            _errors = Enumerable.Empty<string>();
+            return;
+        }
+
+        var fieldIdentifier = FieldIdentifier.Create(For);
+        _errors = EditContext.GetValidationMessages(fieldIdentifier);
+    }
+
+    public void Dispose()
+    {
+        if (EditContext != null)
+        {
+            EditContext.OnValidationStateChanged -= HandleValidationStateChanged;
+        }
+    }
+}

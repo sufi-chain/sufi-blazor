@@ -1,0 +1,199 @@
+@namespace SufiChain.SufiBlazor.Components.Data
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-filter-bar @Class">
+    @if (ShowSearch)
+    {
+        <div class="sb-filter-bar__search">
+            <input type="text"
+                   class="sb-filter-bar__search-input"
+                   value="@SearchValue"
+                   @oninput="OnSearchInput"
+                   placeholder="@(SearchPlaceholder ?? L["Search_Placeholder"])" />
+            @if (!string.IsNullOrEmpty(SearchValue))
+            {
+                <button type="button" class="sb-filter-bar__search-clear" @onclick="ClearSearch">
+                    ×
+                </button>
+            }
+        </div>
+    }
+    
+    <div class="sb-filter-bar__filters">
+        @ChildContent
+    </div>
+    
+    @if (ActiveFilters.Any())
+    {
+        <div class="sb-filter-bar__active">
+            @foreach (var filter in ActiveFilters)
+            {
+                <span class="sb-filter-bar__tag">
+                    <span class="sb-filter-bar__tag-label">@filter.Label:</span>
+                    <span class="sb-filter-bar__tag-value">@filter.Value</span>
+                    <button type="button" 
+                            class="sb-filter-bar__tag-remove"
+                            @onclick="() => RemoveFilter(filter)">
+                        ×
+                    </button>
+                </span>
+            }
+            <button type="button" class="sb-filter-bar__clear-all" @onclick="ClearAllFilters">
+                @L["ClearAll"]
+            </button>
+        </div>
+    }
+    
+    @if (Actions != null)
+    {
+        <div class="sb-filter-bar__actions">
+            @Actions
+        </div>
+    }
+</div>
+
+@code {
+    private System.Timers.Timer? _debounceTimer;
+    
+    /// <summary>
+    /// Filter controls content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Whether to show search input.
+    /// </summary>
+    [Parameter]
+    public bool ShowSearch { get; set; } = true;
+    
+    /// <summary>
+    /// Search value.
+    /// </summary>
+    [Parameter]
+    public string? SearchValue { get; set; }
+    
+    /// <summary>
+    /// Callback when search value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> SearchValueChanged { get; set; }
+    
+    /// <summary>
+    /// Search placeholder.
+    /// </summary>
+    [Parameter]
+    public string? SearchPlaceholder { get; set; }
+    
+    /// <summary>
+    /// Debounce delay for search.
+    /// </summary>
+    [Parameter]
+    public int SearchDebounceMs { get; set; } = 300;
+    
+    /// <summary>
+    /// Active filters.
+    /// </summary>
+    [Parameter]
+    public List<SbFilterTag> ActiveFilters { get; set; } = new();
+    
+    /// <summary>
+    /// Callback when active filters change.
+    /// </summary>
+    [Parameter]
+    public EventCallback<List<SbFilterTag>> ActiveFiltersChanged { get; set; }
+    
+    /// <summary>
+    /// Action buttons.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+    
+    /// <summary>
+    /// Callback when filters are applied.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnApply { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        
+        _debounceTimer?.Stop();
+        _debounceTimer?.Dispose();
+        
+        _debounceTimer = new System.Timers.Timer(SearchDebounceMs);
+        _debounceTimer.Elapsed += async (s, args) =>
+        {
+            _debounceTimer?.Stop();
+            await InvokeAsync(async () =>
+            {
+                await SearchValueChanged.InvokeAsync(value);
+                await OnApply.InvokeAsync();
+            });
+        };
+        _debounceTimer.Start();
+    }
+    
+    private async Task ClearSearch()
+    {
+        await SearchValueChanged.InvokeAsync(null);
+        await OnApply.InvokeAsync();
+    }
+    
+    private async Task RemoveFilter(SbFilterTag filter)
+    {
+        ActiveFilters.Remove(filter);
+        await ActiveFiltersChanged.InvokeAsync(ActiveFilters);
+        await OnApply.InvokeAsync();
+    }
+    
+    private async Task ClearAllFilters()
+    {
+        ActiveFilters.Clear();
+        await ActiveFiltersChanged.InvokeAsync(ActiveFilters);
+        await SearchValueChanged.InvokeAsync(null);
+        await OnApply.InvokeAsync();
+    }
+    
+    /// <summary>
+    /// Add a filter tag.
+    /// </summary>
+    public async Task AddFilterAsync(string label, string value, string? key = null)
+    {
+        var filter = new SbFilterTag { Label = label, Value = value, Key = key ?? label };
+        
+        // Replace existing filter with same key
+        ActiveFilters.RemoveAll(f => f.Key == filter.Key);
+        ActiveFilters.Add(filter);
+        
+        await ActiveFiltersChanged.InvokeAsync(ActiveFilters);
+    }
+}
+
+/// <summary>
+/// Represents an active filter tag.
+/// </summary>
+public class SbFilterTag
+{
+    /// <summary>
+    /// Filter key.
+    /// </summary>
+    public string Key { get; set; } = "";
+    
+    /// <summary>
+    /// Filter label.
+    /// </summary>
+    public string Label { get; set; } = "";
+    
+    /// <summary>
+    /// Filter value display.
+    /// </summary>
+    public string Value { get; set; } = "";
+}

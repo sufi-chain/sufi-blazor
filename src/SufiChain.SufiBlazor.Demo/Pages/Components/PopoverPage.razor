@@ -1,0 +1,146 @@
+@page "/demo/sufi-blazor/popover"
+
+<PageTitle>@(L["Menu:Demo:Popover"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Popover"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:PopoverDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BasicPopover"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbPopover @bind-Open="_basicOpen">
+                <AnchorContent>
+                    <SbButton OnClick="@(() => _basicOpen = !_basicOpen)">@L["Demo:PopoverOpenButton"]</SbButton>
+                </AnchorContent>
+                <ChildContent>
+                    <SbCard style="min-width: 250px;">
+                        <SbStack Gap="2">
+                            <SbHeading Level="5">@L["Demo:PopoverTitle"]</SbHeading>
+                            <SbText>@L["Demo:PopoverBasicContent"]</SbText>
+                        </SbStack>
+                    </SbCard>
+                </ChildContent>
+            </SbPopover>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:PlacementOptions"]" SourceCode="@placementCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbStack Direction="SbStackDirection.Row" Gap="4" Justify="SbJustify.Center">
+                    <SbPopover @bind-Open="_topOpen" Placement="SbPlacement.Top">
+                        <AnchorContent>
+                            <SbButton Size="SbSize.Sm" OnClick="@(() => _topOpen = !_topOpen)">@L["Demo:PopoverPlacementTop"]</SbButton>
+                        </AnchorContent>
+                        <ChildContent>
+                            <SbCard><SbText>@L["Demo:PopoverTopPlacement"]</SbText></SbCard>
+                        </ChildContent>
+                    </SbPopover>
+
+                    <SbPopover @bind-Open="_bottomOpen" Placement="SbPlacement.Bottom">
+                        <AnchorContent>
+                            <SbButton Size="SbSize.Sm" OnClick="@(() => _bottomOpen = !_bottomOpen)">@L["Demo:PopoverPlacementBottom"]</SbButton>
+                        </AnchorContent>
+                        <ChildContent>
+                            <SbCard><SbText>@L["Demo:PopoverBottomPlacement"]</SbText></SbCard>
+                        </ChildContent>
+                    </SbPopover>
+
+                    <SbPopover @bind-Open="_startOpen" Placement="SbPlacement.Start">
+                        <AnchorContent>
+                            <SbButton Size="SbSize.Sm" OnClick="@(() => _startOpen = !_startOpen)">@L["Demo:PopoverPlacementStart"]</SbButton>
+                        </AnchorContent>
+                        <ChildContent>
+                            <SbCard><SbText>@L["Demo:PopoverStartPlacement"]</SbText></SbCard>
+                        </ChildContent>
+                    </SbPopover>
+
+                    <SbPopover @bind-Open="_endOpen" Placement="SbPlacement.End">
+                        <AnchorContent>
+                            <SbButton Size="SbSize.Sm" OnClick="@(() => _endOpen = !_endOpen)">@L["Demo:PopoverPlacementEnd"]</SbButton>
+                        </AnchorContent>
+                        <ChildContent>
+                            <SbCard><SbText>@L["Demo:PopoverEndPlacement"]</SbText></SbCard>
+                        </ChildContent>
+                    </SbPopover>
+                </SbStack>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:UserCardExample"]" SourceCode="@userCardCode">
+        <ExampleContent>
+            <SbPopover @bind-Open="_userCardOpen" Placement="SbPlacement.Bottom">
+                <AnchorContent>
+                    <SbButton OnClick="@(() => _userCardOpen = !_userCardOpen)">
+                        @L["Demo:PopoverViewProfile"]
+                    </SbButton>
+                </AnchorContent>
+                <ChildContent>
+                    <SbCard style="width: 300px;">
+                        <SbStack Gap="3">
+                            <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--sb-color-primary);"></div>
+                                <SbStack Gap="1">
+                                    <SbHeading Level="6">@L["Demo:PopoverUserName"]</SbHeading>
+                                    <SbText Size="SbSize.Sm" Color="SbColor.Muted">john@example.com</SbText>
+                                </SbStack>
+                            </SbStack>
+                            <SbText Size="SbSize.Sm">
+                                @L["Demo:PopoverUserBio"]
+                            </SbText>
+                            <SbStack Direction="SbStackDirection.Row" Gap="2">
+                                <SbButton Size="SbSize.Sm" Fullwidth="true">@L["Demo:PopoverViewProfile"]</SbButton>
+                                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" Fullwidth="true">@L["Demo:PopoverMessage"]</SbButton>
+                            </SbStack>
+                        </SbStack>
+                    </SbCard>
+                </ChildContent>
+            </SbPopover>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbPopover" />
+</DemoLayout>
+
+@code {
+    private bool _basicOpen;
+    private bool _topOpen;
+    private bool _bottomOpen;
+    private bool _startOpen;
+    private bool _endOpen;
+    private bool _userCardOpen;
+
+    private const string basicCode = @"<SbPopover @bind-Open=""_open"">
+    <AnchorContent>
+        <SbButton OnClick=""@(() => _open = !_open)"">Open</SbButton>
+    </AnchorContent>
+    <ChildContent>
+        <SbCard>Content here</SbCard>
+    </ChildContent>
+</SbPopover>";
+
+    private const string placementCode = @"<SbPopover @bind-Open=""_open"" Placement=""SbPlacement.Top"">
+    <AnchorContent>
+        <SbButton>Top</SbButton>
+    </AnchorContent>
+    <ChildContent>
+        <SbCard>Top placement</SbCard>
+    </ChildContent>
+</SbPopover>";
+
+    private const string userCardCode = @"<SbPopover @bind-Open=""_open"" Placement=""SbPlacement.Bottom"">
+    <AnchorContent>
+        <SbButton>View Profile</SbButton>
+    </AnchorContent>
+    <ChildContent>
+        <SbCard>
+            <SbHeading>John Doe</SbHeading>
+            <SbText>john@example.com</SbText>
+        </SbCard>
+    </ChildContent>
+</SbPopover>";
+}

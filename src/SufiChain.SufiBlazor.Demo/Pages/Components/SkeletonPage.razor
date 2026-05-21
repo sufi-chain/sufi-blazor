@@ -1,0 +1,89 @@
+@page "/demo/sufi-blazor/skeleton"
+
+<PageTitle>@(L["Menu:Demo:Skeleton"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Skeleton"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:SkeletonDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:SkeletonTextSkeletons"]" SourceCode="@textCode">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbSkeleton Width="100%" Height="20px" />
+                <SbSkeleton Width="80%" Height="20px" />
+                <SbSkeleton Width="60%" Height="20px" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SkeletonRectangular"]" SourceCode="@rectCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbSkeleton Variant="SbSkeletonVariant.Rectangular" Width="100%" Height="200px" />
+                <SbSkeleton Variant="SbSkeletonVariant.Rectangular" Width="300px" Height="150px" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SkeletonCircular"]" SourceCode="@circularCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4">
+                <SbSkeleton Variant="SbSkeletonVariant.Circular" Width="40px" Height="40px" />
+                <SbSkeleton Variant="SbSkeletonVariant.Circular" Width="60px" Height="60px" />
+                <SbSkeleton Variant="SbSkeletonVariant.Circular" Width="80px" Height="80px" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SkeletonCardLoadingExample"]" SourceCode="@cardCode">
+        <ExampleContent>
+            <SbCard>
+                <SbStack Gap="3">
+                    <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center">
+                        <SbSkeleton Variant="SbSkeletonVariant.Circular" Width="48px" Height="48px" />
+                        <SbStack Gap="2" style="flex: 1;">
+                            <SbSkeleton Width="40%" Height="16px" />
+                            <SbSkeleton Width="60%" Height="14px" />
+                        </SbStack>
+                    </SbStack>
+                    <SbSkeleton Variant="SbSkeletonVariant.Rectangular" Width="100%" Height="200px" />
+                    <SbSkeleton Width="100%" Height="16px" />
+                    <SbSkeleton Width="80%" Height="16px" />
+                </SbStack>
+            </SbCard>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SkeletonWithoutAnimation"]" SourceCode="@noAnimationCode">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbSkeleton Width="100%" Height="20px" Animation="false" />
+                <SbSkeleton Width="80%" Height="20px" Animation="false" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbSkeleton" />
+</DemoLayout>
+
+@code {
+    private const string textCode = @"<SbSkeleton Width=""100%"" Height=""20px"" />
+<SbSkeleton Width=""80%"" Height=""20px"" />
+<SbSkeleton Width=""60%"" Height=""20px"" />";
+
+    private const string rectCode = @"<SbSkeleton Variant=""SbSkeletonVariant.Rectangular"" Width=""100%"" Height=""200px"" />";
+
+    private const string circularCode = @"<SbSkeleton Variant=""SbSkeletonVariant.Circular"" Width=""40px"" Height=""40px"" />
+<SbSkeleton Variant=""SbSkeletonVariant.Circular"" Width=""60px"" Height=""60px"" />";
+
+    private const string cardCode = @"<SbCard>
+    <SbSkeleton Variant=""SbSkeletonVariant.Circular"" Width=""48px"" Height=""48px"" />
+    <SbSkeleton Width=""40%"" Height=""16px"" />
+    <SbSkeleton Variant=""SbSkeletonVariant.Rectangular"" Width=""100%"" Height=""200px"" />
+</SbCard>";
+
+    private const string noAnimationCode = @"<SbSkeleton Width=""100%"" Height=""20px"" Animation=""false"" />";
+}

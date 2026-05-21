@@ -1,0 +1,97 @@
+@page "/demo/sufi-blazor/alert"
+
+<PageTitle>@(L["Menu:Demo:Alert"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Alert"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:AlertDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:Severities"]" SourceCode="@severitiesCode">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbAlert Severity="SbAlertSeverity.Info">@L["Demo:AlertInfoMessage"]</SbAlert>
+                <SbAlert Severity="SbAlertSeverity.Success">@L["Demo:AlertSuccessMessage"]</SbAlert>
+                <SbAlert Severity="SbAlertSeverity.Warning">@L["Demo:AlertWarningMessage"]</SbAlert>
+                <SbAlert Severity="SbAlertSeverity.Danger">@L["Demo:AlertDangerMessage"]</SbAlert>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithTitle"]" SourceCode="@withTitleCode">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbAlert Severity="SbAlertSeverity.Info" Title="@L["Demo:Information"]">
+                    @L["Demo:AlertWithTitleMessage"]
+                </SbAlert>
+                <SbAlert Severity="SbAlertSeverity.Danger" Title="@L["Demo:ErrorOccurred"]">
+                    @L["Demo:AlertErrorDetail"]
+                </SbAlert>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:Dismissible"]" SourceCode="@dismissibleCode" RelatedCode="@dismissibleCodeBehind">
+        <ExampleContent>
+            @if (_showAlert)
+            {
+                <SbAlert Severity="SbAlertSeverity.Success" Dismissible="true" OnDismiss="@(() => _showAlert = false)">
+                    @L["Demo:AlertDismissMessage"]
+                </SbAlert>
+            }
+            else
+            {
+                <SbButton OnClick="@(() => _showAlert = true)">@L["Demo:AlertShowAlert"]</SbButton>
+            }
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithAction"]" SourceCode="@withActionCode">
+        <ExampleContent>
+            <SbAlert Severity="SbAlertSeverity.Warning">
+                <ChildContent>
+                    <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" Justify="SbJustify.SpaceBetween">
+                        <span>@L["Demo:AlertSessionExpire"]</span>
+                        <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline">@L["Demo:AlertExtendSession"]</SbButton>
+                    </SbStack>
+                </ChildContent>
+            </SbAlert>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbAlert" />
+</DemoLayout>
+
+@code {
+    private bool _showAlert = true;
+
+    private string severitiesCode = @"<SbStack Gap=""3"">
+    <SbAlert Severity=""SbAlertSeverity.Info"">This is an info alert.</SbAlert>
+    <SbAlert Severity=""SbAlertSeverity.Success"">This is a success alert.</SbAlert>
+    <SbAlert Severity=""SbAlertSeverity.Warning"">This is a warning alert.</SbAlert>
+    <SbAlert Severity=""SbAlertSeverity.Danger"">This is an error alert.</SbAlert>
+</SbStack>";
+
+    private string withTitleCode = @"<SbAlert Severity=""SbAlertSeverity.Info"" Title=""Information"">
+    This alert has a title above the message.
+</SbAlert>";
+
+    private string dismissibleCodeBehind = @"private bool _showAlert = true;";
+
+    private string dismissibleCode = @"@if (_showAlert)
+{
+    <SbAlert Severity=""SbAlertSeverity.Success"" Dismissible=""true"" OnDismiss=""@(() => _showAlert = false)"">
+        This alert can be dismissed.
+    </SbAlert>
+}";
+
+    private string withActionCode = @"<SbAlert Severity=""SbAlertSeverity.Warning"">
+    <SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Align=""SbAlign.Center"" Justify=""SbJustify.SpaceBetween"">
+        <span>Your session is about to expire.</span>
+        <SbButton Size=""SbSize.Sm"" Variant=""SbButtonVariant.Outline"">Extend Session</SbButton>
+    </SbStack>
+</SbAlert>";
+}

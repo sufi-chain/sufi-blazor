@@ -1,0 +1,127 @@
+@page "/demo/sufi-blazor/color-picker"
+
+<PageTitle>@(L["Menu:Demo:ColorPicker"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:ColorPicker"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:ColorPickerPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:ColorPickerBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbColorPicker @bind-Value="_selectedColor" Label="@L["Demo:ColorPickerPrimaryColor"]" />
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:ColorPickerSelected"]: @(_selectedColor ?? L["Demo:ColorPickerNone"])</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ColorPickerCustomPresets"]" SourceCode="@customPresetsCode" RelatedCode="@customPresetsCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbColorPicker @bind-Value="_brandColor" 
+                             Label="@L["Demo:ColorPickerBrandColor"]"
+                             Presets="@_brandColors" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ColorPickerNoPresets"]" SourceCode="@noPresetsCode" RelatedCode="@noPresetsCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbColorPicker @bind-Value="_customColor" 
+                             Label="@L["Demo:ColorPickerCustomColor"]"
+                             ShowPresets="false" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ColorPickerWithOpacity"]" SourceCode="@withOpacityCode" RelatedCode="@withOpacityCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbColorPicker @bind-Value="_overlayColor" 
+                             Label="@L["Demo:ColorPickerOverlayColor"]"
+                             ShowOpacity="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ColorPickerRequired"]" SourceCode="@requiredCode" RelatedCode="@requiredCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbColorPicker @bind-Value="_themeColor" 
+                             Label="@L["Demo:ColorPickerThemeColor"]"
+                             Required="true"
+                             Clearable="false" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ColorPickerDisabled"]" SourceCode="@disabledCode" RelatedCode="@disabledCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 300px;">
+                <SbColorPicker Value="#3b82f6" 
+                             Label="@L["Demo:ColorPickerLockedColor"]"
+                             Disabled="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbColorPicker" />
+</DemoLayout>
+
+@code {
+    private string? _selectedColor;
+    private string? _brandColor;
+    private string? _customColor;
+    private string? _overlayColor;
+    private string? _themeColor;
+
+    private string[] _brandColors = new[] 
+    {
+        "#1a73e8", "#4285f4", "#34a853", "#fbbc04", "#ea4335"
+    };
+
+    private const string basicCodeBehind = @"private string? _selectedColor;";
+
+    private const string basicCode = @"<SbColorPicker @bind-Value=""_selectedColor"" Label=""Primary Color"" />";
+
+    private const string customPresetsCodeBehind = @"private string? _brandColor;
+
+private string[] _brandColors = new[] 
+{
+    ""#1a73e8"", ""#4285f4"", ""#34a853"", ""#fbbc04"", ""#ea4335""
+};";
+
+    private const string customPresetsCode = @"<SbColorPicker @bind-Value=""_brandColor"" 
+                Label=""Brand Color""
+                Presets=""@_brandColors"" />";
+
+    private const string noPresetsCodeBehind = @"private string? _customColor;";
+
+    private const string noPresetsCode = @"<SbColorPicker @bind-Value=""_customColor"" 
+                Label=""Custom Color""
+                ShowPresets=""false"" />";
+
+    private const string withOpacityCodeBehind = @"private string? _overlayColor;";
+
+    private const string withOpacityCode = @"<SbColorPicker @bind-Value=""_overlayColor"" 
+                Label=""Overlay Color""
+                ShowOpacity=""true"" />";
+
+    private const string requiredCodeBehind = @"private string? _themeColor;";
+
+    private const string requiredCode = @"<SbColorPicker @bind-Value=""_themeColor"" 
+                Label=""Theme Color""
+                Required=""true""
+                Clearable=""false"" />";
+
+    private const string disabledCodeBehind = @"// Fixed value for disabled demo; no binding needed";
+
+    private const string disabledCode = @"<SbColorPicker Value=""#3b82f6"" 
+                Label=""Locked Color""
+                Disabled=""true"" />";
+}

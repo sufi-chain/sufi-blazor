@@ -1,0 +1,102 @@
+@page "/demo/sufi-blazor/divider"
+
+<PageTitle>@(L["Menu:Demo:Divider"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Divider"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DividerDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DividerBasic"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbText>@L["Demo:DividerSection1"]</SbText>
+            <SbDivider />
+            <SbText>@L["Demo:DividerSection2"]</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DividerWithLabel"]" SourceCode="@withLabelCode">
+        <ExampleContent>
+            <SbText>@L["Demo:DividerFirstPart"]</SbText>
+            <SbDivider>@L["Demo:DividerOr"]</SbDivider>
+            <SbText>@L["Demo:DividerSecondPart"]</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DividerLabelAlignment"]" SourceCode="@labelAlignCode">
+        <ExampleContent>
+            <SbDivider LabelAlign="SbAlign.Start">@L["Demo:DividerStart"]</SbDivider>
+            <SbDivider LabelAlign="SbAlign.Center">@L["Demo:DividerCenter"]</SbDivider>
+            <SbDivider LabelAlign="SbAlign.End">@L["Demo:DividerEnd"]</SbDivider>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DividerVertical"]" SourceCode="@verticalCode">
+        <ExampleContent>
+            <div style="display: flex; height: 80px; align-items: center; gap: 16px;">
+                <SbText>@L["Demo:DividerLeft"]</SbText>
+                <SbDivider Orientation="SbOrientation.Vertical" />
+                <SbText>@L["Demo:DividerMiddle"]</SbText>
+                <SbDivider Orientation="SbOrientation.Vertical" />
+                <SbText>@L["Demo:DividerRight"]</SbText>
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:DividerToolbar"]" SourceCode="@toolbarCode">
+        <ExampleContent>
+            <div style="display: flex; gap: 8px; align-items: center; padding: 8px; background: var(--sb-color-neutral-100); border-radius: var(--sb-radius-md);">
+                <SbIconButton AriaLabel="Bold" Size="SbSize.Sm"><SbIcon Name="bold" Size="SbSize.Sm" /></SbIconButton>
+                <SbIconButton AriaLabel="Italic" Size="SbSize.Sm"><SbIcon Name="italic" Size="SbSize.Sm" /></SbIconButton>
+                <SbIconButton AriaLabel="Underline" Size="SbSize.Sm"><SbIcon Name="underline" Size="SbSize.Sm" /></SbIconButton>
+                <SbDivider Orientation="SbOrientation.Vertical" />
+                <SbIconButton AriaLabel="Align left" Size="SbSize.Sm"><SbIcon Name="align-left" Size="SbSize.Sm" /></SbIconButton>
+                <SbIconButton AriaLabel="Align center" Size="SbSize.Sm"><SbIcon Name="align-center" Size="SbSize.Sm" /></SbIconButton>
+                <SbIconButton AriaLabel="Align right" Size="SbSize.Sm"><SbIcon Name="align-right" Size="SbSize.Sm" /></SbIconButton>
+                <SbDivider Orientation="SbOrientation.Vertical" />
+                <SbIconButton AriaLabel="List" Size="SbSize.Sm"><SbIcon Name="list" Size="SbSize.Sm" /></SbIconButton>
+                <SbIconButton AriaLabel="Ordered list" Size="SbSize.Sm"><SbIcon Name="list-ordered" Size="SbSize.Sm" /></SbIconButton>
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDivider" />
+</DemoLayout>
+
+@code {
+    private string basicCode = @"<SbText>Section 1 content</SbText>
+<SbDivider />
+<SbText>Section 2 content</SbText>";
+
+    private string withLabelCode = @"<SbText>First part</SbText>
+<SbDivider>OR</SbDivider>
+<SbText>Second part</SbText>";
+
+    private string labelAlignCode = @"<SbDivider LabelAlign=""SbAlign.Start"">START</SbDivider>
+<SbDivider LabelAlign=""SbAlign.Center"">CENTER</SbDivider>
+<SbDivider LabelAlign=""SbAlign.End"">END</SbDivider>";
+
+    private string verticalCode = @"<div style=""display: flex; height: 80px; align-items: center; gap: 16px;"">
+    <SbText>Left</SbText>
+    <SbDivider Orientation=""SbOrientation.Vertical"" />
+    <SbText>Middle</SbText>
+    <SbDivider Orientation=""SbOrientation.Vertical"" />
+    <SbText>Right</SbText>
+</div>";
+
+    private string toolbarCode = @"<div style=""display: flex; gap: 8px; align-items: center;"">
+    <SbIconButton AriaLabel=""Bold""><SbIcon Name=""bold"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Italic""><SbIcon Name=""italic"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Underline""><SbIcon Name=""underline"" /></SbIconButton>
+    <SbDivider Orientation=""SbOrientation.Vertical"" />
+    <SbIconButton AriaLabel=""Align left""><SbIcon Name=""align-left"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Align center""><SbIcon Name=""align-center"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Align right""><SbIcon Name=""align-right"" /></SbIconButton>
+    <SbDivider Orientation=""SbOrientation.Vertical"" />
+    <SbIconButton AriaLabel=""List""><SbIcon Name=""list"" /></SbIconButton>
+    <SbIconButton AriaLabel=""Ordered list""><SbIcon Name=""list-ordered"" /></SbIconButton>
+</div>";
+}

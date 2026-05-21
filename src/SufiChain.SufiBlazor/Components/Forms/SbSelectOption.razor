@@ -1,0 +1,49 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@typeparam TValue
+
+@* This component is used as a child of SbSelect to define options declaratively. *@
+@* It registers itself with the parent SbSelect via cascading parameter. *@
+
+@code {
+    [CascadingParameter]
+    internal ISbSelectOptionContext<TValue>? Context { get; set; }
+
+    /// <summary>
+    /// The value of this option.
+    /// </summary>
+    [Parameter]
+    public TValue? Value { get; set; }
+
+    /// <summary>
+    /// The display text for this option. When set, used for both the trigger and dropdown.
+    /// Avoids showing the raw Value when ChildContent renders localized text.
+    /// </summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// The display content for this option (custom markup).
+    /// When Text is null, ChildContent is used for dropdown; trigger falls back to Value.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Whether this option is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Register once when the option is first created
+        // The parent SbSimpleSelect maintains options without clearing them
+        Context?.RegisterOption(new SbSelectOptionInfo<TValue>
+        {
+            Value = Value,
+            Text = Text,
+            ChildContent = ChildContent,
+            Disabled = Disabled
+        });
+    }
+}

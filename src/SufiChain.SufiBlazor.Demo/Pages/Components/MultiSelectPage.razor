@@ -1,0 +1,103 @@
+@page "/demo/sufi-blazor/multi-select"
+
+<PageTitle>@(L["Menu:Demo:MultiSelect"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:MultiSelect"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:MultiSelectPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection 
+        Title="@L["Demo:MultiSelectBasic"]"
+        SourceCode='@basicCode'>
+        <ExampleContent>
+            <SbMultiSelect TItem="string" TValue="string"
+                @bind-Values="selectedValues"
+                Label="Select Fruits"
+                Placeholder="Choose fruits..."
+                Items="@fruits" />
+            <SbText Size="SbSize.Sm" Color="SbColor.Muted">Selected: @string.Join(", ", selectedValues)</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:MultiSelectWithSearch"]"
+        SourceCode='@searchCode'>
+        <ExampleContent>
+            <SbMultiSelect TItem="string" TValue="string"
+                @bind-Values="searchValues"
+                Label="Select Countries"
+                Placeholder="Search countries..."
+                Items="@countries"
+                Searchable="true" />
+            <SbText Size="SbSize.Sm" Color="SbColor.Muted">Selected: @string.Join(", ", searchValues)</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:MultiSelectMaxSelected"]"
+        SourceCode='@maxSelectedCode'>
+        <ExampleContent>
+            <SbMultiSelect TItem="string" TValue="string"
+                @bind-Values="maxSelectedValues"
+                Label="Pick up to 3"
+                Placeholder="Max 3 items..."
+                Items="@fruits"
+                MaxSelected="3" />
+            <SbText Size="SbSize.Sm" Color="SbColor.Muted">Selected: @string.Join(", ", maxSelectedValues) (@maxSelectedValues.Count / 3)</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:MultiSelectDisabled"]"
+        SourceCode='@disabledCode'>
+        <ExampleContent>
+            <SbMultiSelect TItem="string" TValue="string"
+                Values="@disabledValues"
+                Label="Disabled"
+                Items="@fruits"
+                Disabled="true" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbMultiSelect" />
+</DemoLayout>
+
+@code {
+    private IReadOnlyList<string> selectedValues = new List<string>();
+    private IReadOnlyList<string> searchValues = new List<string>();
+    private IReadOnlyList<string> maxSelectedValues = new List<string>();
+    private IReadOnlyList<string> disabledValues = new List<string> { "Apple", "Banana" };
+
+    private List<string> fruits = new() { "Apple", "Banana", "Cherry", "Date", "Elderberry", "Fig", "Grape" };
+    private List<string> countries = new() { "USA", "Canada", "UK", "France", "Germany", "Italy", "Spain", "Japan" };
+
+    private string basicCode = @"<SbMultiSelect TItem=""string"" TValue=""string""
+    @bind-Values=""selectedValues""
+    Label=""Select Fruits""
+    Placeholder=""Choose fruits...""
+    Items=""@fruits"" />";
+
+    private string searchCode = @"<SbMultiSelect TItem=""string"" TValue=""string""
+    @bind-Values=""searchValues""
+    Label=""Select Countries""
+    Placeholder=""Search countries...""
+    Items=""@countries""
+    Searchable=""true"" />";
+
+    private string maxSelectedCode = @"<SbMultiSelect TItem=""string"" TValue=""string""
+    @bind-Values=""maxSelectedValues""
+    Label=""Pick up to 3""
+    Placeholder=""Max 3 items...""
+    Items=""@fruits""
+    MaxSelected=""3"" />";
+
+    private string disabledCode = @"<SbMultiSelect TItem=""string"" TValue=""string""
+    Values=""@disabledValues""
+    Label=""Disabled""
+    Items=""@fruits""
+    Disabled=""true"" />";
+}

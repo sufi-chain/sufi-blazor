@@ -1,0 +1,465 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Utilities.DateUtils
+@using System.Globalization
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-datepicker @Class" style="@Style" @ref="_anchorRef">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-datepicker__label">@Label</label>
+    }
+    <div class="sb-datepicker__trigger @(Disabled ? "sb-datepicker__trigger--disabled" : "")" @onclick="Toggle">
+        <span class="@(HasValue ? "sb-datepicker__value" : "sb-datepicker__placeholder")">
+            @(HasValue ? GetDisplayText() : (Placeholder ?? L["SelectDate_Placeholder"]))
+        </span>
+        @if (Clearable && HasValue && !Disabled)
+        {
+            <button type="button" 
+                    class="sb-datepicker__clear" 
+                    @onclick="Clear" 
+                    @onclick:stopPropagation="true"
+                    aria-label="@L["ClearDate"]">
+                <SbIcon Name="x" Size="SbSize.Sm" />
+            </button>
+        }
+        <span class="sb-datepicker__icon"><SbIcon Name="calendar" Size="SbSize.Sm" /></span>
+    </div>
+    
+    @if (_isOpen)
+    {
+        <div class="@DropdownClass" dir="@(_isRtl ? "rtl" : "ltr")">
+            <!-- Header with navigation -->
+            <div class="sb-datepicker__header">
+                <button type="button" 
+                        class="sb-datepicker__nav-btn" 
+                        @onclick="PreviousMonth"
+                        aria-label="Previous month">
+                    @(_isRtl ? "▶" : "◀")
+                </button>
+                <div class="sb-datepicker__title">
+                    <button type="button" 
+                            class="sb-datepicker__month-year"
+                            @onclick="ToggleMonthView">
+                        @GetMonthYearText()
+                    </button>
+                </div>
+                <button type="button" 
+                        class="sb-datepicker__nav-btn" 
+                        @onclick="NextMonth"
+                        aria-label="Next month">
+                    @(_isRtl ? "◀" : "▶")
+                </button>
+            </div>
+            
+            @if (_viewMode == ViewMode.Days)
+            {
+                <!-- Day names header -->
+                <div class="sb-datepicker__day-names">
+                    @foreach (var dayName in _dayNames)
+                    {
+                        <div class="sb-datepicker__day-name" title="@dayName">@GetDisplayDayName(dayName)</div>
+                    }
+                </div>
+                
+                <!-- Calendar grid -->
+                <div class="sb-datepicker__days">
+                    @foreach (var day in _calendarDays)
+                    {
+                        var isCurrentMonth = SbCalendarHelper.GetMonth(day, _culture) == SbCalendarHelper.GetMonth(_displayMonth, _culture) &&
+                                             SbCalendarHelper.GetYear(day, _culture) == SbCalendarHelper.GetYear(_displayMonth, _culture);
+                        var isSelected = _selectedDate.HasValue && day.Date == _selectedDate.Value.Date;
+                        var isToday = day.Date == DateTime.Today;
+                        var isDisabled = IsDayDisabled(day);
+                        
+                        <button type="button"
+                                class="@GetDayClass(isCurrentMonth, isSelected, isToday, isDisabled)"
+                                disabled="@isDisabled"
+                                @onclick="() => SelectDay(day)">
+                            @SbCalendarHelper.GetDayOfMonth(day, _culture)
+                        </button>
+                    }
+                </div>
+            }
+            else if (_viewMode == ViewMode.Months)
+            {
+                <!-- Month selection -->
+                <div class="sb-datepicker__months">
+                    @for (int month = 1; month <= 12; month++)
+                    {
+                        var monthIndex = month;
+                        var isSelected = SbCalendarHelper.GetMonth(_displayMonth, _culture) == monthIndex;
+                        <button type="button"
+                                class="@GetMonthClass(isSelected)"
+                                @onclick="() => SelectMonth(monthIndex)">
+                            @_culture.DateTimeFormat.MonthNames[month - 1]
+                        </button>
+                    }
+                </div>
+            }
+            else if (_viewMode == ViewMode.Years)
+            {
+                <!-- Year selection -->
+                <div class="sb-datepicker__years">
+                    @foreach (var year in GetYearRange())
+                    {
+                        var isSelected = SbCalendarHelper.GetYear(_displayMonth, _culture) == year;
+                        <button type="button"
+                                class="@GetYearClass(isSelected)"
+                                @onclick="() => SelectYear(year)">
+                            @year
+                        </button>
+                    }
+                </div>
+            }
+            
+            <!-- Footer with quick actions -->
+            <div class="sb-datepicker__footer">
+                <button type="button" 
+                        class="sb-datepicker__today-btn"
+                        @onclick="SelectToday">
+                    Today
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private enum ViewMode { Days, Months, Years }
+    
+    private ElementReference _anchorRef;
+    private DotNetObjectReference<SbDatePicker>? _dotNetRef;
+    private bool _isOpen;
+    private DateTime _displayMonth;
+    private DateTime? _selectedDate;
+    private CultureInfo _culture = CultureInfo.CurrentUICulture;
+    private bool _isRtl;
+    private string[] _dayNames = Array.Empty<string>();
+    private List<DateTime> _calendarDays = new();
+    private ViewMode _viewMode = ViewMode.Days;
+    private bool _shouldFlip;
+    
+    /// <summary>
+    /// The selected date value.
+    /// </summary>
+    [Parameter]
+    public DateOnly? Value { get; set; }
+    
+    /// <summary>
+    /// Callback when the selected date changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<DateOnly?> ValueChanged { get; set; }
+    
+    /// <summary>
+    /// The calendar system to use. When null, follows the current UI culture (e.g. Farsi → Persian/Jalali).
+    /// </summary>
+    [Parameter]
+    public SbCalendarSystem? CalendarSystem { get; set; }
+    
+    /// <summary>
+    /// The minimum selectable date.
+    /// </summary>
+    [Parameter]
+    public DateOnly? Min { get; set; }
+    
+    /// <summary>
+    /// The maximum selectable date.
+    /// </summary>
+    [Parameter]
+    public DateOnly? Max { get; set; }
+    
+    /// <summary>
+    /// When true, disables weekend days according to the current calendar (e.g. Friday only for Jalali, Sat/Sun for Gregorian).
+    /// </summary>
+    [Parameter]
+    public bool DisableWeekends { get; set; }
+
+    /// <summary>
+    /// Function to determine if a specific date should be disabled.
+    /// </summary>
+    [Parameter]
+    public Func<DateOnly, bool>? IsDateDisabled { get; set; }
+    
+    /// <summary>
+    /// The date format string.
+    /// </summary>
+    [Parameter]
+    public string? Format { get; set; }
+    
+    /// <summary>
+    /// Placeholder text when no date is selected. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+    
+    /// <summary>
+    /// Whether to show a clear button.
+    /// </summary>
+    [Parameter]
+    public bool Clearable { get; set; } = true;
+    
+    /// <summary>
+    /// Whether the date picker is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+    
+    /// <summary>
+    /// Label text displayed above the date picker.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+    
+    private bool HasValue => Value.HasValue;
+    
+    private string DropdownClass => _shouldFlip 
+        ? "sb-datepicker__dropdown sb-datepicker__dropdown--flip-up" 
+        : "sb-datepicker__dropdown";
+    
+    protected override void OnInitialized()
+    {
+        UpdateCulture();
+        InitializeDisplayMonth();
+    }
+    
+    protected override void OnParametersSet()
+    {
+        UpdateCulture();
+        
+        // Sync selected date with Value parameter
+        _selectedDate = Value.HasValue ? SbCalendarHelper.ToDateTime(Value.Value) : null;
+        
+        // Update display month if selected date changed
+        if (_selectedDate.HasValue)
+        {
+            _displayMonth = SbCalendarHelper.GetMonthStart(_selectedDate.Value, _culture);
+        }
+        
+        UpdateCalendarDays();
+    }
+    
+    private SbCalendarSystem EffectiveCalendarSystem => CalendarSystem
+        ?? SbCalendarHelper.GetCalendarSystemFromCulture(CultureInfo.CurrentUICulture);
+
+    private void UpdateCulture()
+    {
+        var calendar = EffectiveCalendarSystem;
+        _culture = SbCalendarHelper.GetCulture(calendar);
+        _isRtl = SbCalendarHelper.IsRtl(calendar);
+        _dayNames = SbCalendarHelper.GetDayNames(_culture, _culture.DateTimeFormat.FirstDayOfWeek);
+    }
+    
+    private void InitializeDisplayMonth()
+    {
+        _displayMonth = Value.HasValue 
+            ? SbCalendarHelper.GetMonthStart(SbCalendarHelper.ToDateTime(Value.Value), _culture)
+            : SbCalendarHelper.GetMonthStart(DateTime.Today, _culture);
+        UpdateCalendarDays();
+    }
+    
+    private void UpdateCalendarDays()
+    {
+        _calendarDays = SbCalendarHelper.GetMonthViewDays(
+            _displayMonth, 
+            _culture, 
+            _culture.DateTimeFormat.FirstDayOfWeek
+        ).ToList();
+    }
+    
+    private string GetDisplayText()
+    {
+        if (!Value.HasValue) return "";
+        return SbCalendarHelper.FormatDate(SbCalendarHelper.ToDateTime(Value.Value), Format, _culture);
+    }
+    
+    private string GetMonthYearText()
+    {
+        return $"{SbCalendarHelper.GetMonthName(_displayMonth, _culture)} {SbCalendarHelper.GetYear(_displayMonth, _culture)}";
+    }
+    
+    private string GetDisplayDayName(string dayName)
+    {
+        if (!_isRtl || string.IsNullOrEmpty(dayName)) return dayName;
+        return dayName.Substring(0, 1);
+    }
+    
+    private string GetDayClass(bool isCurrentMonth, bool isSelected, bool isToday, bool isDisabled)
+    {
+        var classes = new List<string> { "sb-datepicker__day" };
+        
+        if (!isCurrentMonth) classes.Add("sb-datepicker__day--other-month");
+        if (isSelected) classes.Add("sb-datepicker__day--selected");
+        if (isToday) classes.Add("sb-datepicker__day--today");
+        if (isDisabled) classes.Add("sb-datepicker__day--disabled");
+        
+        return string.Join(" ", classes);
+    }
+    
+    private string GetMonthClass(bool isSelected)
+    {
+        return isSelected 
+            ? "sb-datepicker__month sb-datepicker__month--selected" 
+            : "sb-datepicker__month";
+    }
+    
+    private string GetYearClass(bool isSelected)
+    {
+        return isSelected 
+            ? "sb-datepicker__year sb-datepicker__year--selected" 
+            : "sb-datepicker__year";
+    }
+    
+    private IEnumerable<int> GetYearRange()
+    {
+        var currentYear = SbCalendarHelper.GetYear(_displayMonth, _culture);
+        var startYear = currentYear - 6;
+        for (int i = 0; i < 12; i++)
+        {
+            yield return startYear + i;
+        }
+    }
+    
+    private bool IsDayDisabled(DateTime day)
+    {
+        var dateOnly = SbCalendarHelper.ToDateOnly(day);
+        
+        if (Min.HasValue && dateOnly < Min.Value)
+            return true;
+        if (Max.HasValue && dateOnly > Max.Value)
+            return true;
+        if (DisableWeekends && SbCalendarHelper.IsWeekend(day, EffectiveCalendarSystem))
+            return true;
+        if (IsDateDisabled?.Invoke(dateOnly) == true)
+            return true;
+            
+        return false;
+    }
+    
+    private async Task Toggle()
+    {
+        if (Disabled) return;
+        
+        _isOpen = !_isOpen;
+        _viewMode = ViewMode.Days;
+        
+        if (_isOpen)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
+            
+            // Reset display month to selected date or today
+            if (_selectedDate.HasValue)
+            {
+                _displayMonth = SbCalendarHelper.GetMonthStart(_selectedDate.Value, _culture);
+            }
+            else
+            {
+                _displayMonth = SbCalendarHelper.GetMonthStart(DateTime.Today, _culture);
+            }
+            UpdateCalendarDays();
+            
+            // Check if dropdown should flip upward
+            _shouldFlip = await JSRuntime.InvokeAsync<bool>("SufiBlazor.select.shouldFlipUp", _anchorRef, 400);
+            StateHasChanged();
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+        }
+    }
+    
+    private async Task SelectDay(DateTime day)
+    {
+        if (IsDayDisabled(day)) return;
+        
+        _selectedDate = day;
+        var dateOnly = SbCalendarHelper.ToDateOnly(day);
+        await ValueChanged.InvokeAsync(dateOnly);
+        
+        _isOpen = false;
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+    }
+    
+    private async Task Clear()
+    {
+        _selectedDate = null;
+        await ValueChanged.InvokeAsync(null);
+    }
+    
+    private async Task SelectToday()
+    {
+        var today = DateTime.Today;
+        if (!IsDayDisabled(today))
+        {
+            await SelectDay(today);
+        }
+    }
+    
+    private void PreviousMonth()
+    {
+        _displayMonth = _culture.Calendar.AddMonths(_displayMonth, -1);
+        UpdateCalendarDays();
+    }
+    
+    private void NextMonth()
+    {
+        _displayMonth = _culture.Calendar.AddMonths(_displayMonth, 1);
+        UpdateCalendarDays();
+    }
+    
+    private void ToggleMonthView()
+    {
+        _viewMode = _viewMode switch
+        {
+            ViewMode.Days => ViewMode.Months,
+            ViewMode.Months => ViewMode.Years,
+            ViewMode.Years => ViewMode.Days,
+            _ => ViewMode.Days
+        };
+    }
+    
+    private void SelectMonth(int month)
+    {
+        var year = SbCalendarHelper.GetYear(_displayMonth, _culture);
+        _displayMonth = _culture.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0);
+        _viewMode = ViewMode.Days;
+        UpdateCalendarDays();
+    }
+    
+    private void SelectYear(int year)
+    {
+        var month = SbCalendarHelper.GetMonth(_displayMonth, _culture);
+        _displayMonth = _culture.Calendar.ToDateTime(year, month, 1, 0, 0, 0, 0);
+        _viewMode = ViewMode.Months;
+    }
+    
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}

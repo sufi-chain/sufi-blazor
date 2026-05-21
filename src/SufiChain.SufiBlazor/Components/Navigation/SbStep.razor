@@ -1,0 +1,66 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+@implements IDisposable
+
+@if (_parent != null && _parent.IsStepActive(this))
+{
+    <div class="sb-step-content">
+        @ChildContent
+    </div>
+}
+
+@code {
+    private SbStepper? _parent;
+    
+    /// <summary>
+    /// Step label.
+    /// </summary>
+    [Parameter]
+    public string Label { get; set; } = "";
+    
+    /// <summary>
+    /// Step description.
+    /// </summary>
+    [Parameter]
+    public string? Description { get; set; }
+    
+    /// <summary>
+    /// Step icon.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+    
+    /// <summary>
+    /// Whether the step is optional.
+    /// </summary>
+    [Parameter]
+    public bool Optional { get; set; }
+    
+    /// <summary>
+    /// Step content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Parent stepper.
+    /// </summary>
+    [CascadingParameter]
+    public SbStepper? Parent
+    {
+        get => _parent;
+        set
+        {
+            if (_parent != value)
+            {
+                _parent?.UnregisterStep(this);
+                _parent = value;
+                _parent?.RegisterStep(this);
+            }
+        }
+    }
+    
+    public void Dispose()
+    {
+        _parent?.UnregisterStep(this);
+    }
+}

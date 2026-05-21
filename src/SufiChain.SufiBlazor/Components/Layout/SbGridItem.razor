@@ -1,0 +1,99 @@
+@namespace SufiChain.SufiBlazor.Components.Layout
+
+<div class="@CssClass" style="@ComputedStyle" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Number of columns this item spans (1-12).
+    /// </summary>
+    [Parameter]
+    public int Span { get; set; } = 1;
+
+    /// <summary>
+    /// Column span at small breakpoint.
+    /// </summary>
+    [Parameter]
+    public int? SpanSm { get; set; }
+
+    /// <summary>
+    /// Column span at medium breakpoint.
+    /// </summary>
+    [Parameter]
+    public int? SpanMd { get; set; }
+
+    /// <summary>
+    /// Column span at large breakpoint.
+    /// </summary>
+    [Parameter]
+    public int? SpanLg { get; set; }
+
+    /// <summary>
+    /// Column span at extra large breakpoint.
+    /// </summary>
+    [Parameter]
+    public int? SpanXl { get; set; }
+
+    /// <summary>
+    /// The content to render inside the grid item.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-grid-item" };
+
+            if (SpanSm.HasValue) classes.Add($"sb-grid-item--sm-{SpanSm}");
+            if (SpanMd.HasValue) classes.Add($"sb-grid-item--md-{SpanMd}");
+            if (SpanLg.HasValue) classes.Add($"sb-grid-item--lg-{SpanLg}");
+            if (SpanXl.HasValue) classes.Add($"sb-grid-item--xl-{SpanXl}");
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    private string ComputedStyle
+    {
+        get
+        {
+            var styles = new List<string>
+            {
+                $"--sb-grid-span: {Span}"
+            };
+
+            if (!string.IsNullOrWhiteSpace(Style))
+            {
+                styles.Add(Style);
+            }
+
+            return string.Join("; ", styles);
+        }
+    }
+}

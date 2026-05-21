@@ -1,0 +1,165 @@
+@page "/demo/sufi-blazor/stack"
+
+<PageTitle>@(L["Menu:Demo:Stack"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Stack"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:StackDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:StackHorizontal"]" SourceCode="@horizontalCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3">
+                <SbCard Elevation="2"><SbText>Item 1</SbText></SbCard>
+                <SbCard Elevation="2"><SbText>Item 2</SbText></SbCard>
+                <SbCard Elevation="2"><SbText>Item 3</SbText></SbCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StackVertical"]" SourceCode="@verticalCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                <SbCard Elevation="2"><SbText>Item 1</SbText></SbCard>
+                <SbCard Elevation="2"><SbText>Item 2</SbText></SbCard>
+                <SbCard Elevation="2"><SbText>Item 3</SbText></SbCard>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StackGapSizes"]" SourceCode="@gapCode">
+        <ExampleContent>
+            <SbStack Gap="6">
+                <div>
+                    <SbText Variant="SbTextVariant.Caption" Class="mb-2">@string.Format(L["Demo:StackGapValue"], 1)</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="1">
+                        <SbButton Size="SbSize.Sm">A</SbButton>
+                        <SbButton Size="SbSize.Sm">B</SbButton>
+                        <SbButton Size="SbSize.Sm">C</SbButton>
+                    </SbStack>
+                </div>
+                <div>
+                    <SbText Variant="SbTextVariant.Caption" Class="mb-2">@string.Format(L["Demo:StackGapValue"], 3)</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="3">
+                        <SbButton Size="SbSize.Sm">A</SbButton>
+                        <SbButton Size="SbSize.Sm">B</SbButton>
+                        <SbButton Size="SbSize.Sm">C</SbButton>
+                    </SbStack>
+                </div>
+                <div>
+                    <SbText Variant="SbTextVariant.Caption" Class="mb-2">@string.Format(L["Demo:StackGapValue"], 6)</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="6">
+                        <SbButton Size="SbSize.Sm">A</SbButton>
+                        <SbButton Size="SbSize.Sm">B</SbButton>
+                        <SbButton Size="SbSize.Sm">C</SbButton>
+                    </SbStack>
+                </div>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StackAlignment"]" SourceCode="@alignCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <div>
+                    <SbText Variant="SbTextVariant.Caption" Class="mb-2">@L["Demo:StackAlignStart"]</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Start" style="height: 80px; background: var(--sb-color-surface-variant); padding: var(--sb-space-2);">
+                        <SbButton Size="SbSize.Sm">Short</SbButton>
+                        <SbButton Size="SbSize.Lg">Tall</SbButton>
+                    </SbStack>
+                </div>
+                <div>
+                    <SbText Variant="SbTextVariant.Caption" Class="mb-2">@L["Demo:StackAlignCenter"]</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.Center" style="height: 80px; background: var(--sb-color-surface-variant); padding: var(--sb-space-2);">
+                        <SbButton Size="SbSize.Sm">Short</SbButton>
+                        <SbButton Size="SbSize.Lg">Tall</SbButton>
+                    </SbStack>
+                </div>
+                <div>
+                    <SbText Variant="SbTextVariant.Caption" Class="mb-2">@L["Demo:StackAlignEnd"]</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="3" Align="SbAlign.End" style="height: 80px; background: var(--sb-color-surface-variant); padding: var(--sb-space-2);">
+                        <SbButton Size="SbSize.Sm">Short</SbButton>
+                        <SbButton Size="SbSize.Lg">Tall</SbButton>
+                    </SbStack>
+                </div>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StackJustify"]" SourceCode="@justifyCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <div>
+                    <SbText Variant="SbTextVariant.Caption" Class="mb-2">@L["Demo:StackJustifyStart"]</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="3" Justify="SbJustify.Start" style="background: var(--sb-color-surface-variant); padding: var(--sb-space-2);">
+                        <SbButton Size="SbSize.Sm">A</SbButton>
+                        <SbButton Size="SbSize.Sm">B</SbButton>
+                    </SbStack>
+                </div>
+                <div>
+                    <SbText Variant="SbTextVariant.Caption" Class="mb-2">@L["Demo:StackJustifyCenter"]</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="3" Justify="SbJustify.Center" style="background: var(--sb-color-surface-variant); padding: var(--sb-space-2);">
+                        <SbButton Size="SbSize.Sm">A</SbButton>
+                        <SbButton Size="SbSize.Sm">B</SbButton>
+                    </SbStack>
+                </div>
+                <div>
+                    <SbText Variant="SbTextVariant.Caption" Class="mb-2">@L["Demo:StackJustifySpaceBetween"]</SbText>
+                    <SbStack Direction="SbStackDirection.Row" Gap="3" Justify="SbJustify.SpaceBetween" style="background: var(--sb-color-surface-variant); padding: var(--sb-space-2);">
+                        <SbButton Size="SbSize.Sm">A</SbButton>
+                        <SbButton Size="SbSize.Sm">B</SbButton>
+                    </SbStack>
+                </div>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:StackWrap"]" SourceCode="@wrapCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true" style="max-width: 300px;">
+                @for (int i = 1; i <= 8; i++)
+                {
+                    <SbButton Variant="SbButtonVariant.Outline">Item @i</SbButton>
+                }
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbStack" />
+</DemoLayout>
+
+@code {
+    private string horizontalCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"">
+    <SbCard Elevation=""2""><SbText>Item 1</SbText></SbCard>
+    <SbCard Elevation=""2""><SbText>Item 2</SbText></SbCard>
+    <SbCard Elevation=""2""><SbText>Item 3</SbText></SbCard>
+</SbStack>";
+
+    private string verticalCode = @"<SbStack Direction=""SbStackDirection.Column"" Gap=""3"">
+    <SbCard Elevation=""2""><SbText>Item 1</SbText></SbCard>
+    <SbCard Elevation=""2""><SbText>Item 2</SbText></SbCard>
+    <SbCard Elevation=""2""><SbText>Item 3</SbText></SbCard>
+</SbStack>";
+
+    private string gapCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""1"">...</SbStack>
+<SbStack Direction=""SbStackDirection.Row"" Gap=""3"">...</SbStack>
+<SbStack Direction=""SbStackDirection.Row"" Gap=""6"">...</SbStack>";
+
+    private string alignCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Align=""SbAlign.Start"">...</SbStack>
+<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Align=""SbAlign.Center"">...</SbStack>
+<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Align=""SbAlign.End"">...</SbStack>";
+
+    private string justifyCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Justify=""SbJustify.Start"">...</SbStack>
+<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Justify=""SbJustify.Center"">...</SbStack>
+<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Justify=""SbJustify.SpaceBetween"">...</SbStack>";
+
+    private string wrapCode = @"<SbStack Direction=""SbStackDirection.Row"" Gap=""3"" Wrap=""true"" style=""max-width: 300px;"">
+    @for (int i = 1; i <= 8; i++)
+    {
+        <SbButton Variant=""SbButtonVariant.Outline"">Item @i</SbButton>
+    }
+</SbStack>";
+}

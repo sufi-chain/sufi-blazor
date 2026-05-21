@@ -1,0 +1,323 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Common
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-colorpicker @Class" style="@Style" @ref="_anchorRef">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-colorpicker__label" for="@Id">
+            @Label
+            @if (Required)
+            {
+                <span class="sb-colorpicker__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+    <div class="sb-colorpicker__trigger @(Disabled ? "sb-colorpicker__trigger--disabled" : "")" @onclick="Toggle">
+        <span class="sb-colorpicker__preview" style="background-color: @(Value ?? "#ffffff")"></span>
+        <span class="sb-colorpicker__value">@(Value ?? (Placeholder ?? L["SelectColor_Placeholder"]))</span>
+        @if (Clearable && !string.IsNullOrEmpty(Value) && !Disabled)
+        {
+            <button type="button" 
+                    class="sb-colorpicker__clear"
+                    @onclick="Clear"
+                    @onclick:stopPropagation="true"
+                    aria-label="@L["ClearColor"]">
+                <SbIcon Name="x" Size="SbSize.Sm" />
+            </button>
+        }
+    </div>
+    
+    @if (_isOpen)
+    {
+        <div class="@DropdownClass">
+            @if (ShowPresets && Presets.Any())
+            {
+                <div class="sb-colorpicker__presets">
+                    @foreach (var color in Presets)
+                    {
+                        <button type="button"
+                                class="sb-colorpicker__preset @(color == Value ? "sb-colorpicker__preset--selected" : "")"
+                                style="background-color: @color"
+                                @onclick="() => SelectColor(color)"
+                                title="@color">
+                        </button>
+                    }
+                </div>
+            }
+            
+            <div class="sb-colorpicker__custom">
+                <label class="sb-colorpicker__label">@L["CustomColor"]</label>
+                <div class="sb-colorpicker__input-row">
+                    <div class="sb-colorpicker__native-wrapper" style="background-color: @(_tempValue ?? "#ffffff")">
+                        <input type="color" 
+                               class="sb-colorpicker__native"
+                               value="@(_tempValue ?? "#ffffff")"
+                               @onchange="OnNativeColorChange" />
+                    </div>
+                    <input type="text"
+                           class="sb-colorpicker__hex"
+                           value="@_tempValue"
+                           @oninput="OnHexInput"
+                           placeholder="#000000"
+                           maxlength="7" />
+                </div>
+            </div>
+            
+            @if (ShowOpacity)
+            {
+                <div class="sb-colorpicker__opacity">
+                    <label class="sb-colorpicker__label">@L["Opacity", _opacity]</label>
+                    <input type="range"
+                           class="sb-colorpicker__opacity-slider"
+                           min="0"
+                           max="100"
+                           value="@_opacity"
+                           @oninput="OnOpacityChange" />
+                </div>
+            }
+            
+            <div class="sb-colorpicker__footer">
+                <SbButton Variant="SbButtonVariant.Outline" Size="SbSize.Sm" OnClick="Cancel">
+                    @L["Cancel"]
+                </SbButton>
+                <SbButton Variant="SbButtonVariant.Solid" Size="SbSize.Sm" OnClick="Apply">
+                    @L["Apply"]
+                </SbButton>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _anchorRef;
+    private DotNetObjectReference<SbColorPicker>? _dotNetRef;
+    private bool _isOpen;
+    private string? _tempValue;
+    private int _opacity = 100;
+    private bool _shouldFlip;
+    
+    /// <summary>
+    /// The selected color value (hex format).
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+    
+    /// <summary>
+    /// Callback when color changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+    
+    /// <summary>
+    /// Preset color options.
+    /// </summary>
+    [Parameter]
+    public string[] Presets { get; set; } = new[]
+    {
+        "#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16",
+        "#22c55e", "#10b981", "#14b8a6", "#06b6d4", "#0ea5e9",
+        "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef",
+        "#ec4899", "#f43f5e", "#000000", "#6b7280", "#ffffff"
+    };
+    
+    /// <summary>
+    /// Whether to show preset colors.
+    /// </summary>
+    [Parameter]
+    public bool ShowPresets { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to show opacity slider.
+    /// </summary>
+    [Parameter]
+    public bool ShowOpacity { get; set; }
+    
+    /// <summary>
+    /// Placeholder text.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+    
+    /// <summary>
+    /// Whether to show clear button.
+    /// </summary>
+    [Parameter]
+    public bool Clearable { get; set; } = true;
+    
+    /// <summary>
+    /// Whether the picker is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Element ID.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Label text displayed above the picker.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Whether the field is required (shows asterisk).
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles for the wrapper element.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+    
+    private string DropdownClass => _shouldFlip 
+        ? "sb-colorpicker__dropdown sb-colorpicker__dropdown--flip-up" 
+        : "sb-colorpicker__dropdown";
+    
+    protected override void OnParametersSet()
+    {
+        ParseValue(Value);
+    }
+    
+    private async Task Toggle()
+    {
+        if (Disabled) return;
+        
+        _isOpen = !_isOpen;
+        ParseValue(Value);
+        
+        if (_isOpen)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
+            
+            // Check if dropdown should flip upward
+            _shouldFlip = await JSRuntime.InvokeAsync<bool>("SufiBlazor.select.shouldFlipUp", _anchorRef, 350);
+            StateHasChanged();
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+        }
+    }
+    
+    private void SelectColor(string color)
+    {
+        _tempValue = color;
+    }
+    
+    private void OnNativeColorChange(ChangeEventArgs e)
+    {
+        _tempValue = e.Value?.ToString();
+    }
+    
+    private void OnHexInput(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        if (!value.StartsWith("#"))
+            value = "#" + value;
+        _tempValue = value;
+    }
+    
+    private void OnOpacityChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var opacity))
+        {
+            _opacity = opacity;
+        }
+    }
+    
+    private async Task Apply()
+    {
+        var finalValue = _tempValue;
+        
+        if (ShowOpacity && !string.IsNullOrEmpty(finalValue) && _opacity >= 0 && _opacity <= 100)
+        {
+            // Normalize to 6-digit hex first if possible
+            if (finalValue.Length == 4) // #RGB -> #RRGGBB
+            {
+                finalValue = $"#{finalValue[1]}{finalValue[1]}{finalValue[2]}{finalValue[2]}{finalValue[3]}{finalValue[3]}";
+            }
+            
+            if (finalValue.Length == 7 && finalValue.StartsWith("#"))
+            {
+                // Calculate alpha (0-255)
+                var alpha = (int)Math.Round(_opacity * 2.55);
+                finalValue += alpha.ToString("X2");
+            }
+        }
+        
+        await ValueChanged.InvokeAsync(finalValue);
+        _isOpen = false;
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+    }
+
+    private void ParseValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            _tempValue = null;
+            _opacity = 100;
+            return;
+        }
+
+        if (value.Length == 9 && value.StartsWith("#") && ShowOpacity) // #RRGGBBAA
+        {
+            _tempValue = value.Substring(0, 7);
+            var alphaHex = value.Substring(7, 2);
+            if (int.TryParse(alphaHex, System.Globalization.NumberStyles.HexNumber, null, out var alpha))
+            {
+                _opacity = (int)Math.Round(alpha / 2.55);
+            }
+        }
+        else
+        {
+            _tempValue = value;
+            // If it's a simple color without alpha, opacity defaults to 100,
+            // unless we want to persist previous opacity? Standard behavior is usually reset to 100 or keep existing if logical.
+            // Here we'll reset to 100 if the new value doesn't have alpha information to match the "Value" source of truth.
+             if (ShowOpacity && value.Length <= 7) _opacity = 100;
+        }
+    }
+    
+    private async Task Cancel()
+    {
+        ParseValue(Value);
+        _isOpen = false;
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+    }
+    
+    private async Task Clear()
+    {
+        await ValueChanged.InvokeAsync(null);
+    }
+    
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}

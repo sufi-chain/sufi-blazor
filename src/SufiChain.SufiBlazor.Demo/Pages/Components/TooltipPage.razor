@@ -1,0 +1,122 @@
+@page "/demo/sufi-blazor/tooltip"
+
+<PageTitle>@(L["Menu:Demo:Tooltip"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Tooltip"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:TooltipDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:TooltipBasic"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbTooltip Text="@L["Demo:TooltipBasicText"]">
+                <SbButton>@L["Demo:TooltipHoverMe"]</SbButton>
+            </SbTooltip>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TooltipPlacementOptions"]" SourceCode="@placementCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbStack Direction="SbStackDirection.Row" Gap="4" Justify="SbJustify.Center">
+                    <SbTooltip Text="@L["Demo:TooltipTopStart"]" Placement="SbPlacement.TopStart">
+                        <SbButton Size="SbSize.Sm">@L["Demo:TooltipTopStart"]</SbButton>
+                    </SbTooltip>
+                    <SbTooltip Text="@L["Demo:TooltipTop"]" Placement="SbPlacement.Top">
+                        <SbButton Size="SbSize.Sm">@L["Demo:TooltipTop"]</SbButton>
+                    </SbTooltip>
+                    <SbTooltip Text="@L["Demo:TooltipTopEnd"]" Placement="SbPlacement.TopEnd">
+                        <SbButton Size="SbSize.Sm">@L["Demo:TooltipTopEnd"]</SbButton>
+                    </SbTooltip>
+                </SbStack>
+                
+                <SbStack Direction="SbStackDirection.Row" Gap="4" Justify="SbJustify.Center">
+                    <SbTooltip Text="@L["Demo:TooltipBottomStart"]" Placement="SbPlacement.BottomStart">
+                        <SbButton Size="SbSize.Sm">@L["Demo:TooltipBottomStart"]</SbButton>
+                    </SbTooltip>
+                    <SbTooltip Text="@L["Demo:TooltipBottom"]" Placement="SbPlacement.Bottom">
+                        <SbButton Size="SbSize.Sm">@L["Demo:TooltipBottom"]</SbButton>
+                    </SbTooltip>
+                    <SbTooltip Text="@L["Demo:TooltipBottomEnd"]" Placement="SbPlacement.BottomEnd">
+                        <SbButton Size="SbSize.Sm">@L["Demo:TooltipBottomEnd"]</SbButton>
+                    </SbTooltip>
+                </SbStack>
+
+                <SbStack Direction="SbStackDirection.Row" Gap="4" Justify="SbJustify.Center">
+                    <SbTooltip Text="@L["Demo:TooltipStart"]" Placement="SbPlacement.Start">
+                        <SbButton Size="SbSize.Sm">@L["Demo:TooltipStart"]</SbButton>
+                    </SbTooltip>
+                    <SbTooltip Text="@L["Demo:TooltipEnd"]" Placement="SbPlacement.End">
+                        <SbButton Size="SbSize.Sm">@L["Demo:TooltipEnd"]</SbButton>
+                    </SbTooltip>
+                </SbStack>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TooltipWithDelay"]" SourceCode="@delayCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="4">
+                <SbTooltip Text="@L["Demo:TooltipNoDelayText"]" Delay="0">
+                    <SbButton Size="SbSize.Sm">@L["Demo:TooltipNoDelay"]</SbButton>
+                </SbTooltip>
+                <SbTooltip Text="@L["Demo:Tooltip500msText"]" Delay="500">
+                    <SbButton Size="SbSize.Sm">@L["Demo:Tooltip500msDelay"]</SbButton>
+                </SbTooltip>
+                <SbTooltip Text="@L["Demo:Tooltip1sText"]" Delay="1000">
+                    <SbButton Size="SbSize.Sm">@L["Demo:Tooltip1sDelay"]</SbButton>
+                </SbTooltip>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TooltipRichContent"]" SourceCode="@richCode">
+        <ExampleContent>
+            <SbTooltip Placement="SbPlacement.Top">
+                <Content>
+                    <div style="max-width: 200px;">
+                        <strong>@L["Demo:TooltipUserInfo"]</strong>
+                        <p style="margin: var(--sb-space-1) 0 0 0; font-size: var(--sb-font-size-sm);">
+                            @L["Demo:TooltipProfileDetails"]
+                        </p>
+                    </div>
+                </Content>
+                <ChildContent>
+                    <SbButton>@L["Demo:TooltipProfile"]</SbButton>
+                </ChildContent>
+            </SbTooltip>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbTooltip" />
+</DemoLayout>
+
+@code {
+    private const string basicCode = @"<SbTooltip Text=""This is a tooltip"">
+    <SbButton>Hover Me</SbButton>
+</SbTooltip>";
+
+    private const string placementCode = @"<SbTooltip Text=""Top"" Placement=""SbPlacement.Top"">
+    <SbButton>Top</SbButton>
+</SbTooltip>
+<SbTooltip Text=""Bottom"" Placement=""SbPlacement.Bottom"">
+    <SbButton>Bottom</SbButton>
+</SbTooltip>";
+
+    private const string delayCode = @"<SbTooltip Text=""No delay"" Delay=""0"">
+    <SbButton>No Delay</SbButton>
+</SbTooltip>
+<SbTooltip Text=""500ms"" Delay=""500"">
+    <SbButton>500ms Delay</SbButton>
+</SbTooltip>";
+
+    private const string richCode = @"<SbTooltip>
+    <Content>
+        <strong>User Info</strong>
+        <p>Details here...</p>
+    </Content>
+    <SbButton>Profile</SbButton>
+</SbTooltip>";
+}

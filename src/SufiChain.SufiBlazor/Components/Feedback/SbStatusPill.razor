@@ -1,0 +1,68 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+
+<span class="sb-status-pill sb-status-pill--@Status.ToString().ToLower() @(Pulsing ? "sb-status-pill--pulsing" : "") @Class">
+    @if (ShowDot)
+    {
+        <span class="sb-status-pill__dot"></span>
+    }
+    <span class="sb-status-pill__label">
+        @if (!string.IsNullOrEmpty(Label))
+        {
+            @Label
+        }
+        else
+        {
+            @GetDefaultLabel()
+        }
+    </span>
+</span>
+
+@code {
+    /// <summary>
+    /// Status type.
+    /// </summary>
+    [Parameter]
+    public SbStatusType Status { get; set; } = SbStatusType.Default;
+    
+    /// <summary>
+    /// Custom label text.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+    
+    /// <summary>
+    /// Whether to show status dot.
+    /// </summary>
+    [Parameter]
+    public bool ShowDot { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to show pulsing animation.
+    /// </summary>
+    [Parameter]
+    public bool Pulsing { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string GetDefaultLabel() => Status switch
+    {
+        SbStatusType.Success => "Active",
+        SbStatusType.Warning => "Pending",
+        SbStatusType.Error => "Error",
+        SbStatusType.Info => "Info",
+        _ => "Unknown"
+    };
+}
+
+public enum SbStatusType
+{
+    Default,
+    Success,
+    Warning,
+    Error,
+    Info
+}

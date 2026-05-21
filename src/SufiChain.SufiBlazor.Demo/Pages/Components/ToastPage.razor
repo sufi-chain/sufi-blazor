@@ -1,0 +1,68 @@
+@page "/demo/sufi-blazor/toast"
+
+<PageTitle>@(L["Menu:Demo:Toast"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Toast"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:ToastDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:ToastBasic"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbToast Title="@L["Demo:ToastSuccessTitle"]" Message="@L["Demo:ToastChangesSaved"]" Severity="SbToastSeverity.Success" />
+                <SbToast Message="@L["Demo:ToastInfoMessage"]" Severity="SbToastSeverity.Info" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ToastSeverityTypes"]" SourceCode="@severityCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbToast Title="@L["Demo:Information"]" Message="@L["Demo:ToastInformationalMessage"]" Severity="SbToastSeverity.Info" />
+                <SbToast Title="@L["Demo:ToastSuccessTitle"]" Message="@L["Demo:ToastOperationSuccess"]" Severity="SbToastSeverity.Success" />
+                <SbToast Title="@L["Demo:ToastWarningTitle"]" Message="@L["Demo:ToastPleaseReview"]" Severity="SbToastSeverity.Warning" />
+                <SbToast Title="@L["Demo:ToastErrorTitle"]" Message="@L["Demo:ToastErrorProcessing"]" Severity="SbToastSeverity.Error" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ToastWithoutClose"]" SourceCode="@noCloseCode">
+        <ExampleContent>
+            <SbToast Title="@L["Demo:ToastAutoDismissTitle"]"
+                    Message="@L["Demo:ToastAutoDismissMessage"]"
+                    Severity="SbToastSeverity.Info"
+                    ShowCloseButton="false" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ToastCustomContent"]" SourceCode="@customCode">
+        <ExampleContent>
+            <SbToast Title="@L["Demo:ToastNewMessageTitle"]" Severity="SbToastSeverity.Info">
+                <strong>@L["Demo:ToastCustomSender"]</strong> @L["Demo:ToastSentYouMessage"]:<br />
+                <em>@L["Demo:ToastCustomQuote"]</em>
+            </SbToast>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbToast" />
+</DemoLayout>
+
+@code {
+    private const string basicCode = @"<SbToast Title=""Success"" 
+        Message=""Your changes have been saved."" 
+        Severity=""SbToastSeverity.Success"" />";
+
+    private const string severityCode = @"<SbToast Title=""Info"" Message=""..."" Severity=""SbToastSeverity.Info"" />
+<SbToast Title=""Success"" Message=""..."" Severity=""SbToastSeverity.Success"" />
+<SbToast Title=""Warning"" Message=""..."" Severity=""SbToastSeverity.Warning"" />
+<SbToast Title=""Error"" Message=""..."" Severity=""SbToastSeverity.Error"" />";
+
+    private const string noCloseCode = @"<SbToast Message=""Auto-dismiss toast"" ShowCloseButton=""false"" />";
+
+    private const string customCode = @"<SbToast Title=""New Message"">
+    <strong>John</strong> sent you a message
+</SbToast>";
+}

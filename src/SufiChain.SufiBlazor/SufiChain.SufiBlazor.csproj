@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    
+    <!-- Package information -->
+    <PackageId>SufiChain.SufiBlazor</PackageId>
+    <Description>SufiBlazor - A modern, RTL/LTR-aware Blazor component library with comprehensive theming support.</Description>
+    <PackageTags>blazor;components;ui;rtl;ltr;theming;css-variables;sufi;sabp</PackageTags>
+    <PackageIcon>sufi-chain.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    
+    <!-- Generate XML documentation -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="$(MicrosoftAspNetCoreComponentsWebVersion)" />
+      <PackageReference Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationVersion)" />
+    <PackageReference Include="Markdig" Version="1.1.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\..\..\docs\assets\sufi-chain.png')">
+    <None Include="..\..\docs\assets\sufi-chain.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\..\..\docs\assets\sufi-blazor-light-bg.png')">
+    <None Include="..\..\docs\assets\sufi-blazor-light-bg.png" Pack="true" PackagePath="docs\assets\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="ConfigureAwait.Fody" Version="3.4.0" />
+    <PackageReference Update="Fody" Version="6.9.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

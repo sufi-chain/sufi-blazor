@@ -1,0 +1,253 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using System.Globalization
+@typeparam TNumber where TNumber : struct, IComparable<TNumber>
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+<div class="@CssClass" style="@Style" dir="@(_isRtl ? "rtl" : "ltr")">
+    <div class="sb-slider__track-container" @ref="_trackRef">
+        <div class="sb-slider__track"></div>
+        <div class="sb-slider__fill" style="width: @FillPercentageCss%;"></div>
+        <div class="sb-slider__thumb" 
+             id="@Id"
+             style="inset-inline-start: @FillPercentageCss%;"
+             tabindex="0"
+             role="slider"
+             aria-valuenow="@CurrentValueDouble"
+             aria-valuemin="@MinDouble"
+             aria-valuemax="@MaxDouble"
+             @onkeydown="HandleKeyDown">
+        </div>
+    </div>
+    @if (ShowValue)
+    {
+        <span class="sb-slider__value">@FormatValue(Value)</span>
+    }
+</div>
+
+@code {
+    private ElementReference _trackRef;
+    private DotNetObjectReference<SbSlider<TNumber>>? _dotNetRef;
+    private IJSObjectReference? _cleanupFunction;
+    private readonly bool _isRtl = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+    /// <summary>
+    /// Current value.
+    /// </summary>
+    [Parameter]
+    public TNumber? Value { get; set; }
+
+    /// <summary>
+    /// Callback when value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TNumber?> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Minimum value.
+    /// </summary>
+    [Parameter]
+    public TNumber Min { get; set; }
+
+    /// <summary>
+    /// Maximum value.
+    /// </summary>
+    [Parameter]
+    public TNumber Max { get; set; }
+
+    /// <summary>
+    /// Step increment.
+    /// </summary>
+    [Parameter]
+    public TNumber? Step { get; set; }
+
+    /// <summary>
+    /// Whether to show the current value.
+    /// </summary>
+    [Parameter]
+    public bool ShowValue { get; set; } = true;
+
+    /// <summary>
+    /// Whether the slider is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Element ID for the slider thumb.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles for the wrapper element.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-slider" };
+            if (Disabled)
+            {
+                classes.Add("sb-slider--disabled");
+            }
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(" ", classes);
+        }
+    }
+
+    private double MinDouble => ToDouble(Min);
+    private double MaxDouble => ToDouble(Max);
+    private double CurrentValueDouble => Value.HasValue ? ToDouble(Value.Value) : MinDouble;
+    private double StepDouble => Step.HasValue ? ToDouble(Step.Value) : 1;
+
+    private double FillPercentage
+    {
+        get
+        {
+            var range = MaxDouble - MinDouble;
+            if (range == 0) return 0;
+            return ((CurrentValueDouble - MinDouble) / range) * 100;
+        }
+    }
+
+    /// <summary>Fill percentage formatted with invariant culture so CSS always gets decimal point (e.g. 66.67 not 66٫67).</summary>
+    private string FillPercentageCss => FillPercentage.ToString("G17", CultureInfo.InvariantCulture);
+
+    private async Task HandleTrackClick(MouseEventArgs args)
+    {
+        if (Disabled) return;
+        // Handled by JavaScript drag functionality
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !Disabled)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            _cleanupFunction = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                "SufiBlazor.slider.initDrag",
+                _trackRef,
+                _dotNetRef,
+                MinDouble,
+                MaxDouble,
+                _isRtl
+            );
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnSliderMove(double rawValue)
+    {
+        if (Disabled) return;
+
+        var step = StepDouble;
+        var newValue = rawValue;
+
+        // Snap to step
+        if (Step.HasValue)
+        {
+            newValue = Math.Round((newValue - MinDouble) / step) * step + MinDouble;
+        }
+
+        // Clamp value
+        newValue = Math.Max(MinDouble, Math.Min(MaxDouble, newValue));
+
+        await ValueChanged.InvokeAsync(FromDouble(newValue));
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (Disabled) return;
+
+        var step = StepDouble;
+        var currentValue = CurrentValueDouble;
+        double newValue = currentValue;
+
+        switch (args.Key)
+        {
+            case "ArrowRight":
+            case "ArrowUp":
+                newValue = currentValue + step;
+                break;
+            case "ArrowLeft":
+            case "ArrowDown":
+                newValue = currentValue - step;
+                break;
+            case "Home":
+                newValue = MinDouble;
+                break;
+            case "End":
+                newValue = MaxDouble;
+                break;
+            default:
+                return;
+        }
+
+        // Clamp value
+        newValue = Math.Max(MinDouble, Math.Min(MaxDouble, newValue));
+        
+        // Snap to step
+        if (Step.HasValue)
+        {
+            newValue = Math.Round((newValue - MinDouble) / step) * step + MinDouble;
+        }
+
+        await ValueChanged.InvokeAsync(FromDouble(newValue));
+    }
+
+    private static double ToDouble(TNumber value)
+    {
+        return Convert.ToDouble(value);
+    }
+
+    private static TNumber FromDouble(double value)
+    {
+        var type = typeof(TNumber);
+        if (type == typeof(int)) return (TNumber)(object)(int)value;
+        if (type == typeof(long)) return (TNumber)(object)(long)value;
+        if (type == typeof(float)) return (TNumber)(object)(float)value;
+        if (type == typeof(double)) return (TNumber)(object)value;
+        if (type == typeof(decimal)) return (TNumber)(object)(decimal)value;
+        return (TNumber)(object)value;
+    }
+
+    private string FormatValue(TNumber? value)
+    {
+        if (!value.HasValue) return "";
+        var doubleValue = ToDouble(value.Value);
+        
+        // Format with appropriate decimals
+        var type = typeof(TNumber);
+        if (type == typeof(int) || type == typeof(long))
+        {
+            return doubleValue.ToString("0");
+        }
+        return doubleValue.ToString("0.##");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_cleanupFunction != null)
+        {
+            try
+            {
+                await _cleanupFunction.InvokeVoidAsync("apply");
+                await _cleanupFunction.DisposeAsync();
+            }
+            catch { /* Ignore disposal errors */ }
+        }
+        _dotNetRef?.Dispose();
+    }
+}

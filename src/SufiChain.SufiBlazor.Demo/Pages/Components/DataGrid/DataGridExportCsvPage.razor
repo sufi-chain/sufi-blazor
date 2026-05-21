@@ -1,0 +1,137 @@
+@page "/demo/sufi-blazor/data-grid/export-csv"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridExportCsv"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridExportCsv"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridExportCsvDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DataGridExportCsv"]" SourceCode="@exportCsvCode" RelatedCode="@exportCsvCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbStack Direction="SbStackDirection.Row" Gap="2">
+                    <SbButton Variant="SbButtonVariant.Outline" OnClick="ExportCurrentPage">
+                        @L["Demo:DataGridExportCurrentPage"]
+                    </SbButton>
+                    <SbButton Variant="SbButtonVariant.Outline" OnClick="ExportAllData">
+                        @L["Demo:DataGridExportAllData"]
+                    </SbButton>
+                </SbStack>
+                <SbDataGrid @ref="_exportGrid"
+                            TItem="Employee"
+                            Items="@_employees"
+                            KeySelector="@(e => e.Id.ToString())"
+                            PageSize="5">
+                    <ChildContent>
+                        <SbColumn TItem="Employee" Field="Id" Title="@L["Demo:Id"]" />
+                        <SbColumn TItem="Employee" Field="Name" Title="@L["Demo:Name"]" />
+                        <SbColumn TItem="Employee" Field="Email" Title="@L["Demo:Email"]" />
+                        <SbColumn TItem="Employee" Field="Department" Title="@L["Demo:DataGridDepartment"]" />
+                        <SbColumn TItem="Employee" Field="Salary" Title="@L["Demo:Salary"]">
+                            <CellTemplate Context="context">
+                                @context.Item.Salary.ToString("N0")
+                            </CellTemplate>
+                        </SbColumn>
+                    </ChildContent>
+                </SbDataGrid>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                    @L["Demo:DataGridExportCsvCaption", _employees.Count, 5]
+                </SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private SbDataGrid<Employee>? _exportGrid;
+    private List<Employee> _employees = new();
+
+    protected override void OnInitialized()
+    {
+        _employees = GenerateEmployees(18);
+    }
+
+    private async Task ExportCurrentPage()
+    {
+        if (_exportGrid != null)
+            await _exportGrid.ExportToCsvAsync("employees_page.csv");
+    }
+
+    private async Task ExportAllData()
+    {
+        if (_exportGrid != null)
+            await _exportGrid.ExportAllToCsvAsync("employees_all.csv");
+    }
+
+    private static List<Employee> GenerateEmployees(int count)
+    {
+        var departments = new[] { "Engineering", "Marketing", "Sales", "HR", "Finance", "Operations" };
+        var firstNames = new[] { "John", "Jane", "Mike", "Sarah", "David", "Emily", "Chris", "Lisa", "Tom", "Anna" };
+        var lastNames = new[] { "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez" };
+        var random = new Random(42);
+        return Enumerable.Range(1, count).Select(i => new Employee
+        {
+            Id = i,
+            Name = $"{firstNames[random.Next(firstNames.Length)]} {lastNames[random.Next(lastNames.Length)]}",
+            Email = $"employee{i}@company.com",
+            Department = departments[random.Next(departments.Length)],
+            Salary = random.Next(50000, 150000),
+            HireDate = DateTime.Today.AddDays(-random.Next(30, 1000)),
+            IsActive = random.Next(10) > 2
+        }).ToList();
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal Salary { get; set; }
+        public DateTime HireDate { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    private const string exportCsvCodeBehind = @"private SbDataGrid<Employee>? _exportGrid;
+private List<Employee> _employees = new();
+
+private async Task ExportCurrentPage()
+{
+    if (_exportGrid != null)
+        await _exportGrid.ExportToCsvAsync(""employees_page.csv"");
+}
+
+private async Task ExportAllData()
+{
+    if (_exportGrid != null)
+        await _exportGrid.ExportAllToCsvAsync(""employees_all.csv"");
+}
+
+private class Employee { /* ... */ }";
+
+    private const string exportCsvCode = @"<SbStack Gap=""3"">
+    <SbStack Direction=""SbStackDirection.Row"" Gap=""2"">
+        <SbButton Variant=""SbButtonVariant.Outline"" OnClick=""ExportCurrentPage"">Export Current Page</SbButton>
+        <SbButton Variant=""SbButtonVariant.Outline"" OnClick=""ExportAllData"">Export All Data</SbButton>
+    </SbStack>
+    <SbDataGrid @ref=""_exportGrid""
+                TItem=""Employee""
+                Items=""@_employees""
+                KeySelector=""@(e => e.Id.ToString())""
+                PageSize=""5"">
+        <ChildContent>
+            <SbColumn TItem=""Employee"" Field=""Id"" Title=""ID"" />
+            <SbColumn TItem=""Employee"" Field=""Name"" Title=""Name"" />
+            <SbColumn TItem=""Employee"" Field=""Email"" Title=""Email"" />
+            <SbColumn TItem=""Employee"" Field=""Department"" Title=""Department"" />
+            <SbColumn TItem=""Employee"" Field=""Salary"" Title=""Salary"" />
+        </ChildContent>
+    </SbDataGrid>
+</SbStack>";
+}

@@ -1,0 +1,72 @@
+@page "/demo/sufi-blazor/empty-state"
+
+<PageTitle>@(L["Menu:Demo:EmptyState"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:EmptyState"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DisplayWhenNoData"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BasicEmptyState"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbEmptyState Title="@L["Demo:NoItemsFound"]" 
+                         Description="@L["Demo:ThereAreNoItems"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithCustomIcon"]" SourceCode="@iconCode">
+        <ExampleContent>
+            <SbEmptyState Title="@L["Demo:NoMessages"]" 
+                         Description="@L["Demo:InboxEmpty"]">
+                <Icon>
+                    <SbIcon Name="mail" Size="SbSize.Xl" Color="SbColor.Muted" />
+                </Icon>
+            </SbEmptyState>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithAction"]" SourceCode="@actionsCode">
+        <ExampleContent>
+            <SbEmptyState Title="@L["Demo:NoProjectsYet"]" 
+                         Description="@L["Demo:GetStartedFirstProject"]">
+                <Icon>
+                    <SbIcon Name="folder-plus" Size="SbSize.Xl" Color="SbColor.Primary" />
+                </Icon>
+                <Actions>
+                    <SbButton>@L["Demo:CreateProject"]</SbButton>
+                </Actions>
+            </SbEmptyState>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:CustomIconText"]" SourceCode="@emojiCode">
+        <ExampleContent>
+            <SbEmptyState IconText="🔍" 
+                         Title="@L["Demo:NoResults"]" 
+                         Description="@L["Demo:TryAdjustingSearch"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbEmptyState" />
+</DemoLayout>
+
+@code {
+    private const string basicCode = @"<SbEmptyState Title=""No items found"" 
+             Description=""There are no items."" />";
+
+    private const string iconCode = @"<SbEmptyState Title=""No messages"">
+    <Icon>
+        <SbIcon Name=""mail"" Size=""SbSize.Xxl"" />
+    </Icon>
+</SbEmptyState>";
+
+    private const string actionsCode = @"<SbEmptyState Title=""No projects yet"">
+    <Actions>
+        <SbButton>Create Project</SbButton>
+    </Actions>
+</SbEmptyState>";
+
+    private const string emojiCode = @"<SbEmptyState IconText=""🔍"" Title=""No results"" />";
+}

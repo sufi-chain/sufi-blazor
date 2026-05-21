@@ -1,0 +1,128 @@
+@namespace SufiChain.SufiBlazor.Components.Builder
+
+<div class="sb-inline-toolbar @(Visible ? "sb-inline-toolbar--visible" : "") @(Position.ToString().ToLower()) @Class"
+     style="@GetPositionStyle()">
+    @foreach (var action in Actions)
+    {
+        @if (action.IsSeparator)
+        {
+            <div class="sb-inline-toolbar__separator"></div>
+        }
+        else
+        {
+            <button type="button"
+                    class="sb-inline-toolbar__btn @(action.IsActive ? "sb-inline-toolbar__btn--active" : "") @(action.IsDanger ? "sb-inline-toolbar__btn--danger" : "")"
+                    title="@action.Tooltip"
+                    disabled="@action.Disabled"
+                    @onclick="() => OnActionClick(action)">
+                @if (action.Icon != null)
+                {
+                    @action.Icon
+                }
+                else if (!string.IsNullOrEmpty(action.IconText))
+                {
+                    <span class="sb-inline-toolbar__icon">@action.IconText</span>
+                }
+                @if (!string.IsNullOrEmpty(action.Label))
+                {
+                    <span class="sb-inline-toolbar__label">@action.Label</span>
+                }
+            </button>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Toolbar actions.
+    /// </summary>
+    [Parameter]
+    public List<SbToolbarAction> Actions { get; set; } = new();
+    
+    /// <summary>
+    /// Whether the toolbar is visible.
+    /// </summary>
+    [Parameter]
+    public bool Visible { get; set; } = true;
+    
+    /// <summary>
+    /// Toolbar position.
+    /// </summary>
+    [Parameter]
+    public SbToolbarPosition Position { get; set; } = SbToolbarPosition.Top;
+    
+    /// <summary>
+    /// X offset.
+    /// </summary>
+    [Parameter]
+    public double? X { get; set; }
+    
+    /// <summary>
+    /// Y offset.
+    /// </summary>
+    [Parameter]
+    public double? Y { get; set; }
+    
+    /// <summary>
+    /// Callback when action is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbToolbarAction> OnAction { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string GetPositionStyle()
+    {
+        var styles = new List<string>();
+        
+        if (X.HasValue)
+            styles.Add($"left: {X}px");
+        if (Y.HasValue)
+            styles.Add($"top: {Y}px");
+            
+        return string.Join("; ", styles);
+    }
+    
+    private async Task OnActionClick(SbToolbarAction action)
+    {
+        if (action.Disabled) return;
+        
+        action.OnClick?.Invoke();
+        await OnAction.InvokeAsync(action);
+    }
+}
+
+/// <summary>
+/// Toolbar action.
+/// </summary>
+public class SbToolbarAction
+{
+    public string Id { get; set; } = "";
+    public string? Label { get; set; }
+    public string? IconText { get; set; }
+    public RenderFragment? Icon { get; set; }
+    public string? Tooltip { get; set; }
+    public bool Disabled { get; set; }
+    public bool IsActive { get; set; }
+    public bool IsDanger { get; set; }
+    public bool IsSeparator { get; set; }
+    public Action? OnClick { get; set; }
+    
+    public static SbToolbarAction Separator() => new() { IsSeparator = true };
+}
+
+/// <summary>
+/// Toolbar position.
+/// </summary>
+public enum SbToolbarPosition
+{
+    Top,
+    Bottom,
+    Left,
+    Right,
+    Float
+}

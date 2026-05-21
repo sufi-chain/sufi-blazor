@@ -1,0 +1,139 @@
+@page "/demo/sufi-blazor/data-grid/detail"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridExpandableRows"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridExpandableRows"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridDetailDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DataGridExpandableRows"]" SourceCode="@detailCode" RelatedCode="@detailCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="Order" 
+                        Items="@_orders"
+                        KeySelector="@(o => o.Id.ToString())"
+                        ExpandedRowKeys="@_expandedRowKeys"
+                        OnRowExpandChanged="OnRowExpandChanged">
+                <DetailTemplate Context="order">
+                    <SbCard Class="p-3 m-2">
+                        <SbHeading Level="5">@L["Demo:DataGridOrderItems"]</SbHeading>
+                        <SbStack Gap="2" Class="mt-2">
+                            @foreach (var line in order.Items)
+                            {
+                                <SbText>@line.Name — @line.Quantity × @line.UnitPrice.ToString("C2") = @((line.Quantity * line.UnitPrice).ToString("C2"))</SbText>
+                            }
+                        </SbStack>
+                        <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:DataGridOrderTotal"]: @order.Items.Sum(i => i.Quantity * i.UnitPrice).ToString("C2")</SbText>
+                    </SbCard>
+                </DetailTemplate>
+                <ChildContent>
+                    <SbColumn TItem="Order" Field="Id" Title="@L["Demo:Id"]" />
+                    <SbColumn TItem="Order" Field="Date" Title="@L["Demo:Date"]" Format="d" />
+                    <SbColumn TItem="Order" Field="Customer" Title="@L["Demo:DataGridCustomer"]" />
+                    <SbColumn TItem="Order" Field="Total" Title="@L["Demo:Total"]" Format="C2" />
+                </ChildContent>
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private HashSet<string> _expandedRowKeys = new();
+
+    private List<Order> _orders = new()
+    {
+        new Order
+        {
+            Id = 1,
+            Date = DateTime.Today.AddDays(-2),
+            Customer = "Acme Corp",
+            Items = new List<OrderItem>
+            {
+                new OrderItem { Name = "Widget A", Quantity = 2, UnitPrice = 10.00m },
+                new OrderItem { Name = "Widget B", Quantity = 1, UnitPrice = 15.00m }
+            }
+        },
+        new Order
+        {
+            Id = 2,
+            Date = DateTime.Today.AddDays(-1),
+            Customer = "Globex",
+            Items = new List<OrderItem>
+            {
+                new OrderItem { Name = "Gadget X", Quantity = 3, UnitPrice = 25.00m }
+            }
+        },
+        new Order
+        {
+            Id = 3,
+            Date = DateTime.Today,
+            Customer = "Initech",
+            Items = new List<OrderItem>
+            {
+                new OrderItem { Name = "Widget A", Quantity = 1, UnitPrice = 10.00m },
+                new OrderItem { Name = "Gadget X", Quantity = 2, UnitPrice = 25.00m }
+            }
+        }
+    };
+
+    private Task OnRowExpandChanged((string Key, bool IsExpanded) args)
+    {
+        if (args.IsExpanded)
+            _expandedRowKeys.Add(args.Key);
+        else
+            _expandedRowKeys.Remove(args.Key);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private class OrderItem
+    {
+        public string Name { get; set; } = "";
+        public int Quantity { get; set; }
+        public decimal UnitPrice { get; set; }
+    }
+
+    private class Order
+    {
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public string Customer { get; set; } = "";
+        public List<OrderItem> Items { get; set; } = new();
+        public decimal Total => Items.Sum(i => i.Quantity * i.UnitPrice);
+    }
+
+    private const string detailCodeBehind = @"private HashSet<string> _expandedRowKeys = new();
+
+private List<Order> _orders = new() { /* ... */ };
+
+private Task OnRowExpandChanged((string Key, bool IsExpanded) args)
+{
+    if (args.IsExpanded)
+        _expandedRowKeys.Add(args.Key);
+    else
+        _expandedRowKeys.Remove(args.Key);
+    StateHasChanged();
+    return Task.CompletedTask;
+}
+
+private class Order { public int Id { get; set; } public DateTime Date { get; set; } public string Customer { get; set; } public List<OrderItem> Items { get; set; } }
+private class OrderItem { public string Name { get; set; } public int Quantity { get; set; } public decimal UnitPrice { get; set; } }";
+
+    private const string detailCode = @"<SbDataGrid TItem=""Order"" Items=""@_orders""
+    KeySelector=""@(o => o.Id.ToString())""
+    ExpandedRowKeys=""@_expandedRowKeys""
+    OnRowExpandChanged=""OnRowExpandChanged"">
+    <DetailTemplate Context=""order"">
+        <SbCard><!-- Order line items --></SbCard>
+    </DetailTemplate>
+    <SbColumn TItem=""Order"" Field=""Id"" Title=""Id"" />
+    <SbColumn TItem=""Order"" Field=""Date"" Title=""Date"" />
+    <SbColumn TItem=""Order"" Field=""Customer"" Title=""Customer"" />
+    <SbColumn TItem=""Order"" Field=""Total"" Title=""Total"" />
+</SbDataGrid>";
+}

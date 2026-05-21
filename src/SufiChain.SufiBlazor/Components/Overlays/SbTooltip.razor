@@ -1,0 +1,145 @@
+@namespace SufiChain.SufiBlazor.Components.Overlays
+
+<span class="sb-tooltip-wrapper"
+      @onmouseenter="Show"
+      @onmouseleave="Hide"
+      @onfocus="Show"
+      @onblur="Hide"
+      @attributes="AdditionalAttributes">
+    @ChildContent
+    @if (_isVisible)
+    {
+        <span class="@TooltipCssClass" 
+              role="tooltip"
+              id="@_tooltipId"
+              aria-hidden="@(!_isVisible)">
+            @if (Content != null)
+            {
+                @Content
+            }
+            else
+            {
+                @Text
+            }
+        </span>
+    }
+</span>
+
+@code {
+    private bool _isVisible;
+    private readonly string _tooltipId = $"sb-tooltip-{Guid.NewGuid():N}";
+    private System.Timers.Timer? _showTimer;
+    private System.Timers.Timer? _hideTimer;
+
+    /// <summary>
+    /// Content to wrap with tooltip.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Simple text tooltip.
+    /// </summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// Rich tooltip content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Content { get; set; }
+
+    /// <summary>
+    /// Tooltip placement.
+    /// </summary>
+    [Parameter]
+    public SbPlacement Placement { get; set; } = SbPlacement.Top;
+
+    /// <summary>
+    /// Delay before showing (ms).
+    /// </summary>
+    [Parameter]
+    public int Delay { get; set; } = 200;
+
+    /// <summary>
+    /// Delay before hiding (ms).
+    /// </summary>
+    [Parameter]
+    public int HideDelay { get; set; } = 0;
+
+    /// <summary>
+    /// Maximum width of tooltip.
+    /// </summary>
+    [Parameter]
+    public string? MaxWidth { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes for the wrapper.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string TooltipCssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-tooltip" };
+            classes.Add($"sb-tooltip--{Placement.ToCssClass()}");
+            if (Content != null)
+            {
+                classes.Add("sb-tooltip--rich");
+            }
+            return string.Join(" ", classes);
+        }
+    }
+
+    private void Show()
+    {
+        _hideTimer?.Stop();
+        
+        if (Delay > 0)
+        {
+            _showTimer = new System.Timers.Timer(Delay);
+            _showTimer.Elapsed += (_, _) =>
+            {
+                _isVisible = true;
+                InvokeAsync(StateHasChanged);
+                _showTimer?.Dispose();
+            };
+            _showTimer.AutoReset = false;
+            _showTimer.Start();
+        }
+        else
+        {
+            _isVisible = true;
+        }
+    }
+
+    private void Hide()
+    {
+        _showTimer?.Stop();
+        
+        if (HideDelay > 0)
+        {
+            _hideTimer = new System.Timers.Timer(HideDelay);
+            _hideTimer.Elapsed += (_, _) =>
+            {
+                _isVisible = false;
+                InvokeAsync(StateHasChanged);
+                _hideTimer?.Dispose();
+            };
+            _hideTimer.AutoReset = false;
+            _hideTimer.Start();
+        }
+        else
+        {
+            _isVisible = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _showTimer?.Dispose();
+        _hideTimer?.Dispose();
+    }
+}

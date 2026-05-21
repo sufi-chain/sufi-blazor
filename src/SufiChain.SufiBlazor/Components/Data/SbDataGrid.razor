@@ -1,0 +1,2083 @@
+@namespace SufiChain.SufiBlazor.Components.Data
+@typeparam TItem
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Contracts.Data
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using System.Globalization
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+@* When in edit mode, provide EditContext so InputBase-derived editors (SbTextField, SbCheckbox) don't throw *@
+<CascadingValue Value="_gridEditContext" IsFixed="false">
+<div class="sb-datagrid @Class @GetGridCssClasses()"
+     dir="@(EffectiveRightToLeft ? "rtl" : "ltr")"
+     @ref="_gridRef"
+     @onkeydown="HandleKeyDown"
+     tabindex="0"
+     role="application"
+     aria-label="@AriaLabel">
+    @if (Loading)
+    {
+        <div class="sb-datagrid__loading" role="status" aria-live="polite">
+            <div class="sb-datagrid__loading-spinner" aria-hidden="true"></div>
+            <span>Loading...</span>
+        </div>
+    }
+    
+    @* Screen reader announcements *@
+    <div class="sb-datagrid__sr-only" role="status" aria-live="polite" aria-atomic="true">
+        @_screenReaderAnnouncement
+    </div>
+    
+    @* Active Filters Bar *@
+    @if (ShowFilterBar && _activeFilters.Any())
+    {
+        <div class="sb-datagrid__filter-bar" role="region" aria-label="Active filters">
+            <span class="sb-datagrid__filter-bar-label">Filters:</span>
+            @foreach (var filter in _activeFilters.Values)
+            {
+                var column = _columns.FirstOrDefault(c => c.Field == filter.Field);
+                <span class="sb-datagrid__filter-tag">
+                    <span class="sb-datagrid__filter-tag-text">
+                        @(column?.Title ?? filter.Field): @GetFilterDisplayValue(filter)
+                    </span>
+                    <SbIconButton Size="SbSize.Sm"
+                                 Variant="SbButtonVariant.Ghost"
+                                 Color="SbColor.Secondary"
+                                 Class="sb-datagrid__filter-tag-remove"
+                                 AriaLabel="@($"Remove filter for {column?.Title ?? filter.Field}")"
+                                 OnClick="@(() => RemoveFilterAsync(filter.Field))">
+                        <Icon><SbIcon Name="x" Size="SbSize.Sm" /></Icon>
+                    </SbIconButton>
+                </span>
+            }
+            <SbButton Size="SbSize.Sm"
+                     Variant="SbButtonVariant.Outline"
+                     Color="SbColor.Secondary"
+                     Class="sb-datagrid__filter-bar-clear"
+                     OnClick="ClearAllFiltersAsync">
+                Clear all
+            </SbButton>
+        </div>
+    }
+    
+    <div class="sb-datagrid__container" style="@GetContainerStyle()">
+        <table class="sb-datagrid__table" 
+               style="@GetTableStyle()"
+               role="grid"
+               aria-rowcount="@TotalCount"
+               aria-colcount="@GetTotalColumnCount()"
+               aria-multiselectable="@(SelectionMode == SbSelectionMode.MultipleRows ? "true" : "false")"
+               aria-busy="@Loading.ToString().ToLower()">
+            <thead class="sb-datagrid__header" role="rowgroup">
+                <tr role="row" aria-rowindex="1">
+                    @{
+                        var colIndex = 1;
+                    }
+                    @if (DetailTemplate != null)
+                    {
+                        <th class="sb-datagrid__cell sb-datagrid__cell--expand"
+                            role="columnheader"
+                            aria-colindex="@colIndex"
+                            scope="col"
+                            style="width: 52px; min-width: 52px;">
+                            <span class="sb-sr-only">Expand/Collapse</span>
+                        </th>
+                        colIndex++;
+                    }
+                    @if (SelectionMode != SbSelectionMode.None)
+                    {
+                        <th class="sb-datagrid__cell sb-datagrid__cell--selection"
+                            role="columnheader"
+                            aria-colindex="@colIndex"
+                            scope="col">
+                            @if (SelectionMode == SbSelectionMode.MultipleRows)
+                            {
+                                <SbCheckbox Value="@IsAllSelected"
+                                            ValueChanged="ToggleSelectAll"
+                                            AriaLabel="Select all rows" />
+                            }
+                        </th>
+                        colIndex++;
+                    }
+                    @foreach (var column in _columns.Where(c => c.Visible))
+                    {
+                        var columnIndex = colIndex;
+                        <th class="sb-datagrid__cell sb-datagrid__cell--header @column.Class @(column.Sortable ? "sb-datagrid__cell--sortable" : "") @(column.Filterable && ShowColumnFilters ? "sb-datagrid__cell--filterable" : "") @GetFrozenColumnClass(column)"
+                            style="@GetColumnHeaderStyle(column, columnIndex)"
+                            role="columnheader"
+                            scope="col"
+                            aria-colindex="@colIndex"
+                            aria-sort="@GetAriaSortValue(column)"
+                            tabindex="@(column.Sortable ? 0 : -1)"
+                            @onclick="() => OnHeaderClick(column)"
+                            @onkeydown="e => OnHeaderKeyDown(e, column)">
+                            <div class="sb-datagrid__header-content">
+                                @if (column.HeaderTemplate != null)
+                                {
+                                    @column.HeaderTemplate
+                                }
+                                else
+                                {
+                                    <span class="sb-datagrid__header-title">@column.Title</span>
+                                }
+                                
+                                @if (column.Sortable && !string.IsNullOrEmpty(column.Field))
+                                {
+                                    <span class="sb-datagrid__sort-icon @GetSortIconClass(column)" aria-hidden="true">
+                                        <SbIcon Name="@GetSortIconName(column)" Size="SbSize.Sm" />
+                                    </span>
+                                }
+                                
+                                @if (column.Filterable && ShowColumnFilters && !string.IsNullOrEmpty(column.Field))
+                                {
+                                    <SbColumnFilterMenu Field="@column.Field"
+                                                        ColumnTitle="@column.Title"
+                                                        FieldType="@column.GetFieldType()"
+                                                        CurrentFilter="@GetColumnFilter(column.Field)"
+                                                        FilterTemplate="@column.FilterTemplate"
+                                                        OnFilterChanged="filter => OnColumnFilterChanged(column.Field!, filter)" />
+                                }
+                            </div>
+                            @if (column.Resizable && AllowColumnResize)
+                            {
+                                <div class="sb-datagrid__resize-handle"
+                                     @onmousedown="(e) => _ = StartColumnResize(e, column)"
+                                     @onmousedown:stopPropagation="true"
+                                     @onmousedown:preventDefault="true"
+                                     @onclick:stopPropagation="true"
+                                     aria-hidden="true"
+                                     title="Drag to resize column"></div>
+                            }
+                        </th>
+                        colIndex++;
+                    }
+                    @if (EditMode != SbEditMode.None && ShowEditActions)
+                    {
+                        <th class="sb-datagrid__cell sb-datagrid__cell--header sb-datagrid__cell--actions"
+                            role="columnheader"
+                            scope="col"
+                            aria-colindex="@colIndex">
+                            <span class="sb-datagrid__header-title">Actions</span>
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody class="sb-datagrid__body" role="rowgroup">
+                @if (VirtualizationEnabled && _virtualizedItems.Any())
+                {
+                    <Virtualize Items="@_virtualizedItems" Context="pair" ItemSize="@GetEffectiveRowHeight()" OverscanCount="@OverscanCount" SpacerElement="tr">
+                        @RenderRow(pair.item, pair.index)
+                    </Virtualize>
+                }
+                else if (_displayItems.Any())
+                {
+                    var rowIndex = 0;
+                    foreach (var item in _displayItems)
+                    {
+                        @RenderRow(item, rowIndex)
+                        rowIndex++;
+                    }
+                }
+                else
+                {
+                    <tr class="sb-datagrid__row sb-datagrid__row--empty">
+                        <td class="sb-datagrid__cell sb-datagrid__cell--empty" 
+                            colspan="@GetTotalColumnCount()">
+                            @if (EmptyTemplate != null)
+                            {
+                                @EmptyTemplate
+                            }
+                            else
+                            {
+                                <span>No data available</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            @if (_columns.Any(c => c.FooterTemplate != null))
+            {
+                <tfoot class="sb-datagrid__footer">
+                    <tr>
+                        @if (DetailTemplate != null)
+                        {
+                            <td class="sb-datagrid__cell"></td>
+                        }
+                        @if (SelectionMode != SbSelectionMode.None)
+                        {
+                            <td class="sb-datagrid__cell"></td>
+                        }
+                        @foreach (var column in _columns.Where(c => c.Visible))
+                        {
+                            <td class="sb-datagrid__cell sb-datagrid__cell--footer @column.Class"
+                                style="@GetColumnStyle(column)">
+                                @column.FooterTemplate
+                            </td>
+                        }
+                        @if (EditMode != SbEditMode.None && ShowEditActions)
+                        {
+                            <td class="sb-datagrid__cell sb-datagrid__cell--footer"></td>
+                        }
+                    </tr>
+                </tfoot>
+            }
+        </table>
+    </div>
+    
+    @if (ShowPagination && TotalCount > 0 && !VirtualizationEnabled)
+    {
+        <div class="sb-datagrid__pagination">
+            <SbPagination PageIndex="@PageIndex"
+                          PageIndexChanged="@OnPageIndexChanged"
+                          PageSize="@PageSize"
+                          PageSizeChanged="@OnPageSizeChanged"
+                          TotalCount="@TotalCount"
+                          ShowPageSizeSelector="@ShowPageSizeSelector"
+                          PageSizeOptions="@PageSizeOptions" />
+        </div>
+    }
+</div>
+</CascadingValue>
+
+@{
+    RenderFragment RenderRow(TItem item, int rowIndex) => @<text>
+        @{
+            var key = GetItemKey(item);
+            var isSelected = _selectedKeys.Contains(key);
+            var isRowEditing = IsEditingRow(key);
+            var editItem = isRowEditing && _editingItem != null ? _editingItem : item;
+            var isFocused = _focusedRowIndex == rowIndex;
+            var ariaRowIndex = rowIndex + 2; // +2 because header is row 1
+            var cellColIndex = 1;
+        }
+        @{
+            var isExpanded = _expandedRows.Contains(key);
+        }
+        <tr class="sb-datagrid__row @(isSelected ? "sb-datagrid__row--selected" : "") @(isRowEditing ? "sb-datagrid__row--editing" : "") @(isFocused ? "sb-datagrid__row--focused" : "") @(Striped && rowIndex % 2 == 1 ? "sb-datagrid__row--striped" : "")"
+            style="@GetRowStyle()"
+            role="row"
+            aria-rowindex="@ariaRowIndex"
+            aria-selected="@isSelected.ToString().ToLower()"
+            aria-expanded="@(DetailTemplate != null ? isExpanded.ToString().ToLower() : null)"
+            tabindex="@(isFocused ? 0 : -1)"
+            data-row-key="@key"
+            @onclick="() => OnRowClick(item, key)"
+            @ondblclick="() => OnRowDoubleClick(item, rowIndex)"
+            @onfocus="() => OnRowFocus(rowIndex)">
+            @if (DetailTemplate != null)
+            {
+                <td class="sb-datagrid__cell sb-datagrid__cell--expand"
+                    role="gridcell"
+                    aria-colindex="@cellColIndex">
+                    <button type="button" 
+                            class="sb-datagrid__expand-btn @(isExpanded ? "sb-datagrid__expand-btn--expanded" : "")"
+                            @onclick="() => ToggleRowExpand(key)"
+                            @onclick:stopPropagation="true"
+                            aria-label="@(isExpanded ? "Collapse row details" : "Expand row details")">
+                        <SbIcon Name="@(isExpanded ? "chevron-down" : (EffectiveRightToLeft ? "chevron-left" : "chevron-right"))" Size="SbSize.Sm" />
+                    </button>
+                </td>
+                cellColIndex++;
+            }
+            @if (SelectionMode != SbSelectionMode.None)
+            {
+                <td class="sb-datagrid__cell sb-datagrid__cell--selection"
+                    role="gridcell"
+                    aria-colindex="@cellColIndex">
+                    <SbCheckbox Value="@isSelected"
+                                            ValueChanged="() => ToggleSelection(key, item)"
+                                            AriaLabel="@($"Select row {rowIndex + 1}")" />
+                </td>
+                cellColIndex++;
+            }
+            @foreach (var column in _columns.Where(c => c.Visible))
+            {
+                var col = column;
+                var isCellEditing = isRowEditing && col.Editable && (EditMode == SbEditMode.Row || (EditMode == SbEditMode.Cell && (_editingColumnField == null || _editingColumnField == col.Field)));
+                var cellContext = new SbCellContext<TItem>(editItem, rowIndex, col);
+                var isCellFocused = _focusedRowIndex == rowIndex && _focusedColIndex == cellColIndex;
+                var currentCellColIndex = cellColIndex;
+                
+                <td class="sb-datagrid__cell @col.Class @(isCellEditing ? "sb-datagrid__cell--editing" : "") @(isCellFocused ? "sb-datagrid__cell--focused" : "") @GetFrozenColumnClass(col)" 
+                    style="@GetColumnCellStyle(col, currentCellColIndex)"
+                    role="gridcell"
+                    aria-colindex="@cellColIndex"
+                    tabindex="@(isCellFocused ? 0 : -1)"
+                    @onclick:stopPropagation="@(EditMode == SbEditMode.Cell && col.Editable)"
+                    @onclick="() => OnCellClick(item, rowIndex, col)">
+                    @if (isCellEditing && col.Editable)
+                    {
+                        @if (col.EditTemplate != null)
+                        {
+                            @col.EditTemplate(cellContext)
+                        }
+                        else
+                        {
+                            @RenderDefaultEditor(col, editItem)
+                        }
+                    }
+                    else if (col.CellTemplate != null)
+                    {
+                        @col.CellTemplate(cellContext)
+                    }
+                    else
+                    {
+                        @col.GetDisplayValue(item)
+                    }
+                </td>
+                cellColIndex++;
+            }
+            @if (EditMode != SbEditMode.None && ShowEditActions)
+            {
+                <td class="sb-datagrid__cell sb-datagrid__cell--actions"
+                    role="gridcell"
+                    aria-colindex="@cellColIndex">
+                    @if (isRowEditing)
+                    {
+                        <SbIconButton Color="SbColor.Success"
+                                      OnClick="SaveEditAsync"
+                                      Title="@L["Save"]"
+                                      AriaLabel="@L["SaveChanges"]"
+                                      Class="sb-datagrid__action-btn">
+                            <Icon><SbIcon Name="check" /></Icon>
+                        </SbIconButton>
+                        <SbIconButton Color="SbColor.Danger"
+                                      OnClick="CancelEditAsync"
+                                      Title="@L["Cancel"]"
+                                      AriaLabel="@L["CancelEditing"]"
+                                      Class="sb-datagrid__action-btn">
+                            <Icon><SbIcon Name="x" /></Icon>
+                        </SbIconButton>
+                    }
+                    else
+                    {
+                        <SbIconButton Color="SbColor.Primary"
+                                      OnClick="() => StartEditAsync(item, rowIndex)"
+                                      Title="@L["EditRow"]"
+                                      AriaLabel="@L["EditRow"]"
+                                      Class="sb-datagrid__action-btn">
+                            <Icon><SbIcon Name="edit" /></Icon>
+                        </SbIconButton>
+                    }
+                </td>
+            }
+        </tr>
+        @if (DetailTemplate != null && isExpanded)
+        {
+            <tr class="sb-datagrid__row sb-datagrid__row--detail" role="row">
+                <td class="sb-datagrid__cell sb-datagrid__cell--detail" 
+                    colspan="@GetTotalColumnCount()"
+                    role="gridcell">
+                    <div class="sb-datagrid__detail-content">
+                        @DetailTemplate(item)
+                    </div>
+                </td>
+            </tr>
+        }
+    </text>;
+    
+    RenderFragment RenderDefaultEditor(SbColumn<TItem> column, TItem item) => @<text>
+        @{
+            var fieldType = column.GetFieldType();
+            var currentValue = column.GetValue(item);
+            var col = column;
+        }
+        @* Use native inputs to avoid InputBase's ValueExpression/EditContext requirements *@
+        @if (fieldType == typeof(bool) || fieldType == typeof(bool?))
+        {
+            <input type="checkbox"
+                   class="sb-datagrid__editor sb-datagrid__editor--checkbox"
+                   checked="@((bool?)currentValue ?? false)"
+                   @onchange="e => OnCellValueChangedFromInput(col, e)" />
+        }
+        else if (fieldType == typeof(int) || fieldType == typeof(int?) ||
+                 fieldType == typeof(long) || fieldType == typeof(long?) ||
+                 fieldType == typeof(decimal) || fieldType == typeof(decimal?) ||
+                 fieldType == typeof(double) || fieldType == typeof(double?) ||
+                 fieldType == typeof(float) || fieldType == typeof(float?))
+        {
+            <input type="number"
+                   class="sb-datagrid__editor sb-datagrid__editor--number"
+                   value="@FormatNumberForInput(currentValue)"
+                   @onchange="e => OnCellValueChangedFromInput(col, e)" />
+        }
+        else if (fieldType == typeof(DateTime) || fieldType == typeof(DateTime?) ||
+                 fieldType == typeof(DateOnly) || fieldType == typeof(DateOnly?))
+        {
+            <input type="date"
+                   class="sb-datagrid__editor sb-datagrid__editor--date"
+                   value="@FormatDateForInput(currentValue)"
+                   @onchange="e => OnCellValueChangedFromInput(col, e)" />
+        }
+        else
+        {
+            <input type="text"
+                   class="sb-datagrid__editor sb-datagrid__editor--text"
+                   value="@(currentValue?.ToString())"
+                   @onchange="e => OnCellValueChangedFromInput(col, e)" />
+        }
+    </text>;
+}
+
+@code {
+#nullable enable
+    private List<SbColumn<TItem>> _columns = new();
+    private List<TItem> _displayItems = new();
+    private List<(TItem item, int index)> _virtualizedItems = new();
+    private HashSet<string> _selectedKeys = new();
+    private SbSort? _currentSort;
+    
+    // Editing state
+    private string? _editingRowKey;
+    private string? _editingColumnField;
+    private SbRowEditContext<TItem>? _currentEditContext;
+    private TItem? _editingItem;
+    private EditContext? _gridEditContext;
+    
+    // Accessibility state
+    private ElementReference _gridRef;
+    private int _focusedRowIndex = 0;
+    private int _focusedColIndex = 1;
+    private string? _screenReaderAnnouncement;
+    
+    // Filtering state
+    private Dictionary<string, SbFilter> _activeFilters = new();
+    
+    // Row details state
+    private HashSet<string> _expandedRows = new();
+    
+    // Column resize state
+    private Dictionary<string, ElementReference> _headerRefs = new();
+    private Dictionary<string, int> _columnWidths = new();
+    private string? _resizingColumn;
+    private DotNetObjectReference<SbDataGrid<TItem>>? _dotNetRef;
+    
+    /// <summary>
+    /// Column definitions (child content).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Items to display (client mode).
+    /// </summary>
+    [Parameter]
+    public IEnumerable<TItem>? Items { get; set; }
+    
+    /// <summary>
+    /// Data provider for server mode.
+    /// </summary>
+    [Parameter]
+    public Func<SbDataRequest, Task<SbDataResponse<TItem>>>? ItemsProvider { get; set; }
+    
+    /// <summary>
+    /// The current page index (zero-based).
+    /// </summary>
+    [Parameter]
+    public int PageIndex { get; set; }
+    
+    /// <summary>
+    /// Callback when page index changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> PageIndexChanged { get; set; }
+    
+    
+    /// <summary>
+    /// The number of items per page.
+    /// </summary>
+    [Parameter]
+    public int PageSize { get; set; } = 10;
+    
+    /// <summary>
+    /// Callback when page size changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> PageSizeChanged { get; set; }
+    
+    /// <summary>
+    /// Total count of items (set by server mode or calculated in client mode).
+    /// </summary>
+    [Parameter]
+    public long TotalCount { get; set; }
+    
+    /// <summary>
+    /// Whether data is currently loading.
+    /// </summary>
+    [Parameter]
+    public bool Loading { get; set; }
+    
+    /// <summary>
+    /// The selection mode.
+    /// </summary>
+    [Parameter]
+    public SbSelectionMode SelectionMode { get; set; } = SbSelectionMode.None;
+    
+    /// <summary>
+    /// Selected row keys.
+    /// </summary>
+    [Parameter]
+    public IReadOnlySet<string>? SelectedKeys { get; set; }
+    
+    /// <summary>
+    /// Callback when selected keys change.
+    /// </summary>
+    [Parameter]
+    public EventCallback<IReadOnlySet<string>> SelectedKeysChanged { get; set; }
+    
+    /// <summary>
+    /// Callback when selected items change.
+    /// </summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
+    
+    /// <summary>
+    /// Function to get the unique key for an item.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, string>? KeySelector { get; set; }
+    
+    /// <summary>
+    /// Whether to show the pagination controls.
+    /// </summary>
+    [Parameter]
+    public bool ShowPagination { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to show the page size selector.
+    /// </summary>
+    [Parameter]
+    public bool ShowPageSizeSelector { get; set; } = true;
+    
+    /// <summary>
+    /// Available page size options.
+    /// </summary>
+    [Parameter]
+    public int[] PageSizeOptions { get; set; } = { 5, 10, 25, 50, 100 };
+    
+    /// <summary>
+    /// Template to display when there are no items.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? EmptyTemplate { get; set; }
+    
+    /// <summary>
+    /// Callback when a row is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TItem> OnRowClicked { get; set; }
+    
+    /// <summary>
+    /// Callback when sort changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbSort?> OnSortChanged { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    // ============ RTL and Visual Parameters ============
+    
+    /// <summary>
+    /// Whether to render the grid in right-to-left mode. When null, follows the current UI culture (e.g. RTL for Farsi/Arabic).
+    /// </summary>
+    [Parameter]
+    public bool? RightToLeft { get; set; }
+    
+    private bool EffectiveRightToLeft => RightToLeft ?? CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+    
+    /// <summary>
+    /// The row density (spacing) of the grid.
+    /// </summary>
+    [Parameter]
+    public SbDataGridDensity Density { get; set; } = SbDataGridDensity.Default;
+    
+    /// <summary>
+    /// Whether to show alternating row colors (striped rows).
+    /// </summary>
+    [Parameter]
+    public bool Striped { get; set; }
+    
+    /// <summary>
+    /// Whether to show row hover effect.
+    /// </summary>
+    [Parameter]
+    public bool Hoverable { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to show grid borders.
+    /// </summary>
+    [Parameter]
+    public bool Bordered { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to show column filter menus.
+    /// </summary>
+    [Parameter]
+    public bool ShowColumnFilters { get; set; } = true;
+    
+    // ============ Column Resize Parameters ============
+    
+    /// <summary>
+    /// Whether to allow column resizing.
+    /// </summary>
+    [Parameter]
+    public bool AllowColumnResize { get; set; }
+    
+    /// <summary>
+    /// Callback when a column is resized.
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string Field, int Width)> OnColumnResized { get; set; }
+    
+    // ============ Row Details Parameters ============
+    
+    /// <summary>
+    /// Template for expandable row details (master-detail).
+    /// </summary>
+    [Parameter]
+    public RenderFragment<TItem>? DetailTemplate { get; set; }
+    
+    /// <summary>
+    /// Keys of rows that should be expanded by default.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<string>? ExpandedRowKeys { get; set; }
+    
+    /// <summary>
+    /// Callback when a row is expanded or collapsed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string Key, bool IsExpanded)> OnRowExpandChanged { get; set; }
+    
+    // ============ Filter Bar Parameters ============
+    
+    /// <summary>
+    /// Whether to show the active filters bar above the grid.
+    /// </summary>
+    [Parameter]
+    public bool ShowFilterBar { get; set; } = true;
+    
+    // ============ Virtualization Parameters ============
+    
+    /// <summary>
+    /// Whether to enable row virtualization for large datasets.
+    /// When enabled, only visible rows are rendered for better performance.
+    /// </summary>
+    [Parameter]
+    public bool VirtualizationEnabled { get; set; }
+    
+    /// <summary>
+    /// The height of each row in pixels. Required for virtualization calculations.
+    /// Default is 48px.
+    /// </summary>
+    [Parameter]
+    public float RowHeight { get; set; } = 48f;
+    
+    /// <summary>
+    /// The number of additional rows to render outside the visible area.
+    /// Higher values reduce flickering but use more memory. Default is 3.
+    /// </summary>
+    [Parameter]
+    public int OverscanCount { get; set; } = 3;
+    
+    /// <summary>
+    /// The height of the virtualized container. Required when VirtualizationEnabled is true.
+    /// Can be a CSS value like "400px", "50vh", or "100%".
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; }
+    
+    // ============ Editing Parameters ============
+    
+    /// <summary>
+    /// The edit mode for the grid.
+    /// </summary>
+    [Parameter]
+    public SbEditMode EditMode { get; set; } = SbEditMode.None;
+    
+    /// <summary>
+    /// Callback when a row starts being edited.
+    /// Set Cancel to true to prevent editing.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbRowEditEventArgs<TItem>> OnRowEditing { get; set; }
+    
+    /// <summary>
+    /// Callback when a row edit is completed (saved).
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbRowEditCompletedEventArgs<TItem>> OnRowEdited { get; set; }
+    
+    /// <summary>
+    /// Callback when a row edit is cancelled.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TItem> OnRowEditCancelled { get; set; }
+    
+    /// <summary>
+    /// Callback when a cell edit starts.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbCellEditEventArgs<TItem>> OnCellEditing { get; set; }
+    
+    /// <summary>
+    /// Callback when a cell edit is completed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbCellEditEventArgs<TItem>> OnCellEdited { get; set; }
+    
+    /// <summary>
+    /// Whether to show edit actions (Edit/Save/Cancel buttons).
+    /// </summary>
+    [Parameter]
+    public bool ShowEditActions { get; set; } = true;
+    
+    // ============ Other Parameters ============
+    
+    /// <summary>
+    /// Accessibility label for the grid.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+    
+    /// <summary>
+    /// Whether to enable keyboard navigation.
+    /// </summary>
+    [Parameter]
+    public bool EnableKeyboardNavigation { get; set; } = true;
+    
+    /// <summary>
+    /// Callback when filters change.
+    /// </summary>
+    [Parameter]
+    public EventCallback<IReadOnlyList<SbFilter>> OnFiltersChanged { get; set; }
+    
+    /// <summary>
+    /// Gets the current active filters.
+    /// </summary>
+    public IReadOnlyList<SbFilter> ActiveFilters => _activeFilters.Values.ToList();
+    
+    private bool IsAllSelected => _displayItems.Any() && 
+                                   _displayItems.All(item => _selectedKeys.Contains(GetItemKey(item)));
+    
+    private bool IsServerMode => ItemsProvider != null;
+    
+    private bool IsEditing => _editingRowKey != null;
+    
+    private bool IsEditingRow(string key) => _editingRowKey == key;
+    
+    private bool IsEditingCell(string key, string? field) => 
+        _editingRowKey == key && _editingColumnField == field;
+    
+    private string GetContainerStyle()
+    {
+        if (!VirtualizationEnabled || string.IsNullOrEmpty(Height))
+            return "";
+        
+        return $"height: {Height}; overflow-y: auto;";
+    }
+    
+    private string GetTableStyle()
+    {
+        if (VirtualizationEnabled || AllowColumnResize || _columns.Any(c => c.Visible && c.Freeze != SbColumnFreeze.None))
+            return "table-layout: fixed;";
+        return "";
+    }
+    
+    private int GetTotalColumnCount()
+    {
+        var count = _columns.Count(c => c.Visible);
+        if (DetailTemplate != null) count++;
+        if (SelectionMode != SbSelectionMode.None) count++;
+        if (EditMode != SbEditMode.None && ShowEditActions) count++;
+        return count;
+    }
+    
+    private bool _isFirstRender = true;
+    private bool _parametersChanged = false;
+    
+    protected override void OnInitialized()
+    {
+        if (SelectedKeys != null)
+        {
+            _selectedKeys = new HashSet<string>(SelectedKeys);
+        }
+    }
+    
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        
+        if (SelectedKeys != null)
+        {
+            _selectedKeys = new HashSet<string>(SelectedKeys);
+        }
+        
+        // Sync expanded rows with parameter
+        if (ExpandedRowKeys != null)
+        {
+            _expandedRows = new HashSet<string>(ExpandedRowKeys);
+        }
+        
+        // Mark that parameters changed so we can refresh data after render
+        _parametersChanged = true;
+    }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            _dotNetRef = DotNetObjectReference.Create(this);
+        // Load data after render when columns are registered
+        if (_isFirstRender || _parametersChanged)
+        {
+            _isFirstRender = false;
+            _parametersChanged = false;
+            await RefreshDataAsync();
+            StateHasChanged();
+        }
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        _dotNetRef?.Dispose();
+        await ValueTask.CompletedTask;
+    }
+    
+    /// <summary>
+    /// Adds a column to the grid (called by SbColumn).
+    /// </summary>
+    internal void AddColumn(SbColumn<TItem> column)
+    {
+        if (!_columns.Contains(column))
+        {
+            _columns.Add(column);
+            // Don't call StateHasChanged here - columns are registered during render.
+            // Data will be loaded in OnAfterRenderAsync after columns are registered.
+        }
+    }
+    
+    /// <summary>
+    /// Refreshes the data displayed in the grid.
+    /// </summary>
+    public async Task RefreshDataAsync()
+    {
+        if (IsServerMode)
+        {
+            await LoadServerDataAsync();
+        }
+        else
+        {
+            LoadClientData();
+        }
+    }
+    
+    private void LoadClientData()
+    {
+        if (Items == null)
+        {
+            _displayItems = new List<TItem>();
+            _virtualizedItems = new();
+            TotalCount = 0;
+            return;
+        }
+        
+        var items = Items.ToList();
+        
+        // Apply client-side filtering
+        if (_activeFilters.Any())
+        {
+            items = ApplyClientFilters(items);
+        }
+        
+        // Apply sorting
+        if (_currentSort != null && !string.IsNullOrEmpty(_currentSort.Field))
+        {
+            var column = _columns.FirstOrDefault(c => c.Field == _currentSort.Field);
+            if (column != null)
+            {
+                items = _currentSort.Direction == SbSortDirection.Ascending
+                    ? items.OrderBy(item => column.GetValue(item)).ToList()
+                    : items.OrderByDescending(item => column.GetValue(item)).ToList();
+            }
+        }
+        
+        TotalCount = items.Count;
+        
+        // When virtualization is enabled, load all items (virtualization handles visible rows)
+        // Otherwise, apply pagination
+        if (VirtualizationEnabled)
+        {
+            _displayItems = items;
+            _virtualizedItems = items.Select((item, index) => (item, index)).ToList();
+        }
+        else if (ShowPagination && PageSize > 0)
+        {
+            _displayItems = items
+                .Skip(PageIndex * PageSize)
+                .Take(PageSize)
+                .ToList();
+            _virtualizedItems = new();
+        }
+        else
+        {
+            _displayItems = items;
+            _virtualizedItems = new();
+        }
+    }
+    
+    private List<TItem> ApplyClientFilters(List<TItem> items)
+    {
+        foreach (var filter in _activeFilters.Values)
+        {
+            var column = _columns.FirstOrDefault(c => c.Field == filter.Field);
+            if (column == null) continue;
+            
+            items = items.Where(item => MatchesFilter(item, column, filter)).ToList();
+        }
+        
+        return items;
+    }
+    
+    private bool MatchesFilter(TItem item, SbColumn<TItem> column, SbFilter filter)
+    {
+        var value = column.GetValue(item);
+        
+        return filter.Operator switch
+        {
+            SbFilterOperator.IsNull => value == null,
+            SbFilterOperator.IsNotNull => value != null,
+            SbFilterOperator.Equals => Equals(value, filter.Value),
+            SbFilterOperator.NotEquals => !Equals(value, filter.Value),
+            SbFilterOperator.Contains => ContainsString(value, filter.Value),
+            SbFilterOperator.StartsWith => StartsWithString(value, filter.Value),
+            SbFilterOperator.EndsWith => EndsWithString(value, filter.Value),
+            SbFilterOperator.GreaterThan => CompareValues(value, filter.Value) > 0,
+            SbFilterOperator.GreaterThanOrEqual => CompareValues(value, filter.Value) >= 0,
+            SbFilterOperator.LessThan => CompareValues(value, filter.Value) < 0,
+            SbFilterOperator.LessThanOrEqual => CompareValues(value, filter.Value) <= 0,
+            SbFilterOperator.Between => CompareValues(value, filter.Value) >= 0 && CompareValues(value, filter.Value2) <= 0,
+            SbFilterOperator.In => IsInList(value, filter.Value),
+            _ => true
+        };
+    }
+    
+    private static bool ContainsString(object? value, object? filterValue)
+    {
+        if (value == null || filterValue == null) return false;
+        return value.ToString()?.Contains(filterValue.ToString() ?? "", StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+    
+    private static bool StartsWithString(object? value, object? filterValue)
+    {
+        if (value == null || filterValue == null) return false;
+        return value.ToString()?.StartsWith(filterValue.ToString() ?? "", StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+    
+    private static bool EndsWithString(object? value, object? filterValue)
+    {
+        if (value == null || filterValue == null) return false;
+        return value.ToString()?.EndsWith(filterValue.ToString() ?? "", StringComparison.OrdinalIgnoreCase) ?? false;
+    }
+    
+    private static int CompareValues(object? value1, object? value2)
+    {
+        if (value1 == null && value2 == null) return 0;
+        if (value1 == null) return -1;
+        if (value2 == null) return 1;
+        
+        if (value1 is IComparable c1 && value2 is IComparable c2)
+        {
+            try { return c1.CompareTo(c2); } catch { }
+            try { return c1.CompareTo(Convert.ChangeType(c2, value1.GetType())); } catch { }
+        }
+        
+        return string.Compare(value1.ToString(), value2.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+    
+    private static bool IsInList(object? value, object? filterValue)
+    {
+        if (value == null || filterValue == null) return false;
+        var filterStr = filterValue.ToString();
+        if (string.IsNullOrEmpty(filterStr)) return false;
+        
+        var items = filterStr.Split(',').Select(s => s.Trim());
+        return items.Any(item => string.Equals(value.ToString(), item, StringComparison.OrdinalIgnoreCase));
+    }
+    
+    private async Task LoadServerDataAsync()
+    {
+        if (ItemsProvider == null) return;
+        
+        var request = new SbDataRequest
+        {
+            PageIndex = PageIndex,
+            PageSize = PageSize,
+            Sorts = _currentSort != null ? new[] { _currentSort } : Array.Empty<SbSort>(),
+            Filters = _activeFilters.Values.ToArray(),
+            IncludeTotalCount = true
+        };
+        
+        var response = await ItemsProvider(request);
+        
+        _displayItems = response.Items.ToList();
+        
+        if (VirtualizationEnabled)
+        {
+            _virtualizedItems = _displayItems.Select((item, index) => (item, index)).ToList();
+        }
+        else
+        {
+            _virtualizedItems = new();
+        }
+
+        TotalCount = response.TotalCount ?? _displayItems.Count;
+    }
+    
+    private string GetItemKey(TItem item)
+    {
+        if (KeySelector != null)
+        {
+            return KeySelector(item);
+        }
+        
+        // Fallback to hash code
+        return item?.GetHashCode().ToString() ?? Guid.NewGuid().ToString();
+    }
+    
+    private string GetColumnStyle(SbColumn<TItem> column)
+    {
+        var styles = new List<string>();
+        
+        if (!string.IsNullOrEmpty(column.Width))
+            styles.Add($"width: {column.Width}");
+        if (!string.IsNullOrEmpty(column.MinWidth))
+            styles.Add($"min-width: {column.MinWidth}");
+        if (!string.IsNullOrEmpty(column.MaxWidth))
+            styles.Add($"max-width: {column.MaxWidth}");
+        
+        styles.Add($"text-align: {column.GetAlignStyle()}");
+        
+        if (!string.IsNullOrWhiteSpace(column.Style))
+            styles.Add(column.Style.Trim());
+        
+        return string.Join("; ", styles);
+    }
+    
+    private string GetSortIconClass(SbColumn<TItem> column)
+    {
+        if (_currentSort == null || _currentSort.Field != column.Field)
+            return "sb-datagrid__sort-icon--none";
+            
+        return _currentSort.Direction == SbSortDirection.Ascending
+            ? "sb-datagrid__sort-icon--asc"
+            : "sb-datagrid__sort-icon--desc";
+    }
+    
+    private string GetSortIconName(SbColumn<TItem> column)
+    {
+        if (_currentSort == null || _currentSort.Field != column.Field)
+            return "sort-none";
+            
+        return _currentSort.Direction == SbSortDirection.Ascending ? "sort-asc" : "sort-desc";
+    }
+    
+    private async Task OnHeaderClick(SbColumn<TItem> column)
+    {
+        if (!column.Sortable || string.IsNullOrEmpty(column.Field))
+            return;
+        
+        if (_currentSort?.Field == column.Field)
+        {
+            // Toggle direction or clear
+            if (_currentSort.Direction == SbSortDirection.Ascending)
+            {
+                _currentSort = new SbSort(column.Field, SbSortDirection.Descending);
+            }
+            else
+            {
+                _currentSort = null;
+            }
+        }
+        else
+        {
+            _currentSort = new SbSort(column.Field, SbSortDirection.Ascending);
+        }
+        
+        await OnSortChanged.InvokeAsync(_currentSort);
+        await RefreshDataAsync();
+    }
+    
+    private async Task OnRowClick(TItem item, string key)
+    {
+        await OnRowClicked.InvokeAsync(item);
+        
+        if (SelectionMode == SbSelectionMode.SingleRow)
+        {
+            _selectedKeys.Clear();
+            _selectedKeys.Add(key);
+            await SelectedKeysChanged.InvokeAsync(_selectedKeys);
+            await SelectedItemsChanged.InvokeAsync(new List<TItem> { item });
+        }
+    }
+    
+    private async Task ToggleSelection(string key, TItem item)
+    {
+        if (SelectionMode == SbSelectionMode.SingleRow)
+        {
+            _selectedKeys.Clear();
+            _selectedKeys.Add(key);
+        }
+        else if (SelectionMode == SbSelectionMode.MultipleRows)
+        {
+            if (_selectedKeys.Contains(key))
+            {
+                _selectedKeys.Remove(key);
+            }
+            else
+            {
+                _selectedKeys.Add(key);
+            }
+        }
+        
+        await SelectedKeysChanged.InvokeAsync(_selectedKeys);
+        
+        // Find all selected items for the callback
+        if (Items != null)
+        {
+            var selectedItems = Items.Where(i => _selectedKeys.Contains(GetItemKey(i))).ToList();
+            await SelectedItemsChanged.InvokeAsync(selectedItems);
+        }
+    }
+    
+    private async Task ToggleSelectAll()
+    {
+        if (IsAllSelected)
+        {
+            foreach (var item in _displayItems)
+            {
+                _selectedKeys.Remove(GetItemKey(item));
+            }
+        }
+        else
+        {
+            foreach (var item in _displayItems)
+            {
+                _selectedKeys.Add(GetItemKey(item));
+            }
+        }
+        
+        await SelectedKeysChanged.InvokeAsync(_selectedKeys);
+        
+        if (Items != null)
+        {
+            var selectedItems = Items.Where(i => _selectedKeys.Contains(GetItemKey(i))).ToList();
+            await SelectedItemsChanged.InvokeAsync(selectedItems);
+        }
+    }
+    
+    private async Task OnPageIndexChanged(int newIndex)
+    {
+        PageIndex = newIndex;
+        await PageIndexChanged.InvokeAsync(newIndex);
+        await RefreshDataAsync();
+    }
+    
+    private async Task OnPageSizeChanged(int newSize)
+    {
+        PageSize = newSize;
+        await PageSizeChanged.InvokeAsync(newSize);
+        PageIndex = 0;
+        await PageIndexChanged.InvokeAsync(0);
+        await RefreshDataAsync();
+    }
+    
+    private async Task ToggleRowExpand(string key)
+    {
+        bool isExpanded;
+        if (_expandedRows.Contains(key))
+        {
+            _expandedRows.Remove(key);
+            isExpanded = false;
+        }
+        else
+        {
+            _expandedRows.Add(key);
+            isExpanded = true;
+        }
+        
+        await OnRowExpandChanged.InvokeAsync((key, isExpanded));
+    }
+    
+    // ============ Editing Methods ============
+    
+    private async Task StartEditAsync(TItem item, int rowIndex)
+    {
+        if (item == null) return;
+        try
+        {
+            var key = GetItemKey(item);
+            var args = new SbRowEditEventArgs<TItem>(item, key, rowIndex);
+            await OnRowEditing.InvokeAsync(args);
+            if (!args.Cancel)
+            {
+                _editingRowKey = key;
+                _editingColumnField = null;
+                _editingItem = CloneItem(item);
+                _gridEditContext = new EditContext(_editingItem!);
+                _currentEditContext = new SbRowEditContext<TItem>(item, _editingItem, key, rowIndex);
+                StateHasChanged();
+            }
+        }
+        catch
+        {
+            ClearEditState();
+            StateHasChanged();
+        }
+    }
+    
+    private async Task StartCellEditAsync(TItem item, int rowIndex, SbColumn<TItem> column)
+    {
+        if (item == null || column == null) return;
+        try
+        {
+            var key = GetItemKey(item);
+            var field = column.Field ?? "";
+            var currentValue = column.GetValue(item);
+            var args = new SbCellEditEventArgs<TItem>(item, key, rowIndex, field, currentValue, currentValue);
+            await OnCellEditing.InvokeAsync(args);
+            if (!args.Cancel)
+            {
+                _editingRowKey = key;
+                _editingColumnField = column.Field;
+                _editingItem = CloneItem(item);
+                _gridEditContext = new EditContext(_editingItem!);
+                _currentEditContext = new SbRowEditContext<TItem>(item, _editingItem, key, rowIndex);
+                StateHasChanged();
+            }
+        }
+        catch
+        {
+            ClearEditState();
+            StateHasChanged();
+        }
+    }
+    
+    private async Task SaveEditAsync()
+    {
+        if (_editingRowKey == null || _editingItem == null || _currentEditContext == null) return;
+        
+        var originalItem = IsServerMode 
+            ? _displayItems[_currentEditContext.RowIndex]
+            : (Items ?? Enumerable.Empty<TItem>()).FirstOrDefault(i => GetItemKey(i) == _editingRowKey);
+            
+        if (originalItem != null)
+        {
+            // Map edited values back to the original item or a model
+            var args = new SbRowEditCompletedEventArgs<TItem>(_editingItem, originalItem, _editingRowKey!, _currentEditContext.RowIndex, _currentEditContext.IsNewRow);
+            await OnRowEdited.InvokeAsync(args);
+            
+            if (!args.Cancel)
+            {
+                // Update the item in the list
+                UpdateItemInList(originalItem, _editingItem);
+                ClearEditState();
+                await RefreshDataAsync();
+            }
+        }
+    }
+    
+    private async Task CancelEditAsync()
+    {
+        if (_editingRowKey == null) return;
+        
+        var originalItem = IsServerMode 
+            ? _displayItems[_currentEditContext!.RowIndex]
+            : (Items ?? Enumerable.Empty<TItem>()).FirstOrDefault(i => GetItemKey(i) == _editingRowKey);
+            
+        if (originalItem != null)
+        {
+            await OnRowEditCancelled.InvokeAsync(originalItem);
+        }
+        
+        ClearEditState();
+        StateHasChanged();
+    }
+    
+    private TItem CloneItem(TItem item)
+    {
+        // Simple memberwise clone or serialization clone
+        // For now, assume it's a simple object
+        // NOTE: In a real library, we might use a more robust cloning mechanism
+        return item; 
+    }
+    
+    private void UpdateItemInList(TItem original, TItem edited)
+    {
+        // Copy properties from edited back to original
+        // This is simplified and depends on the object structure
+        var properties = typeof(TItem).GetProperties().Where(p => p.CanWrite);
+        foreach (var prop in properties)
+        {
+            prop.SetValue(original, prop.GetValue(edited));
+        }
+    }
+    
+    private async Task OnCellValueChanged(SbColumn<TItem> column, object? newValue)
+    {
+        if (_editingItem == null || _currentEditContext == null) return;
+        
+        var oldValue = column.GetValue(_editingItem);
+        column.SetValue(_editingItem, newValue);
+        
+        if (EditMode == SbEditMode.Cell)
+        {
+            var args = new SbCellEditEventArgs<TItem>(
+                _editingItem,
+                _editingRowKey ?? "",
+                _currentEditContext.RowIndex,
+                column.Field ?? "",
+                oldValue,
+                newValue
+            );
+            
+            await OnCellEdited.InvokeAsync(args);
+            
+            if (!args.Cancel)
+            {
+                // In cell mode, save immediately after cell edit
+                await SaveEditAsync();
+            }
+        }
+    }
+    
+    private void ClearEditState()
+    {
+        _editingRowKey = null;
+        _editingColumnField = null;
+        _currentEditContext = null;
+        _editingItem = default;
+        _gridEditContext = null;
+    }
+    
+    /// <summary>
+    /// Gets the current edit context if available.
+    /// </summary>
+    public SbRowEditContext<TItem>? GetEditContext() => _currentEditContext;
+    
+    private async Task OnRowDoubleClick(TItem item, int rowIndex)
+    {
+        try
+        {
+            if (EditMode == SbEditMode.None) return;
+            if (EditMode == SbEditMode.Row || EditMode == SbEditMode.Popup || EditMode == SbEditMode.Cell)
+            {
+                await StartEditAsync(item, rowIndex);
+            }
+        }
+        catch (Exception)
+        {
+            // Prevent unhandled exception from terminating the circuit
+            StateHasChanged();
+        }
+    }
+    
+    private async Task OnCellClick(TItem item, int rowIndex, SbColumn<TItem> column)
+    {
+        try
+        {
+            if (EditMode == SbEditMode.Cell && column.Editable && !IsEditingRow(GetItemKey(item)))
+            {
+                await StartCellEditAsync(item, rowIndex, column);
+            }
+        }
+        catch (Exception)
+        {
+            StateHasChanged();
+        }
+    }
+    
+    private string? FormatDateForInput(object? value)
+    {
+        if (value == null) return null;
+        
+        if (value is DateTime dt)
+            return dt.ToString("yyyy-MM-dd");
+        if (value is DateOnly d)
+            return d.ToString("yyyy-MM-dd");
+        
+        return value.ToString();
+    }
+    
+    private static string FormatNumberForInput(object? value)
+    {
+        if (value == null) return "";
+        return System.Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? "";
+    }
+    
+    private async Task OnCellValueChangedFromInput(SbColumn<TItem> column, ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        var fieldType = column.GetFieldType();
+        object? parsed = raw;
+        
+        if (!string.IsNullOrEmpty(raw))
+        {
+            var targetType = Nullable.GetUnderlyingType(fieldType) ?? fieldType;
+            try
+            {
+                if (targetType == typeof(bool))
+                    parsed = (e.Value is bool b) ? b : (bool.TryParse(raw, out var b2) ? b2 : false);
+                else if (targetType == typeof(int))
+                    parsed = int.TryParse(raw, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var i) ? i : (object?)null;
+                else if (targetType == typeof(long))
+                    parsed = long.TryParse(raw, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var l) ? l : (object?)null;
+                else if (targetType == typeof(decimal))
+                    parsed = decimal.TryParse(raw, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var m) ? m : (object?)null;
+                else if (targetType == typeof(double))
+                    parsed = double.TryParse(raw, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : (object?)null;
+                else if (targetType == typeof(float))
+                    parsed = float.TryParse(raw, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var f) ? f : (object?)null;
+                else if (targetType == typeof(DateTime))
+                    parsed = DateTime.TryParse(raw, out var dt) ? dt : (object?)null;
+                else if (targetType == typeof(DateOnly))
+                    parsed = DateOnly.TryParse(raw, out var d) ? d : (object?)null;
+            }
+            catch
+            {
+                parsed = raw;
+            }
+        }
+        
+        await OnCellValueChanged(column, parsed);
+    }
+    
+    private object? ParseDateFromInput(object? value, Type targetType)
+    {
+        if (value == null || string.IsNullOrEmpty(value.ToString()))
+            return null;
+        
+        var strValue = value.ToString()!;
+        
+        if (targetType == typeof(DateTime) || targetType == typeof(DateTime?))
+        {
+            if (DateTime.TryParse(strValue, out var dt))
+                return dt;
+        }
+        else if (targetType == typeof(DateOnly) || targetType == typeof(DateOnly?))
+        {
+            if (DateOnly.TryParse(strValue, out var d))
+                return d;
+        }
+        
+        return value;
+    }
+    
+    // ============ Accessibility Methods ============
+    
+    private string? GetAriaSortValue(SbColumn<TItem> column)
+    {
+        if (!column.Sortable || string.IsNullOrEmpty(column.Field))
+            return null;
+        
+        if (_currentSort == null || _currentSort.Field != column.Field)
+            return "none";
+        
+        return _currentSort.Direction == SbSortDirection.Ascending ? "ascending" : "descending";
+    }
+    
+    private void OnRowFocus(int rowIndex)
+    {
+        _focusedRowIndex = rowIndex;
+    }
+    
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (!EnableKeyboardNavigation) return;
+        
+        var handled = false;
+        
+        switch (e.Key)
+        {
+            case "ArrowUp":
+                await NavigateRow(-1);
+                handled = true;
+                break;
+            case "ArrowDown":
+                await NavigateRow(1);
+                handled = true;
+                break;
+            case "ArrowLeft":
+                await NavigateColumn(EffectiveRightToLeft ? 1 : -1);
+                handled = true;
+                break;
+            case "ArrowRight":
+                await NavigateColumn(EffectiveRightToLeft ? -1 : 1);
+                handled = true;
+                break;
+            case "Home":
+                _focusedRowIndex = 0;
+                handled = true;
+                break;
+            case "End":
+                _focusedRowIndex = _displayItems.Count - 1;
+                handled = true;
+                break;
+            case "Enter":
+                await HandleEnterKey();
+                handled = true;
+                break;
+            case " ":
+                await HandleSpaceKey();
+                handled = true;
+                break;
+            case "Escape":
+                if (IsEditing) await CancelEditAsync();
+                handled = true;
+                break;
+        }
+        
+        if (handled)
+        {
+            StateHasChanged();
+        }
+    }
+    
+    private Task NavigateRow(int delta)
+    {
+        var newIndex = _focusedRowIndex + delta;
+        _focusedRowIndex = Math.Max(0, Math.Min(newIndex, _displayItems.Count - 1));
+        
+        // Announce current row
+        if (_focusedRowIndex >= 0 && _focusedRowIndex < _displayItems.Count)
+        {
+            AnnounceToScreenReader($"Row {_focusedRowIndex + 1} of {_displayItems.Count}");
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private Task NavigateColumn(int delta)
+    {
+        var maxCol = GetTotalColumnCount();
+        var newIndex = _focusedColIndex + delta;
+        _focusedColIndex = Math.Max(1, Math.Min(newIndex, maxCol));
+        
+        // Announce the column
+        var visibleColumns = _columns.Where(c => c.Visible).ToList();
+        var colOffset = SelectionMode != SbSelectionMode.None ? 1 : 0;
+        var colIdx = _focusedColIndex - 1 - colOffset;
+        
+        if (colIdx >= 0 && colIdx < visibleColumns.Count)
+        {
+            AnnounceToScreenReader($"Column: {visibleColumns[colIdx].Title}");
+        }
+        
+        return Task.CompletedTask;
+    }
+    
+    private async Task HandleEnterKey()
+    {
+        if (_focusedRowIndex >= 0 && _focusedRowIndex < _displayItems.Count)
+        {
+            var item = _displayItems[_focusedRowIndex];
+            
+            if (IsEditing)
+            {
+                await SaveEditAsync();
+            }
+            else if (EditMode != SbEditMode.None)
+            {
+                await StartEditAsync(item, _focusedRowIndex);
+            }
+            else if (SelectionMode != SbSelectionMode.None)
+            {
+                var key = GetItemKey(item);
+                await ToggleSelection(key, item);
+            }
+        }
+    }
+    
+    private async Task HandleSpaceKey()
+    {
+        if (SelectionMode != SbSelectionMode.None && 
+            _focusedRowIndex >= 0 && _focusedRowIndex < _displayItems.Count)
+        {
+            var item = _displayItems[_focusedRowIndex];
+            var key = GetItemKey(item);
+            await ToggleSelection(key, item);
+            
+            var isSelected = _selectedKeys.Contains(key);
+            AnnounceToScreenReader(isSelected ? "Row selected" : "Row deselected");
+        }
+    }
+    
+    private void AnnounceToScreenReader(string message)
+    {
+        _screenReaderAnnouncement = message;
+        StateHasChanged();
+        
+        // Clear after a short delay to allow re-announcement of same message
+        _ = Task.Delay(100).ContinueWith(_ =>
+        {
+            _screenReaderAnnouncement = null;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+    
+    /// <summary>
+    /// Focuses a specific row by index.
+    /// </summary>
+    public async Task FocusRowAsync(int rowIndex)
+    {
+        _focusedRowIndex = Math.Max(0, Math.Min(rowIndex, _displayItems.Count - 1));
+        StateHasChanged();
+        
+        // Focus the grid element
+        await JSRuntime.InvokeVoidAsync("eval", $"document.querySelector('[data-row-key]')?.closest('.sb-datagrid')?.focus()");
+    }
+    
+    // ============ Filtering Methods ============
+    
+    private SbFilter? GetColumnFilter(string? field)
+    {
+        if (string.IsNullOrEmpty(field)) return null;
+        return _activeFilters.TryGetValue(field, out var filter) ? filter : null;
+    }
+    
+    private async Task OnColumnFilterChanged(string field, SbFilter? filter)
+    {
+        if (filter == null)
+        {
+            _activeFilters.Remove(field);
+        }
+        else
+        {
+            _activeFilters[field] = filter;
+        }
+        
+        // Reset to first page when filter changes
+        PageIndex = 0;
+        await PageIndexChanged.InvokeAsync(0);
+        
+        await OnFiltersChanged.InvokeAsync(ActiveFilters);
+        await RefreshDataAsync();
+        
+        AnnounceToScreenReader($"Filter applied. Showing {_displayItems.Count} results.");
+    }
+    
+    /// <summary>
+    /// Clears all active filters.
+    /// </summary>
+    public async Task ClearAllFiltersAsync()
+    {
+        _activeFilters.Clear();
+        PageIndex = 0;
+        await PageIndexChanged.InvokeAsync(0);
+        await OnFiltersChanged.InvokeAsync(ActiveFilters);
+        await RefreshDataAsync();
+        StateHasChanged();
+        AnnounceToScreenReader("All filters cleared.");
+    }
+    
+    /// <summary>
+    /// Sets a filter programmatically (adds or replaces the filter for the given field).
+    /// </summary>
+    public async Task SetFilterAsync(string field, SbFilterOperator op, object? value, object? value2 = null)
+    {
+        var filter = new SbFilter(field, op, value, value2);
+        _activeFilters[field] = filter;
+        await OnFiltersChanged.InvokeAsync(ActiveFilters);
+        await RefreshDataAsync();
+        StateHasChanged();
+    }
+    
+    /// <summary>
+    /// Clears all filters and sets a single filter in one operation. Use when only one filter should be active (e.g. preset "Engineering Only").
+    /// Avoids an extra round-trip compared to calling ClearAllFiltersAsync then SetFilterAsync.
+    /// </summary>
+    public async Task SetOnlyFilterAsync(string field, SbFilterOperator op, object? value, object? value2 = null)
+    {
+        _activeFilters.Clear();
+        PageIndex = 0;
+        var filter = new SbFilter(field, op, value, value2);
+        _activeFilters[field] = filter;
+        await PageIndexChanged.InvokeAsync(0);
+        await OnFiltersChanged.InvokeAsync(ActiveFilters);
+        await RefreshDataAsync();
+        StateHasChanged();
+    }
+    
+    /// <summary>
+    /// Removes a filter by field name.
+    /// </summary>
+    public async Task RemoveFilterAsync(string field)
+    {
+        if (_activeFilters.Remove(field))
+        {
+            await OnFiltersChanged.InvokeAsync(ActiveFilters);
+            await RefreshDataAsync();
+            StateHasChanged();
+        }
+    }
+    
+    private static bool MatchesFilter(object? value, SbColumn<TItem> column, SbFilter filter)
+    {
+        return filter.Operator switch
+        {
+            SbFilterOperator.IsNull => value == null,
+            SbFilterOperator.IsNotNull => value != null,
+            SbFilterOperator.Equals => Equals(value, filter.Value),
+            SbFilterOperator.NotEquals => !Equals(value, filter.Value),
+            SbFilterOperator.Contains => ContainsString(value, filter.Value),
+            SbFilterOperator.StartsWith => StartsWithString(value, filter.Value),
+            SbFilterOperator.EndsWith => EndsWithString(value, filter.Value),
+            SbFilterOperator.GreaterThan => CompareValues(value, filter.Value) > 0,
+            SbFilterOperator.GreaterThanOrEqual => CompareValues(value, filter.Value) >= 0,
+            SbFilterOperator.LessThan => CompareValues(value, filter.Value) < 0,
+            SbFilterOperator.LessThanOrEqual => CompareValues(value, filter.Value) <= 0,
+            _ => true
+        };
+    }
+    
+    private string GetSortIconClass(SbFilter filter)
+    {
+        return "";
+    }
+    
+    private string GetSortIconName(SbFilter filter)
+    {
+        return "";
+    }
+    
+    private string GetPageInfo()
+    {
+        if (TotalCount == 0) return "No items";
+        var start = PageIndex * PageSize + 1;
+        var end = Math.Min((PageIndex + 1) * PageSize, TotalCount);
+        return $"{start}-{end} of {TotalCount}";
+    }
+    
+    private string GetGridCssClasses()
+    {
+        var classes = new List<string>();
+        classes.Add($"sb-datagrid--density-{Density.ToString().ToLowerInvariant()}");
+        if (Striped) classes.Add("sb-datagrid--striped");
+        if (Hoverable) classes.Add("sb-datagrid--hoverable");
+        if (Bordered) classes.Add("sb-datagrid--bordered");
+        else classes.Add("sb-datagrid--borderless");
+        if (VirtualizationEnabled) classes.Add("sb-datagrid--virtualized");
+        if (_columns.Any(c => c.Visible && c.Freeze != SbColumnFreeze.None)) classes.Add("sb-datagrid--frozen");
+        if (AllowColumnResize) classes.Add("sb-datagrid--resizable");
+        return string.Join(" ", classes);
+    }
+    
+    private float GetEffectiveRowHeight()
+    {
+        return Density switch
+        {
+            SbDataGridDensity.Compact => 32f,
+            SbDataGridDensity.Comfortable => 56f,
+            _ => 48f // Default
+        };
+    }
+    
+    private string GetRowStyle()
+    {
+        return $"height: {GetEffectiveRowHeight()}px";
+    }
+    
+    // ============ CSV Export Methods ============
+    
+    /// <summary>
+    /// Exports current display items to CSV format.
+    /// </summary>
+    public async Task ExportToCsvAsync(string filename = "export.csv")
+    {
+        var csv = new System.Text.StringBuilder();
+        var visibleColumns = _columns.Where(c => c.Visible).ToList();
+        
+        // Header row
+        csv.AppendLine(string.Join(",", visibleColumns.Select(c => EscapeCsvValue(c.Title))));
+        
+        // Data rows
+        foreach (var item in _displayItems)
+        {
+            var values = visibleColumns.Select(c => EscapeCsvValue(c.GetDisplayValue(item)));
+            csv.AppendLine(string.Join(",", values));
+        }
+        
+        // Trigger download via JS
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+        var base64 = Convert.ToBase64String(bytes);
+        
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.dataGrid.downloadFile", filename, base64, "text/csv");
+    }
+    
+    /// <summary>
+    /// Exports all data (not just current page) to CSV format.
+    /// </summary>
+    public async Task ExportAllToCsvAsync(string filename = "export.csv")
+    {
+        IEnumerable<TItem> allItems;
+        
+        if (IsServerMode && ItemsProvider != null)
+        {
+            // Fetch all data from server
+            var request = new SbDataRequest
+            {
+                PageIndex = 0,
+                PageSize = int.MaxValue,
+                Sorts = _currentSort != null ? new[] { _currentSort } : Array.Empty<SbSort>(),
+                Filters = _activeFilters.Values.ToArray(),
+                IncludeTotalCount = false
+            };
+            var response = await ItemsProvider(request);
+            allItems = response.Items;
+        }
+        else
+        {
+            allItems = Items ?? Enumerable.Empty<TItem>();
+        }
+        
+        var csv = new System.Text.StringBuilder();
+        var visibleColumns = _columns.Where(c => c.Visible).ToList();
+        
+        // Header row
+        csv.AppendLine(string.Join(",", visibleColumns.Select(c => EscapeCsvValue(c.Title))));
+        
+        // Data rows
+        foreach (var item in allItems)
+        {
+            var values = visibleColumns.Select(c => EscapeCsvValue(c.GetDisplayValue(item)));
+            csv.AppendLine(string.Join(",", values));
+        }
+        
+        var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+        var base64 = Convert.ToBase64String(bytes);
+        
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.dataGrid.downloadFile", filename, base64, "text/csv");
+    }
+    
+    private static string EscapeCsvValue(string? value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return "";
+        
+        // Escape quotes and wrap in quotes if contains special characters
+        if (value.Contains(',') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
+        {
+            return $"\"{value.Replace("\"", "\"\"")}\"";
+        }
+        
+        return value;
+    }
+    
+    private string GetFilterDisplayValue(SbFilter filter)
+    {
+        var opLabel = filter.Operator switch
+        {
+            SbFilterOperator.Equals => "=",
+            SbFilterOperator.NotEquals => "≠",
+            SbFilterOperator.Contains => "contains",
+            SbFilterOperator.StartsWith => "starts with",
+            SbFilterOperator.EndsWith => "ends with",
+            SbFilterOperator.GreaterThan => ">",
+            SbFilterOperator.GreaterThanOrEqual => "≥",
+            SbFilterOperator.LessThan => "<",
+            SbFilterOperator.LessThanOrEqual => "≤",
+            SbFilterOperator.Between => "between",
+            SbFilterOperator.IsNull => "is empty",
+            SbFilterOperator.IsNotNull => "is not empty",
+            _ => filter.Operator.ToString()
+        };
+        
+        if (filter.Operator == SbFilterOperator.IsNull || filter.Operator == SbFilterOperator.IsNotNull)
+            return opLabel;
+        
+        if (filter.Operator == SbFilterOperator.Between)
+            return $"{opLabel} {filter.Value} and {filter.Value2}";
+        
+        return $"{opLabel} {filter.Value}";
+    }
+
+    private async Task OnHeaderKeyDown(KeyboardEventArgs e, SbColumn<TItem> column)
+    {
+        if (e.Key == "Enter" || e.Key == " ")
+        {
+            await OnHeaderClick(column);
+        }
+    }
+
+    // ============ Frozen Column Methods ============
+    
+    private string GetFrozenColumnClass(SbColumn<TItem> column)
+    {
+        return column.Freeze switch
+        {
+            SbColumnFreeze.Start => "sb-datagrid__cell--frozen-start",
+            SbColumnFreeze.End => "sb-datagrid__cell--frozen-end",
+            _ => ""
+        };
+    }
+    
+    private string GetColumnHeaderStyle(SbColumn<TItem> column, int colIndex, bool isHeader = true)
+    {
+        var styles = new List<string>();
+        
+        // Base column styles: prefer user-resized width, then column.Width
+        if (_columnWidths.TryGetValue(column.Field ?? "", out var width))
+            styles.Add($"width: {width}px");
+        else if (!string.IsNullOrEmpty(column.Width))
+            styles.Add($"width: {column.Width}");
+            
+        if (!string.IsNullOrEmpty(column.MinWidth))
+            styles.Add($"min-width: {column.MinWidth}");
+        else if (column.Freeze != SbColumnFreeze.None && !string.IsNullOrEmpty(column.Width))
+            styles.Add($"min-width: {column.Width}"); // Prevent frozen columns from shrinking in responsive view
+        if (!string.IsNullOrEmpty(column.MaxWidth))
+            styles.Add($"max-width: {column.MaxWidth}");
+        
+        styles.Add($"text-align: {column.GetAlignStyle()}");
+        
+        if (!string.IsNullOrWhiteSpace(column.Style))
+            styles.Add(column.Style.Trim());
+        
+        // Frozen column positioning: header gets higher z-index so it stacks above body when scrolling
+        var frozenZIndex = isHeader ? 3 : 2;
+        if (column.Freeze == SbColumnFreeze.Start)
+        {
+            var leftOffset = CalculateFrozenOffset(column, true);
+            styles.Add($"position: sticky");
+            styles.Add($"{(EffectiveRightToLeft ? "right" : "left")}: {leftOffset}px");
+            styles.Add($"z-index: {frozenZIndex}");
+        }
+        else if (column.Freeze == SbColumnFreeze.End)
+        {
+            var rightOffset = CalculateFrozenOffset(column, false);
+            styles.Add($"position: sticky");
+            styles.Add($"{(EffectiveRightToLeft ? "left" : "right")}: {rightOffset}px");
+            styles.Add($"z-index: {frozenZIndex}");
+        }
+        
+        return string.Join("; ", styles);
+    }
+    
+    private string GetColumnCellStyle(SbColumn<TItem> column, int colIndex)
+    {
+        return GetColumnHeaderStyle(column, colIndex, isHeader: false);
+    }
+    
+    private int CalculateFrozenOffset(SbColumn<TItem> targetColumn, bool isStart)
+    {
+        var offset = 0;
+        var visibleColumns = _columns.Where(c => c.Visible).ToList();
+        
+        if (isStart)
+        {
+            // Calculate offset from left for start-frozen columns
+            foreach (var col in visibleColumns)
+            {
+                if (col == targetColumn) break;
+                if (col.Freeze == SbColumnFreeze.Start)
+                {
+                    offset += GetColumnWidth(col);
+                }
+            }
+        }
+        else
+        {
+            // Calculate offset from right for end-frozen columns
+            for (int i = visibleColumns.Count - 1; i >= 0; i--)
+            {
+                var col = visibleColumns[i];
+                if (col == targetColumn) break;
+                if (col.Freeze == SbColumnFreeze.End)
+                {
+                    offset += GetColumnWidth(col);
+                }
+            }
+        }
+        return offset;
+    }
+    
+    private int GetColumnWidth(SbColumn<TItem> column)
+    {
+        if (_columnWidths.TryGetValue(column.Field ?? "", out var width))
+            return width;
+            
+        if (!string.IsNullOrEmpty(column.Width) && int.TryParse(column.Width.Replace("px", ""), out var pWidth))
+            return pWidth;
+            
+        return 150; // Default width if not specified
+    }
+    
+    private static int ParseWidthPx(string? cssWidth, int fallback)
+    {
+        if (string.IsNullOrWhiteSpace(cssWidth)) return fallback;
+        var s = cssWidth.Trim().Replace("px", "").Trim();
+        return int.TryParse(s, out var v) ? v : fallback;
+    }
+    
+    private int GetMinWidthPx(SbColumn<TItem> column)
+    {
+        return ParseWidthPx(column.MinWidth, 50);
+    }
+    
+    private int GetMaxWidthPx(SbColumn<TItem> column)
+    {
+        return ParseWidthPx(column.MaxWidth, 2000);
+    }
+    
+    private async Task StartColumnResize(MouseEventArgs e, SbColumn<TItem> column)
+    {
+        if (_dotNetRef == null || string.IsNullOrEmpty(column.Field)) return;
+        _resizingColumn = column.Field;
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.dataGrid.startResize",
+                _dotNetRef,
+                column.Field,
+                e.ClientX,
+                GetColumnWidth(column),
+                GetMinWidthPx(column).ToString(),
+                GetMaxWidthPx(column).ToString());
+        }
+        catch (JSException)
+        {
+            _resizingColumn = null;
+        }
+    }
+    
+    [JSInvokable]
+    public void OnColumnResizing(string field, int width)
+    {
+        _columnWidths[field] = width;
+        StateHasChanged();
+    }
+    
+    [JSInvokable]
+    public void OnColumnResizeComplete(string field, int width)
+    {
+        _resizingColumn = null;
+        _columnWidths[field] = width;
+        InvokeAsync(async () =>
+        {
+            await OnColumnResized.InvokeAsync((field, width));
+            StateHasChanged();
+        });
+    }
+}

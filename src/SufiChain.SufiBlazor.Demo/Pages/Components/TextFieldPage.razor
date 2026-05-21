@@ -1,0 +1,176 @@
+@page "/demo/sufi-blazor/text-field"
+
+<PageTitle>@(L["Menu:Demo:TextField"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:TextField"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:TextFieldPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:TextFieldBasicInput"]" SourceCode="@BasicInputCode" RelatedCode="@BasicInputCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="Name" InputId="name">
+                    <SbTextField TValue="string" @bind-Value="_name" Id="name" Placeholder="Enter your name" />
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption">Value: @_name</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextFieldWithHelperText"]" SourceCode="@HelperTextCode" RelatedCode="@HelperTextCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="Email" HelperText="We'll never share your email" InputId="email">
+                    <SbTextField TValue="string" @bind-Value="_email" Id="email" Type="email" Placeholder="name@domain.com" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextFieldWithError"]" SourceCode="@ErrorCode" RelatedCode="@ErrorCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="Username" ErrorText="Username is already taken" Required="true" InputId="username">
+                    <SbTextField TValue="string" @bind-Value="_username" Id="username" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextFieldPasswordToggle"]" SourceCode="@PasswordCode" RelatedCode="@PasswordCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="Password" InputId="password">
+                    <SbTextField TValue="string" @bind-Value="_password" Id="password" Type="password" Placeholder="Enter password" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextFieldClearable"]" SourceCode="@ClearableCode" RelatedCode="@ClearableCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="Search" InputId="search">
+                    <SbTextField TValue="string" @bind-Value="_search" Id="search" Placeholder="Search..." Clearable="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextFieldWithAdornments"]" SourceCode="@AdornmentsCode" RelatedCode="@AdornmentsCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="Amount" InputId="amount">
+                    <SbTextField TValue="string" @bind-Value="_amount" Id="amount" Placeholder="0.00">
+                        <StartAdornment>$</StartAdornment>
+                    </SbTextField>
+                </SbFormField>
+                <SbFormField Label="Website" InputId="website">
+                    <SbTextField TValue="string" @bind-Value="_website" Id="website" Placeholder="example.com">
+                        <StartAdornment>https://</StartAdornment>
+                    </SbTextField>
+                </SbFormField>
+                <SbFormField Label="Search" InputId="search-adornment">
+                    <SbTextField TValue="string" @bind-Value="_searchWithIcon" Id="search-adornment" Placeholder="Search..." Type="search">
+                        <EndAdornment><SbIcon Name="search" Size="SbSize.Sm" /></EndAdornment>
+                    </SbTextField>
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:TextFieldStates"]" SourceCode="@StatesCode" RelatedCode="@StatesCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="Disabled" InputId="disabled-field">
+                    <SbTextField TValue="string" @bind-Value="_disabledValue" Id="disabled-field" Disabled="true" />
+                </SbFormField>
+                <SbFormField Label="Read Only" InputId="readonly-field">
+                    <SbTextField TValue="string" @bind-Value="_readonlyValue" Id="readonly-field" ReadOnly="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbTextField" />
+</DemoLayout>
+
+@code {
+    private string _name = "";
+    private string _email = "";
+    private string _username = "john_doe";
+    private string _password = "";
+    private string _search = "";
+    private string _amount = "";
+    private string _website = "";
+    private string _searchWithIcon = "";
+    private string _disabledValue = "Cannot edit";
+    private string _readonlyValue = "Read only value";
+
+    private const string BasicInputCodeBehind = @"private string _name = """";";
+
+    private const string HelperTextCodeBehind = @"private string _email = """";";
+
+    private const string ErrorCodeBehind = @"private string _username = ""john_doe"";";
+
+    private const string PasswordCodeBehind = @"private string _password = """";";
+
+    private const string ClearableCodeBehind = @"private string _search = """";";
+
+    private const string AdornmentsCodeBehind = @"private string _amount = """";
+    private string _website = """";
+    private string _searchWithIcon = """";";
+
+    private const string StatesCodeBehind = @"private string _disabledValue = ""Cannot edit"";
+    private string _readonlyValue = ""Read only value"";";
+
+    private const string BasicInputCode = @"<SbFormField Label=""Name"" InputId=""name"">
+    <SbTextField TValue=""string"" @bind-Value=""_name"" Id=""name"" Placeholder=""Enter your name"" />
+</SbFormField>";
+
+    private const string HelperTextCode = @"<SbFormField Label=""Email"" HelperText=""We'll never share your email"" InputId=""email"">
+    <SbTextField TValue=""string"" @bind-Value=""_email"" Id=""email"" Type=""email"" Placeholder=""name@domain.com"" />
+</SbFormField>";
+
+    private const string ErrorCode = @"<SbFormField Label=""Username"" ErrorText=""Username is already taken"" Required=""true"" InputId=""username"">
+    <SbTextField TValue=""string"" @bind-Value=""_username"" Id=""username"" />
+</SbFormField>";
+
+    private const string PasswordCode = @"<SbFormField Label=""Password"" InputId=""password"">
+    <SbTextField TValue=""string"" @bind-Value=""_password"" Id=""password"" Type=""password"" Placeholder=""Enter password"" />
+</SbFormField>";
+
+    private const string ClearableCode = @"<SbFormField Label=""Search"" InputId=""search"">
+    <SbTextField TValue=""string"" @bind-Value=""_search"" Id=""search"" Placeholder=""Search..."" Clearable=""true"" />
+</SbFormField>";
+
+    private const string AdornmentsCode = @"<SbFormField Label=""Amount"" InputId=""amount"">
+    <SbTextField TValue=""string"" @bind-Value=""_amount"" Id=""amount"" Placeholder=""0.00"">
+        <StartAdornment>$</StartAdornment>
+    </SbTextField>
+</SbFormField>
+
+<SbFormField Label=""Website"" InputId=""website"">
+    <SbTextField TValue=""string"" @bind-Value=""_website"" Id=""website"" Placeholder=""example.com"">
+        <StartAdornment>https://</StartAdornment>
+    </SbTextField>
+</SbFormField>
+
+<SbFormField Label=""Search"" InputId=""search-adornment"">
+    <SbTextField TValue=""string"" @bind-Value=""_searchWithIcon"" Id=""search-adornment"" Placeholder=""Search..."" Type=""search"">
+        <EndAdornment><SbIcon Name=""search"" Size=""SbSize.Sm"" /></EndAdornment>
+    </SbTextField>
+</SbFormField>";
+
+    private const string StatesCode = @"<SbFormField Label=""Disabled"" InputId=""disabled-field"">
+    <SbTextField TValue=""string"" @bind-Value=""_disabledValue"" Id=""disabled-field"" Disabled=""true"" />
+</SbFormField>
+
+<SbFormField Label=""Read Only"" InputId=""readonly-field"">
+    <SbTextField TValue=""string"" @bind-Value=""_readonlyValue"" Id=""readonly-field"" ReadOnly=""true"" />
+</SbFormField>";
+}

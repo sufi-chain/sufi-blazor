@@ -1,0 +1,64 @@
+@page "/demo/sufi-blazor/data-grid/compact"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridCompactDensity"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridCompactDensity"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridCompactDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:CompactDensity"]" SourceCode="@compactCode" RelatedCode="@compactCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="Employee" 
+                      Items="@_employees"
+                      Density="SbDataGridDensity.Compact"
+                      Hoverable="true">
+                <SbColumn TItem="Employee" Field="Name" Title="@L["Demo:Name"]" />
+                <SbColumn TItem="Employee" Field="Department" Title="@L["Demo:Department"]" />
+                <SbColumn TItem="Employee" Field="Salary" Title="@L["Demo:Salary"]" Format="C0" />
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<Employee> _employees = new()
+    {
+        new Employee { Name = "Alice", Department = "Engineering", Salary = 95000 },
+        new Employee { Name = "Bob", Department = "Sales", Salary = 70000 },
+        new Employee { Name = "Charlie", Department = "Marketing", Salary = 80000 }
+    };
+
+    private class Employee
+    {
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public int Salary { get; set; }
+    }
+
+    private const string compactCodeBehind = @"private List<Employee> _employees = new()
+{
+    new Employee { Name = ""Alice"", Department = ""Engineering"", Salary = 95000 }
+};
+
+private class Employee
+{
+    public string Name { get; set; } = """";
+    public string Department { get; set; } = """";
+    public int Salary { get; set; }
+}";
+
+    private const string compactCode = @"<SbDataGrid TItem=""Employee"" 
+              Items=""@_employees""
+              Density=""SbDataGridDensity.Compact""
+              Hoverable=""true"">
+    <SbColumn TItem=""Employee"" Field=""Name"" Title=""Name"" />
+    <SbColumn TItem=""Employee"" Field=""Department"" Title=""Department"" />
+    <SbColumn TItem=""Employee"" Field=""Salary"" Title=""Salary"" Format=""C0"" />
+</SbDataGrid>";
+}

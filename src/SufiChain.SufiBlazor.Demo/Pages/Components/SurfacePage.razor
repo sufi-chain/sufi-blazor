@@ -1,0 +1,88 @@
+@page "/demo/sufi-blazor/surface"
+
+<PageTitle>@(L["Menu:Demo:Surface"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Surface"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:SurfaceDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:SurfaceElevationLevels"]" SourceCode="@elevationCode">
+        <ExampleContent>
+            <SbGrid Columns="3" Gap="4">
+                <SbGridItem>
+                    <SbSurface Elevation="0" Padding="var(--sb-space-4)">
+                        <SbText>@L["Demo:SurfaceElevation0"]</SbText>
+                    </SbSurface>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbSurface Elevation="1" Padding="var(--sb-space-4)">
+                        <SbText>@L["Demo:SurfaceElevation1"]</SbText>
+                    </SbSurface>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbSurface Elevation="2" Padding="var(--sb-space-4)">
+                        <SbText>@L["Demo:SurfaceElevation2"]</SbText>
+                    </SbSurface>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbSurface Elevation="3" Padding="var(--sb-space-4)">
+                        <SbText>@L["Demo:SurfaceElevation3"]</SbText>
+                    </SbSurface>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbSurface Elevation="4" Padding="var(--sb-space-4)">
+                        <SbText>@L["Demo:SurfaceElevation4"]</SbText>
+                    </SbSurface>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbSurface Elevation="5" Padding="var(--sb-space-4)">
+                        <SbText>@L["Demo:SurfaceElevation5"]</SbText>
+                    </SbSurface>
+                </SbGridItem>
+            </SbGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SurfaceWithCustomBackground"]" SourceCode="@bgCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbSurface Elevation="2" Background="var(--sb-color-primary)" Padding="var(--sb-space-4)">
+                    <SbText Style="color: var(--sb-color-on-primary);">@L["Demo:SurfacePrimaryBackground"]</SbText>
+                </SbSurface>
+                <SbSurface Elevation="2" Background="var(--sb-color-success)" Padding="var(--sb-space-4)">
+                    <SbText Style="color: var(--sb-color-on-success);">@L["Demo:SurfaceSuccessBackground"]</SbText>
+                </SbSurface>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SurfaceOutlined"]" SourceCode="@outlinedCode">
+        <ExampleContent>
+            <SbSurface Outlined="true" Padding="var(--sb-space-4)">
+                <SbText>@L["Demo:SurfaceOutlinedText"]</SbText>
+            </SbSurface>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbSurface" />
+</DemoLayout>
+
+@code {
+    private const string elevationCode = @"<SbSurface Elevation=""0"" Padding=""var(--sb-space-4)"">
+    <SbText>Elevation 0</SbText>
+</SbSurface>
+<SbSurface Elevation=""3"" Padding=""var(--sb-space-4)"">
+    <SbText>Elevation 3</SbText>
+</SbSurface>";
+
+    private const string bgCode = @"<SbSurface Background=""var(--sb-color-primary-50)"" Padding=""var(--sb-space-4)"">
+    <SbText>Custom background</SbText>
+</SbSurface>";
+
+    private const string outlinedCode = @"<SbSurface Outlined=""true"" Padding=""var(--sb-space-4)"">
+    <SbText>Outlined surface</SbText>
+</SbSurface>";
+}

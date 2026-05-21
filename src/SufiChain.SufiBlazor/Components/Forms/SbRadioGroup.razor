@@ -1,0 +1,126 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@typeparam TValue
+
+<div class="@CssClass"
+     style="@Style"
+     role="radiogroup"
+     aria-label="@(AriaLabel ?? Label)"
+     @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <span class="sb-radio-group__label">@Label</span>
+    }
+    <CascadingValue Value="this">
+        @ChildContent
+    </CascadingValue>
+</div>
+
+
+@code {
+    /// <summary>
+    /// Current value.
+    /// </summary>
+    [Parameter]
+    public TValue? Value { get; set; }
+
+    /// <summary>
+    /// Value changed callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TValue> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Group name.
+    /// </summary>
+    [Parameter]
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// Visible label for the group (e.g. "Select Plan"). Also used as aria-label when AriaLabel is not set.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Accessible label for the group. When not set, Label is used.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Whether the group is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Layout orientation.
+    /// </summary>
+    [Parameter]
+    public SbOrientation Orientation { get; set; } = SbOrientation.Vertical;
+
+    /// <summary>
+    /// Radio buttons.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    internal string GroupName => Name ?? Guid.NewGuid().ToString("N");
+
+    internal bool IsSelected(TValue? value)
+    {
+        if (Value == null && value == null) return true;
+        if (Value == null || value == null) return false;
+        return EqualityComparer<TValue>.Default.Equals(Value, value);
+    }
+
+    internal async Task SelectValue(TValue value)
+    {
+        if (!Disabled)
+        {
+            Value = value;
+            await ValueChanged.InvokeAsync(value);
+            StateHasChanged(); // Force re-render of all child radios
+        }
+    }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-radio-group" };
+
+            classes.Add($"sb-radio-group--{Orientation.ToString().ToLowerInvariant()}");
+
+            if (Disabled)
+            {
+                classes.Add("sb-radio-group--disabled");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+}

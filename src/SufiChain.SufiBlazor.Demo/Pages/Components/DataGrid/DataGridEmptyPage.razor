@@ -1,0 +1,52 @@
+@page "/demo/sufi-blazor/data-grid/empty"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridEmptyState"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridEmptyState"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridEmptyDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Menu:Demo:EmptyState"]" SourceCode="@emptyCode" RelatedCode="@emptyCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="Item" Items="@_emptyItems">
+                <ChildContent>
+                    <SbColumn TItem="Item" Field="Name" Title="@L["Demo:Name"]" />
+                </ChildContent>
+                <EmptyTemplate>
+                    <SbEmptyState Title="@L["Demo:NoItemsFound"]" Description="@L["Demo:AddItemsDescription"]" />
+                </EmptyTemplate>
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<Item> _emptyItems = new();
+
+    private class Item
+    {
+        public string Name { get; set; } = "";
+    }
+
+    private const string emptyCodeBehind = @"private List<Item> _emptyItems = new();
+
+private class Item
+{
+    public string Name { get; set; } = """";
+}";
+
+    private const string emptyCode = @"<SbDataGrid TItem=""Item"" Items=""@_emptyItems"">
+    <ChildContent>
+        <SbColumn TItem=""Item"" Field=""Name"" Title=""Name"" />
+    </ChildContent>
+    <EmptyTemplate>
+        <SbEmptyState Title=""No items found"" Description=""Add some items to see them here."" />
+    </EmptyTemplate>
+</SbDataGrid>";
+}

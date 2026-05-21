@@ -1,0 +1,137 @@
+@page "/demo/sufi-blazor/data-grid/inline-edit"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridInlineEdit"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridInlineEdit"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridInlineEditDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DataGridInlineEdit"]" SourceCode="@inlineEditCode" RelatedCode="@inlineEditCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="Employee"
+                        Items="@_editableEmployees"
+                        KeySelector="@(e => e.Id.ToString())"
+                        PageSize="5"
+                        EditMode="SbEditMode.Cell"
+                        OnRowEdited="OnRowEdited">
+                <ChildContent>
+                    <SbColumn TItem="Employee" Field="Id" Title="@L["Demo:Id"]" Width="80px" />
+                    <SbColumn TItem="Employee" Field="Name" Title="@L["Demo:Name"]" Editable="true" />
+                    <SbColumn TItem="Employee" Field="Department" Title="@L["Demo:DataGridDepartment"]" Editable="true" />
+                    <SbColumn TItem="Employee" Field="Salary" Title="@L["Demo:Salary"]" Align="SbColumnAlign.End" Editable="true">
+                        <CellTemplate Context="context">
+                            @context.Item.Salary.ToString("N0")
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="Employee" Field="IsActive" Title="@L["Demo:Active"]" Editable="true" Align="SbColumnAlign.Center">
+                        <CellTemplate Context="context">
+                            <SbBadge Color="@(context.Item.IsActive ? SbColor.Success : SbColor.Danger)">
+                                @(context.Item.IsActive ? L["Demo:Yes"] : L["Demo:No"])
+                            </SbBadge>
+                        </CellTemplate>
+                    </SbColumn>
+                </ChildContent>
+            </SbDataGrid>
+            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted" Class="mt-3">@L["Demo:DataGridInlineEditHint"]</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<Employee> _editableEmployees = new();
+
+    protected override void OnInitialized()
+    {
+        _editableEmployees = GenerateEmployees(12);
+    }
+
+    private Task OnRowEdited(SbRowEditCompletedEventArgs<Employee> args)
+    {
+        var index = _editableEmployees.FindIndex(e => e.Id.ToString() == args.RowKey);
+        if (index >= 0)
+        {
+            var edited = args.Item;
+            _editableEmployees[index] = new Employee
+            {
+                Id = edited.Id,
+                Name = edited.Name,
+                Email = edited.Email,
+                Department = edited.Department,
+                Salary = edited.Salary,
+                HireDate = edited.HireDate,
+                IsActive = edited.IsActive
+            };
+        }
+        return Task.CompletedTask;
+    }
+
+    private static List<Employee> GenerateEmployees(int count)
+    {
+        var departments = new[] { "Engineering", "Marketing", "Sales", "HR", "Finance", "Operations" };
+        var firstNames = new[] { "John", "Jane", "Mike", "Sarah", "David", "Emily", "Chris", "Lisa", "Tom", "Anna" };
+        var lastNames = new[] { "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez" };
+        var random = new Random(42);
+        return Enumerable.Range(1, count).Select(i => new Employee
+        {
+            Id = i,
+            Name = $"{firstNames[random.Next(firstNames.Length)]} {lastNames[random.Next(lastNames.Length)]}",
+            Email = $"employee{i}@company.com",
+            Department = departments[random.Next(departments.Length)],
+            Salary = random.Next(50000, 150000),
+            HireDate = DateTime.Today.AddDays(-random.Next(30, 1000)),
+            IsActive = random.Next(10) > 2
+        }).ToList();
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal Salary { get; set; }
+        public DateTime HireDate { get; set; }
+        public bool IsActive { get; set; }
+    }
+
+    private const string inlineEditCodeBehind = @"private List<Employee> _editableEmployees = new();
+
+protected override void OnInitialized()
+{
+    _editableEmployees = GenerateEmployees(12);
+}
+
+private Task OnRowEdited(SbRowEditCompletedEventArgs<Employee> args)
+{
+    var index = _editableEmployees.FindIndex(e => e.Id.ToString() == args.RowKey);
+    if (index >= 0)
+        _editableEmployees[index] = args.Item;
+    return Task.CompletedTask;
+}
+
+private static List<Employee> GenerateEmployees(int count) { /* ... */ }
+
+private class Employee { /* ... */ }";
+
+    private const string inlineEditCode = @"<SbDataGrid TItem=""Employee""
+                Items=""@_editableEmployees""
+                KeySelector=""@(e => e.Id.ToString())""
+                PageSize=""5""
+                EditMode=""SbEditMode.Cell""
+                OnRowEdited=""OnRowEdited"">
+    <ChildContent>
+        <SbColumn TItem=""Employee"" Field=""Id"" Title=""ID"" />
+        <SbColumn TItem=""Employee"" Field=""Name"" Title=""Name"" Editable=""true"" />
+        <SbColumn TItem=""Employee"" Field=""Department"" Title=""Department"" Editable=""true"" />
+        <SbColumn TItem=""Employee"" Field=""Salary"" Title=""Salary"" Editable=""true"" />
+        <SbColumn TItem=""Employee"" Field=""IsActive"" Title=""Active"" Editable=""true"" />
+    </ChildContent>
+</SbDataGrid>
+<SbText Color=""SbColor.Muted"" Class=""mt-3"">Click on a cell to edit. Press Enter to save or Escape to cancel.</SbText>";
+}

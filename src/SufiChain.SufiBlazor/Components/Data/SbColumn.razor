@@ -1,0 +1,283 @@
+@namespace SufiChain.SufiBlazor.Components.Data
+@typeparam TItem
+
+@code {
+    /// <summary>
+    /// The field/property name for data binding, sorting, and filtering.
+    /// </summary>
+    [Parameter]
+    public string? Field { get; set; }
+    
+    /// <summary>
+    /// The column header title.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+    
+    /// <summary>
+    /// The column width (CSS value, e.g., "100px", "10%", "1fr").
+    /// </summary>
+    [Parameter]
+    public string? Width { get; set; }
+    
+    /// <summary>
+    /// The minimum column width.
+    /// </summary>
+    [Parameter]
+    public string? MinWidth { get; set; }
+    
+    /// <summary>
+    /// The maximum column width.
+    /// </summary>
+    [Parameter]
+    public string? MaxWidth { get; set; }
+    
+    /// <summary>
+    /// The horizontal alignment of column content.
+    /// </summary>
+    [Parameter]
+    public SbColumnAlign Align { get; set; } = SbColumnAlign.Start;
+    
+    /// <summary>
+    /// Whether the column is sortable.
+    /// </summary>
+    [Parameter]
+    public bool Sortable { get; set; }
+    
+    /// <summary>
+    /// Whether the column is filterable.
+    /// </summary>
+    [Parameter]
+    public bool Filterable { get; set; }
+    
+    /// <summary>
+    /// Custom template for the filter UI.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<SbColumnFilterMenu>? FilterTemplate { get; set; }
+    
+    /// <summary>
+    /// Whether the column is resizable.
+    /// </summary>
+    [Parameter]
+    public bool Resizable { get; set; }
+    
+    /// <summary>
+    /// Whether the column is visible.
+    /// </summary>
+    [Parameter]
+    public bool Visible { get; set; } = true;
+    
+    /// <summary>
+    /// The freeze position for the column.
+    /// </summary>
+    [Parameter]
+    public SbColumnFreeze Freeze { get; set; } = SbColumnFreeze.None;
+    
+    /// <summary>
+    /// Additional CSS classes for the column.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    /// <summary>
+    /// Inline styles for the column (header, cells, footer). e.g. "min-width: 160px".
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+    
+    /// <summary>
+    /// Custom template for the column header.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? HeaderTemplate { get; set; }
+    
+    /// <summary>
+    /// Custom template for cell content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<SbCellContext<TItem>>? CellTemplate { get; set; }
+    
+    /// <summary>
+    /// Custom template for the column footer.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? FooterTemplate { get; set; }
+    
+    /// <summary>
+    /// Custom template for cell editing. Receives the edit context.
+    /// If not provided and Editable is true, a default input is generated.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<SbCellContext<TItem>>? EditTemplate { get; set; }
+    
+    /// <summary>
+    /// Whether the column is editable.
+    /// </summary>
+    [Parameter]
+    public bool Editable { get; set; }
+    
+    /// <summary>
+    /// Function to get the cell value from the item.
+    /// Used when no CellTemplate is provided.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, object?>? ValueFunc { get; set; }
+    
+    /// <summary>
+    /// Function to set the cell value on the item (for editing).
+    /// </summary>
+    [Parameter]
+    public Action<TItem, object?>? SetValueFunc { get; set; }
+    
+    /// <summary>
+    /// Function to format the cell value for display.
+    /// </summary>
+    [Parameter]
+    public Func<object?, string>? FormatFunc { get; set; }
+    
+    /// <summary>
+    /// Format string for display (e.g. "C0" for currency, "d" for short date).
+    /// Applied when the value implements IFormattable and no FormatFunc is set.
+    /// </summary>
+    [Parameter]
+    public string? Format { get; set; }
+    
+    /// <summary>
+    /// The type of the field value (used for generating default editors).
+    /// If not specified, it's inferred from the property type.
+    /// </summary>
+    [Parameter]
+    public Type? FieldType { get; set; }
+    
+    /// <summary>
+    /// The parent DataGrid component.
+    /// </summary>
+    [CascadingParameter]
+    internal SbDataGrid<TItem>? DataGrid { get; set; }
+    
+    /// <summary>
+    /// Gets the display value for an item.
+    /// </summary>
+    public string GetDisplayValue(TItem item)
+    {
+        object? value = null;
+        
+        if (ValueFunc != null)
+        {
+            value = ValueFunc(item);
+        }
+        else if (!string.IsNullOrEmpty(Field))
+        {
+            value = GetPropertyValue(item, Field);
+        }
+        
+        if (FormatFunc != null)
+        {
+            return FormatFunc(value);
+        }
+        
+        if (!string.IsNullOrEmpty(Format) && value is IFormattable formattable)
+        {
+            return formattable.ToString(Format, System.Globalization.CultureInfo.CurrentCulture);
+        }
+        
+        return value?.ToString() ?? string.Empty;
+    }
+    
+    /// <summary>
+    /// Gets the raw value for an item (used for sorting/filtering).
+    /// </summary>
+    public object? GetValue(TItem item)
+    {
+        if (ValueFunc != null)
+        {
+            return ValueFunc(item);
+        }
+        
+        if (!string.IsNullOrEmpty(Field))
+        {
+            return GetPropertyValue(item, Field);
+        }
+        
+        return null;
+    }
+    
+    /// <summary>
+    /// Sets the value for an item (used for editing).
+    /// </summary>
+    public void SetValue(TItem item, object? value)
+    {
+        if (SetValueFunc != null)
+        {
+            SetValueFunc(item, value);
+            return;
+        }
+        
+        if (!string.IsNullOrEmpty(Field))
+        {
+            SetPropertyValue(item, Field, value);
+        }
+    }
+    
+    /// <summary>
+    /// Gets the type of the field value.
+    /// </summary>
+    public Type GetFieldType()
+    {
+        if (FieldType != null)
+            return FieldType;
+        
+        if (!string.IsNullOrEmpty(Field))
+        {
+            var property = typeof(TItem).GetProperty(Field);
+            if (property != null)
+                return property.PropertyType;
+        }
+        
+        return typeof(string);
+    }
+    
+    private static object? GetPropertyValue(TItem item, string propertyName)
+    {
+        if (item == null) return null;
+        
+        var property = typeof(TItem).GetProperty(propertyName);
+        return property?.GetValue(item);
+    }
+    
+    private static void SetPropertyValue(TItem item, string propertyName, object? value)
+    {
+        if (item == null) return;
+        
+        var property = typeof(TItem).GetProperty(propertyName);
+        if (property != null && property.CanWrite)
+        {
+            // Handle type conversion
+            if (value != null && !property.PropertyType.IsAssignableFrom(value.GetType()))
+            {
+                var targetType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+                value = Convert.ChangeType(value, targetType);
+            }
+            property.SetValue(item, value);
+        }
+    }
+    
+    protected override void OnInitialized()
+    {
+        DataGrid?.AddColumn(this);
+    }
+    
+    /// <summary>
+    /// Gets the CSS text-align value for this column.
+    /// </summary>
+    public string GetAlignStyle()
+    {
+        return Align switch
+        {
+            SbColumnAlign.Center => "center",
+            SbColumnAlign.End => "end",
+            _ => "start"
+        };
+    }
+}

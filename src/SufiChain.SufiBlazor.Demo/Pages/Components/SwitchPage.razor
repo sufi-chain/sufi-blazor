@@ -1,0 +1,112 @@
+@page "/demo/sufi-blazor/switch"
+
+<PageTitle>@(L["Menu:Demo:Switch"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Switch"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:SwitchPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection 
+        Title="@L["Demo:SwitchBasic"]"
+        SourceCode="@basicCode"
+        RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+			<SbStack Direction="SbStackDirection.Column" Gap="3">
+				<SbSwitch @bind-Value="basicChecked" Label="@L["Demo:SwitchEnableNotifications"]" />
+				<SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:SwitchValue"]: @basicChecked</SbText>
+			</SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:SwitchColors"]"
+        SourceCode="@colorsCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                <SbSwitch @bind-Value="primaryChecked" Color="SbColor.Primary" Label="@L["Demo:SwitchColorPrimary"]" />
+                <SbSwitch @bind-Value="successChecked" Color="SbColor.Success" Label="@L["Demo:SwitchColorSuccess"]" />
+                <SbSwitch @bind-Value="warningChecked" Color="SbColor.Warning" Label="@L["Demo:SwitchColorWarning"]" />
+                <SbSwitch @bind-Value="dangerChecked" Color="SbColor.Danger" Label="@L["Demo:SwitchColorDanger"]" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:SwitchSizes"]"
+        SourceCode="@sizesCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                <SbSwitch @bind-Value="smChecked" Size="SbSize.Sm" Label="@L["Demo:SwitchSizeSmall"]" />
+                <SbSwitch @bind-Value="mdChecked" Size="SbSize.Md" Label="@L["Demo:SwitchSizeMedium"]" />
+                <SbSwitch @bind-Value="lgChecked" Size="SbSize.Lg" Label="@L["Demo:SwitchSizeLarge"]" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:SwitchHelperText"]"
+        SourceCode="@helperCode">
+        <ExampleContent>
+            <SbSwitch 
+                @bind-Value="helperChecked" 
+                Label="@L["Demo:SwitchDarkMode"]" 
+                HelperText="@L["Demo:SwitchHelperDarkMode"]" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:SwitchDisabled"]"
+        SourceCode="@disabledCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                <SbSwitch Value="false" Label="@L["Demo:SwitchDisabledOff"]" Disabled="true" />
+                <SbSwitch Value="true" Label="@L["Demo:SwitchDisabledOn"]" Disabled="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbSwitch" />
+</DemoLayout>
+
+@code {
+    private bool basicChecked = false;
+    private bool primaryChecked = true;
+    private bool successChecked = true;
+    private bool warningChecked = true;
+    private bool dangerChecked = true;
+    private bool smChecked = false;
+    private bool mdChecked = true;
+    private bool lgChecked = false;
+    private bool helperChecked = false;
+
+    private string basicCodeBehind = @"private bool basicChecked = false;";
+
+    private string basicCode = @"<SbSwitch @bind-Value=""basicChecked"" Label=""Enable notifications"" />";
+
+    private string colorsCode = @"<SbStack Direction=""SbStackDirection.Column"" Gap=""3"">
+    <SbSwitch @bind-Value=""primaryChecked"" Color=""SbColor.Primary"" Label=""Primary"" />
+    <SbSwitch @bind-Value=""successChecked"" Color=""SbColor.Success"" Label=""Success"" />
+    <SbSwitch @bind-Value=""warningChecked"" Color=""SbColor.Warning"" Label=""Warning"" />
+    <SbSwitch @bind-Value=""dangerChecked"" Color=""SbColor.Danger"" Label=""Danger"" />
+</SbStack>";
+
+    private string sizesCode = @"<SbStack Direction=""SbStackDirection.Column"" Gap=""3"">
+    <SbSwitch @bind-Value=""smChecked"" Size=""SbSize.Sm"" Label=""Small"" />
+    <SbSwitch @bind-Value=""mdChecked"" Size=""SbSize.Md"" Label=""Medium"" />
+    <SbSwitch @bind-Value=""lgChecked"" Size=""SbSize.Lg"" Label=""Large"" />
+</SbStack>";
+
+    private string helperCode = @"<SbSwitch 
+    @bind-Value=""helperChecked"" 
+    Label=""Enable dark mode"" 
+    HelperText=""Switch between light and dark themes"" />";
+
+    private string disabledCode = @"<SbStack Direction=""SbStackDirection.Column"" Gap=""3"">
+    <SbSwitch Value=""false"" Label=""Disabled (Off)"" Disabled=""true"" />
+    <SbSwitch Value=""true"" Label=""Disabled (On)"" Disabled=""true"" />
+</SbStack>";
+}

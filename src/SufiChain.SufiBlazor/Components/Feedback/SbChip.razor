@@ -1,0 +1,172 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+@using SufiChain.SufiBlazor.Components.Common
+
+@if (OnClick.HasDelegate)
+{
+    <button type="button"
+            class="@CssClass"
+            style="@Style"
+            disabled="@Disabled"
+            @onclick="HandleClick"
+            @attributes="AdditionalAttributes">
+        @RenderChipContent
+    </button>
+}
+else
+{
+    <span class="@CssClass"
+          style="@Style"
+          @attributes="AdditionalAttributes">
+        @RenderChipContent
+    </span>
+}
+
+@code {
+    /// <summary>
+    /// Chip variant.
+    /// </summary>
+    [Parameter]
+    public SbChipVariant Variant { get; set; } = SbChipVariant.Filled;
+
+    /// <summary>
+    /// Chip size.
+    /// </summary>
+    [Parameter]
+    public SbSize Size { get; set; } = SbSize.Md;
+
+    /// <summary>
+    /// Chip color.
+    /// </summary>
+    [Parameter]
+    public SbColor Color { get; set; } = SbColor.Default;
+
+    /// <summary>
+    /// Whether the chip is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Icon to show before the label.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? StartIcon { get; set; }
+
+    /// <summary>
+    /// Click event callback (makes chip clickable).
+    /// </summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Remove event callback (shows remove button).
+    /// </summary>
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+
+    /// <summary>
+    /// Chip content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool IsClickable => OnClick.HasDelegate;
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-chip" };
+
+            classes.Add($"sb-chip--{Variant.ToString().ToLowerInvariant()}");
+            classes.Add($"sb-chip--{Size.ToString().ToLowerInvariant()}");
+
+            if (Color != SbColor.Default)
+            {
+                classes.Add($"sb-chip--{Color.ToString().ToLowerInvariant()}");
+            }
+
+            if (IsClickable)
+            {
+                classes.Add("sb-chip--clickable");
+            }
+
+            if (Disabled)
+            {
+                classes.Add("sb-chip--disabled");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    private RenderFragment RenderChipContent => builder =>
+    {
+        if (StartIcon != null)
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "class", "sb-chip__icon");
+            builder.AddContent(2, StartIcon);
+            builder.CloseElement();
+        }
+
+        builder.OpenElement(3, "span");
+        builder.AddAttribute(4, "class", "sb-chip__label");
+        builder.AddContent(5, ChildContent);
+        builder.CloseElement();
+
+        if (OnRemove.HasDelegate)
+        {
+            builder.OpenElement(6, "button");
+            builder.AddAttribute(7, "type", "button");
+            builder.AddAttribute(8, "class", "sb-chip__remove");
+            builder.AddAttribute(9, "aria-label", "Remove");
+            builder.AddAttribute(10, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, HandleRemove));
+            builder.AddEventStopPropagationAttribute(11, "onclick", true);
+            builder.OpenComponent<SbIcon>(12);
+            builder.AddAttribute(13, "Name", "x");
+            builder.AddAttribute(14, "Size", SbSize.Sm);
+            builder.CloseComponent();
+            builder.CloseElement();
+        }
+    };
+
+    private async Task HandleClick(MouseEventArgs args)
+    {
+        if (!Disabled)
+        {
+            await OnClick.InvokeAsync(args);
+        }
+    }
+
+    private async Task HandleRemove(MouseEventArgs args)
+    {
+        if (!Disabled)
+        {
+            await OnRemove.InvokeAsync();
+        }
+    }
+}

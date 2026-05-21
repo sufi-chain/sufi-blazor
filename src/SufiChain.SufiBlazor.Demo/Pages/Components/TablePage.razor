@@ -1,0 +1,345 @@
+@page "/demo/sufi-blazor/table"
+
+<PageTitle>@(L["Menu:Demo:Table"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+	<SbHeading Level="1">@L["Menu:Demo:Table"]</SbHeading>
+	<SbText Color="SbColor.Muted">@L["Demo:TableDescription"]</SbText>
+
+	<SbDivider />
+
+	<DemoSection Title="@L["Demo:BasicTable"]" SourceCode="@BasicCode" RelatedCode="@ProductsCodeBehind">
+		<ExampleContent>
+			<SbTable TItem="Product" Items="_products">
+				<HeaderContent>
+					<tr>
+						<th>@L["Demo:Name"]</th>
+						<th>@L["Demo:Category"]</th>
+						<th>@L["Demo:Price"]</th>
+						<th>@L["Demo:Stock"]</th>
+					</tr>
+				</HeaderContent>
+				<RowTemplate>
+					<td>@context.Name</td>
+					<td>@context.Category</td>
+					<td>$@context.Price.ToString("N2")</td>
+					<td>@context.Stock</td>
+				</RowTemplate>
+			</SbTable>
+		</ExampleContent>
+	</DemoSection>
+
+	<DemoSection Title="@L["Demo:StripedTable"]" SourceCode="@StripedCode" RelatedCode="@ProductsCodeBehind">
+		<ExampleContent>
+			<SbTable TItem="Product" Items="_products" Striped="true">
+				<HeaderContent>
+					<tr>
+						<th>@L["Demo:Name"]</th>
+						<th>@L["Demo:Category"]</th>
+						<th>@L["Demo:Price"]</th>
+					</tr>
+				</HeaderContent>
+				<RowTemplate>
+					<td>@context.Name</td>
+					<td>@context.Category</td>
+					<td>$@context.Price.ToString("N2")</td>
+				</RowTemplate>
+			</SbTable>
+		</ExampleContent>
+	</DemoSection>
+
+	<DemoSection Title="@L["Demo:BorderedTable"]" SourceCode="@BorderedCode" RelatedCode="@ProductsCodeBehind">
+		<ExampleContent>
+			<SbTable TItem="Product" Items="_products" Bordered="true">
+				<HeaderContent>
+					<tr>
+						<th>@L["Demo:Name"]</th>
+						<th>@L["Demo:Category"]</th>
+						<th>@L["Demo:Price"]</th>
+					</tr>
+				</HeaderContent>
+				<RowTemplate>
+					<td>@context.Name</td>
+					<td>@context.Category</td>
+					<td>$@context.Price.ToString("N2")</td>
+				</RowTemplate>
+			</SbTable>
+		</ExampleContent>
+	</DemoSection>
+
+	<DemoSection Title="@L["Demo:CompactTable"]" SourceCode="@CompactCode" RelatedCode="@ProductsCodeBehind">
+		<ExampleContent>
+			<SbTable TItem="Product" Items="_products" Compact="true">
+				<HeaderContent>
+					<tr>
+						<th>@L["Demo:Name"]</th>
+						<th>@L["Demo:Category"]</th>
+						<th>@L["Demo:Price"]</th>
+					</tr>
+				</HeaderContent>
+				<RowTemplate>
+					<td>@context.Name</td>
+					<td>@context.Category</td>
+					<td>$@context.Price.ToString("N2")</td>
+				</RowTemplate>
+			</SbTable>
+		</ExampleContent>
+	</DemoSection>
+
+	<DemoSection Title="@L["Menu:Demo:EmptyState"]" SourceCode="@EmptyCode" RelatedCode="@ProductsCodeBehind">
+		<ExampleContent>
+			<SbTable TItem="Product" Items="@(new List<Product>())">
+				<HeaderContent>
+					<tr>
+						<th>@L["Demo:Name"]</th>
+						<th>@L["Demo:Category"]</th>
+						<th>@L["Demo:Price"]</th>
+					</tr>
+				</HeaderContent>
+				<RowTemplate>
+					<td>@context.Name</td>
+					<td>@context.Category</td>
+					<td>$@context.Price.ToString("N2")</td>
+				</RowTemplate>
+				<EmptyContent>
+					<div style="padding: var(--sb-space-10); text-align: center; color: var(--sb-color-text-muted);">
+						<SbIcon Name="search" Size="SbSize.Lg" style="margin-bottom: var(--sb-space-2); opacity: 0.5;" />
+						<p>@L["Demo:NoProductsFound"]</p>
+					</div>
+				</EmptyContent>
+			</SbTable>
+		</ExampleContent>
+	</DemoSection>
+
+	<DemoSection Title="@L["Demo:ClickableRows"]" SourceCode="@ClickableCode" RelatedCode="@ClickableCodeBehind">
+		<ExampleContent>
+			<SbStack Gap="4">
+				<SbTable TItem="Product" Items="_products" OnRowClick="OnProductClick">
+					<HeaderContent>
+						<tr>
+							<th>@L["Demo:Name"]</th>
+							<th>@L["Demo:Category"]</th>
+							<th>@L["Demo:Price"]</th>
+						</tr>
+					</HeaderContent>
+					<RowTemplate>
+						<td>@context.Name</td>
+						<td>@context.Category</td>
+						<td>$@context.Price.ToString("N2")</td>
+					</RowTemplate>
+				</SbTable>
+				<SbText Variant="SbTextVariant.Caption">
+					Clicked: @(_clickedProduct?.Name ?? "(none)")
+				</SbText>
+			</SbStack>
+		</ExampleContent>
+	</DemoSection>
+
+	<DemoSection Title="@L["Demo:TableWithFooter"]" SourceCode="@FooterCode" RelatedCode="@FooterCodeBehind">
+		<ExampleContent>
+			<SbTable TItem="Product" Items="_products">
+				<HeaderContent>
+					<tr>
+						<th>@L["Demo:Name"]</th>
+						<th>@L["Demo:Price"]</th>
+					</tr>
+				</HeaderContent>
+				<RowTemplate>
+					<td>@context.Name</td>
+					<td>$@context.Price.ToString("N2")</td>
+				</RowTemplate>
+				<FooterContent>
+					<tr>
+						<td><strong>@L["Demo:Total"]</strong></td>
+						<td><strong>@_products.Sum(p => p.Price).ToString("N2")</strong></td>
+					</tr>
+				</FooterContent>
+			</SbTable>
+		</ExampleContent>
+	</DemoSection>
+
+	<SbDivider />
+
+	<DocViewer DocName="SbTable" />
+</DemoLayout>
+
+
+@code {
+    private Product? _clickedProduct;
+    
+    private List<Product> _products = new()
+    {
+        new Product("Laptop", "Electronics", 999.99m, 15),
+        new Product("Desk Chair", "Furniture", 249.99m, 32),
+        new Product("Wireless Mouse", "Electronics", 29.99m, 150),
+        new Product("Notebook", "Stationery", 4.99m, 500),
+        new Product("Monitor", "Electronics", 399.99m, 25)
+    };
+    
+    private void OnProductClick(Product product)
+    {
+        _clickedProduct = product;
+    }
+    
+    private record Product(string Name, string Category, decimal Price, int Stock);
+
+    private const string ProductsCodeBehind = @"private List<Product> _products = new()
+{
+    new Product(""Laptop"", ""Electronics"", 999.99m, 15),
+    new Product(""Desk Chair"", ""Furniture"", 249.99m, 32),
+    new Product(""Wireless Mouse"", ""Electronics"", 29.99m, 150),
+    new Product(""Notebook"", ""Stationery"", 4.99m, 500),
+    new Product(""Monitor"", ""Electronics"", 399.99m, 25)
+};
+
+private record Product(string Name, string Category, decimal Price, int Stock);";
+
+    private const string ClickableCodeBehind = @"private Product? _clickedProduct;
+
+private List<Product> _products = new()
+{
+    new Product(""Laptop"", ""Electronics"", 999.99m, 15),
+    new Product(""Desk Chair"", ""Furniture"", 249.99m, 32),
+    new Product(""Wireless Mouse"", ""Electronics"", 29.99m, 150),
+    new Product(""Notebook"", ""Stationery"", 4.99m, 500),
+    new Product(""Monitor"", ""Electronics"", 399.99m, 25)
+};
+
+private void OnProductClick(Product product)
+{
+    _clickedProduct = product;
+}
+
+private record Product(string Name, string Category, decimal Price, int Stock);";
+
+    private const string BasicCode = @"<SbTable TItem=""Product"" Items=""_products"">
+    <HeaderContent>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Stock</th>
+        </tr>
+    </HeaderContent>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Category</td>
+        <td>$@context.Price.ToString(""N2"")</td>
+        <td>@context.Stock</td>
+    </RowTemplate>
+</SbTable>";
+
+    private const string StripedCode = @"<SbTable TItem=""Product"" Items=""_products"" Striped=""true"">
+    <HeaderContent>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+        </tr>
+    </HeaderContent>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Category</td>
+        <td>$@context.Price.ToString(""N2"")</td>
+    </RowTemplate>
+</SbTable>";
+
+    private const string BorderedCode = @"<SbTable TItem=""Product"" Items=""_products"" Bordered=""true"">
+    <HeaderContent>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+        </tr>
+    </HeaderContent>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Category</td>
+        <td>$@context.Price.ToString(""N2"")</td>
+    </RowTemplate>
+</SbTable>";
+
+    private const string CompactCode = @"<SbTable TItem=""Product"" Items=""_products"" Compact=""true"">
+    <HeaderContent>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+        </tr>
+    </HeaderContent>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Category</td>
+        <td>$@context.Price.ToString(""N2"")</td>
+    </RowTemplate>
+</SbTable>";
+
+    private const string EmptyCode = @"<SbTable TItem=""Product"" Items=""@(new List<Product>())"">
+    <HeaderContent>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+        </tr>
+    </HeaderContent>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Category</td>
+        <td>$@context.Price.ToString(""N2"")</td>
+    </RowTemplate>
+    <EmptyContent>
+        <div style=""padding: var(--sb-space-10); text-align: center; color: var(--sb-color-text-muted);"">
+            <SbIcon Name=""search"" Size=""SbSize.Lg"" style=""margin-bottom: var(--sb-space-2); opacity: 0.5;"" />
+            <p>No products found.</p>
+        </div>
+    </EmptyContent>
+</SbTable>";
+
+    private const string ClickableCode = @"<SbTable TItem=""Product"" Items=""_products"" OnRowClick=""OnProductClick"">
+    <HeaderContent>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+        </tr>
+    </HeaderContent>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>@context.Category</td>
+        <td>$@context.Price.ToString(""N2"")</td>
+    </RowTemplate>
+</SbTable>
+<SbText Variant=""SbTextVariant.Caption"">
+    Clicked: @(_clickedProduct?.Name ?? ""(none)"")
+</SbText>";
+
+    private const string FooterCode = @"<SbTable TItem=""Product"" Items=""_products"">
+    <HeaderContent>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+        </tr>
+    </HeaderContent>
+    <RowTemplate>
+        <td>@context.Name</td>
+        <td>$@context.Price.ToString(""N2"")</td>
+    </RowTemplate>
+    <FooterContent>
+        <tr>
+            <td><strong>Total</strong></td>
+            <td><strong>@_products.Sum(p => p.Price).ToString(""N2"")</strong></td>
+        </tr>
+    </FooterContent>
+</SbTable>";
+
+    private const string FooterCodeBehind = @"private List<Product> _products = new()
+{
+    new Product(""Laptop"", ""Electronics"", 999.99m, 15),
+    new Product(""Desk Chair"", ""Furniture"", 249.99m, 32),
+    new Product(""Wireless Mouse"", ""Electronics"", 29.99m, 150),
+    new Product(""Notebook"", ""Stationery"", 4.99m, 500),
+    new Product(""Monitor"", ""Electronics"", 399.99m, 25)
+};
+
+private record Product(string Name, string Category, decimal Price, int Stock);";
+}

@@ -1,0 +1,150 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+
+<label class="@CssClass" style="@Style">
+    <input type="checkbox"
+           class="sb-checkbox__input"
+           id="@Id"
+           checked="@Value"
+           disabled="@Disabled"
+           aria-checked="@GetAriaChecked()"
+           @onchange="HandleChange"
+           @attributes="AdditionalAttributes" />
+    <span class="sb-checkbox__box">
+        @if (Value)
+        {
+            <SbIcon Name="check" Size="SbSize.Sm" Class="sb-checkbox__check" />
+        }
+        else if (Indeterminate)
+        {
+            <SbIcon Name="minus" Size="SbSize.Sm" Class="sb-checkbox__indeterminate" />
+        }
+    </span>
+    @if (!string.IsNullOrEmpty(Label) || ChildContent != null)
+    {
+        <span class="sb-checkbox__label">
+            @if (ChildContent != null)
+            {
+                @ChildContent
+            }
+            else
+            {
+                @Label
+            }
+        </span>
+    }
+</label>
+
+@code {
+    /// <summary>
+    /// Checkbox value.
+    /// </summary>
+    [Parameter]
+    public bool Value { get; set; }
+
+    /// <summary>
+    /// Value changed callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Whether the checkbox is in indeterminate state.
+    /// </summary>
+    [Parameter]
+    public bool Indeterminate { get; set; }
+
+    /// <summary>
+    /// Checkbox label.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Whether the checkbox is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Checkbox color.
+    /// </summary>
+    [Parameter]
+    public SbColor Color { get; set; } = SbColor.Primary;
+
+    /// <summary>
+    /// Custom label content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Element ID for the input.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-checkbox" };
+
+            classes.Add($"sb-checkbox--{Color.ToString().ToLowerInvariant()}");
+
+            if (Value)
+            {
+                classes.Add("sb-checkbox--checked");
+            }
+
+            if (Indeterminate)
+            {
+                classes.Add("sb-checkbox--indeterminate");
+            }
+
+            if (Disabled)
+            {
+                classes.Add("sb-checkbox--disabled");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    private string GetAriaChecked()
+    {
+        if (Indeterminate) return "mixed";
+        return Value ? "true" : "false";
+    }
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        if (!Disabled)
+        {
+            Value = (bool)(e.Value ?? false);
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+}

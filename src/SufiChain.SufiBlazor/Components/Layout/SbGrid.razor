@@ -1,0 +1,132 @@
+@namespace SufiChain.SufiBlazor.Components.Layout
+
+<div class="@CssClass" style="@ComputedStyle" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Number of columns (default 12). Used as base/mobile-first value.
+    /// </summary>
+    [Parameter]
+    public int Columns { get; set; } = 12;
+
+    /// <summary>
+    /// Number of columns at sm breakpoint (640px+).
+    /// </summary>
+    [Parameter]
+    public int? ColumnsSm { get; set; }
+
+    /// <summary>
+    /// Number of columns at md breakpoint (768px+).
+    /// </summary>
+    [Parameter]
+    public int? ColumnsMd { get; set; }
+
+    /// <summary>
+    /// Number of columns at lg breakpoint (1024px+).
+    /// </summary>
+    [Parameter]
+    public int? ColumnsLg { get; set; }
+
+    /// <summary>
+    /// Number of columns at xl breakpoint (1280px+).
+    /// </summary>
+    [Parameter]
+    public int? ColumnsXl { get; set; }
+
+    /// <summary>
+    /// Gap between grid items (uses spacing scale 0-16).
+    /// </summary>
+    [Parameter]
+    public int Gap { get; set; } = 4;
+
+    /// <summary>
+    /// Row gap (if different from Gap).
+    /// </summary>
+    [Parameter]
+    public int? RowGap { get; set; }
+
+    /// <summary>
+    /// Column gap (if different from Gap).
+    /// </summary>
+    [Parameter]
+    public int? ColumnGap { get; set; }
+
+    /// <summary>
+    /// The content to render inside the grid.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-grid" };
+
+            // Add responsive column classes
+            if (ColumnsSm.HasValue)
+                classes.Add($"sb-grid--sm-{ColumnsSm.Value}");
+            if (ColumnsMd.HasValue)
+                classes.Add($"sb-grid--md-{ColumnsMd.Value}");
+            if (ColumnsLg.HasValue)
+                classes.Add($"sb-grid--lg-{ColumnsLg.Value}");
+            if (ColumnsXl.HasValue)
+                classes.Add($"sb-grid--xl-{ColumnsXl.Value}");
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    private string ComputedStyle
+    {
+        get
+        {
+            var styles = new List<string>
+            {
+                $"--sb-grid-columns: {Columns}"
+            };
+
+            if (RowGap.HasValue || ColumnGap.HasValue)
+            {
+                styles.Add($"row-gap: var(--sb-space-{RowGap ?? Gap})");
+                styles.Add($"column-gap: var(--sb-space-{ColumnGap ?? Gap})");
+            }
+            else
+            {
+                styles.Add($"gap: var(--sb-space-{Gap})");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Style))
+            {
+                styles.Add(Style);
+            }
+
+            return string.Join("; ", styles);
+        }
+    }
+}

@@ -1,0 +1,204 @@
+@page "/demo/sufi-blazor/pagination"
+
+<PageTitle>@(L["Menu:Demo:Pagination"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Pagination"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:PaginationDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BasicUsage"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbPagination @bind-PageIndex="_pageIndex"
+                            @bind-PageSize="_pageSize"
+                            TotalCount="100" />
+                <SbText Size="SbSize.Sm" Color="SbColor.Muted">
+                    @string.Format(L["Demo:PaginationCurrentPageSize"], _pageIndex + 1, _pageSize)
+                </SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:PaginationNoPageSizeSelector"]" SourceCode="@noSelectorCode" RelatedCode="@noSelectorCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbPagination @bind-PageIndex="_pageIndex2"
+                            PageSize="10"
+                            TotalCount="75"
+                            ShowPageSizeSelector="false" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:PaginationNoPageNumbers"]" SourceCode="@noNumbersCode" RelatedCode="@noNumbersCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbPagination @bind-PageIndex="_pageIndex3"
+                            @bind-PageSize="_pageSize3"
+                            TotalCount="200"
+                            ShowPageNumbers="false" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:PaginationCustomPageSizes"]" SourceCode="@customSizesCode" RelatedCode="@customSizesCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbPagination @bind-PageIndex="_pageIndex4"
+                            @bind-PageSize="_pageSize4"
+                            TotalCount="500"
+                            PageSizeOptions="@(new[] { 10, 20, 50, 100 })" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:PaginationManyPages"]" SourceCode="@manyPagesCode" RelatedCode="@manyPagesCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbPagination @bind-PageIndex="_pageIndex5"
+                            PageSize="10"
+                            TotalCount="1000"
+                            MaxVisiblePages="7"
+                            ShowPageSizeSelector="false" />
+                <SbText Size="SbSize.Sm" Color="SbColor.Muted">
+                    @string.Format(L["Demo:PaginationTotalPagesCount"], 100)
+                </SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:PaginationWithDataList"]" SourceCode="@withDataCode" RelatedCode="@withDataCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbStack Gap="2">
+                    @foreach (var item in GetPagedItems())
+                    {
+                        <SbCard>
+                            <SbStack Direction="SbStackDirection.Row" Justify="SbJustify.SpaceBetween">
+                                <SbText Weight="SbFontWeight.Semibold">Item @item.Id</SbText>
+                                <SbText Color="SbColor.Muted" Size="SbSize.Sm">@item.Name</SbText>
+                            </SbStack>
+                        </SbCard>
+                    }
+                </SbStack>
+                <SbPagination @bind-PageIndex="_dataPageIndex"
+                            @bind-PageSize="_dataPageSize"
+                            TotalCount="@_items.Count" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbPagination" />
+</DemoLayout>
+
+@code {
+    private int _pageIndex = 0;
+    private int _pageSize = 10;
+    
+    private int _pageIndex2 = 0;
+    
+    private int _pageIndex3 = 0;
+    private int _pageSize3 = 25;
+    
+    private int _pageIndex4 = 0;
+    private int _pageSize4 = 20;
+    
+    private int _pageIndex5 = 0;
+    
+    private int _dataPageIndex = 0;
+    private int _dataPageSize = 5;
+    
+    private List<DataItem> _items = Enumerable.Range(1, 50)
+        .Select(i => new DataItem { Id = i, Name = $"Item {i}" })
+        .ToList();
+
+    private IEnumerable<DataItem> GetPagedItems()
+    {
+        return _items
+            .Skip(_dataPageIndex * _dataPageSize)
+            .Take(_dataPageSize);
+    }
+
+    private class DataItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+    }
+
+    private const string basicCodeBehind = @"private int _pageIndex = 0;
+private int _pageSize = 10;";
+
+    private const string basicCode = @"<SbPagination @bind-PageIndex=""_pageIndex""
+            @bind-PageSize=""_pageSize""
+            TotalCount=""100"" />";
+
+    private const string noSelectorCodeBehind = @"private int _pageIndex = 0;";
+
+    private const string noSelectorCode = @"<SbPagination @bind-PageIndex=""_pageIndex""
+            PageSize=""10""
+            TotalCount=""75""
+            ShowPageSizeSelector=""false"" />";
+
+    private const string noNumbersCodeBehind = @"private int _pageIndex = 0;
+private int _pageSize = 25;";
+
+    private const string noNumbersCode = @"<SbPagination @bind-PageIndex=""_pageIndex""
+            @bind-PageSize=""_pageSize""
+            TotalCount=""200""
+            ShowPageNumbers=""false"" />";
+
+    private const string customSizesCodeBehind = @"private int _pageIndex = 0;
+private int _pageSize = 20;";
+
+    private const string customSizesCode = @"<SbPagination @bind-PageIndex=""_pageIndex""
+            @bind-PageSize=""_pageSize""
+            TotalCount=""500""
+            PageSizeOptions=""@(new[] { 10, 20, 50, 100 })"" />";
+
+    private const string manyPagesCodeBehind = @"private int _pageIndex = 0;";
+
+    private const string manyPagesCode = @"<SbPagination @bind-PageIndex=""_pageIndex""
+            PageSize=""10""
+            TotalCount=""1000""
+            MaxVisiblePages=""7""
+            ShowPageSizeSelector=""false"" />";
+
+    private const string withDataCodeBehind = @"private int _dataPageIndex = 0;
+private int _dataPageSize = 5;
+
+private List<DataItem> _items = Enumerable.Range(1, 50)
+    .Select(i => new DataItem { Id = i, Name = $""Item {i}"" })
+    .ToList();
+
+private IEnumerable<DataItem> GetPagedItems()
+{
+    return _items
+        .Skip(_dataPageIndex * _dataPageSize)
+        .Take(_dataPageSize);
+}
+
+private class DataItem
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = """";
+}";
+
+    private const string withDataCode = @"<SbStack Gap=""2"">
+    @foreach (var item in GetPagedItems())
+    {
+        <SbCard>
+            <SbStack Direction=""SbStackDirection.Row"" Justify=""SbJustify.SpaceBetween"">
+                <SbText Weight=""SbFontWeight.Semibold"">Item @item.Id</SbText>
+                <SbText Color=""SbColor.Muted"" Size=""SbSize.Sm"">@item.Name</SbText>
+            </SbStack>
+        </SbCard>
+    }
+</SbStack>
+<SbPagination @bind-PageIndex=""_dataPageIndex""
+            @bind-PageSize=""_dataPageSize""
+            TotalCount=""@_items.Count"" />";
+}

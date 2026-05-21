@@ -1,0 +1,278 @@
+@page "/demo/sufi-blazor/container"
+
+<PageTitle>@(L["Menu:Demo:Container"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Container"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:ContainerDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:ContainerDefault"]" SourceCode="@defaultCode">
+        <ExampleContent>
+            <SbContainer>
+                <SbCard Elevation="2">
+                    <SbText>This content is centered with a maximum width of 1024px (Large).</SbText>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted">Resize the browser to see the container behavior.</SbText>
+                </SbCard>
+            </SbContainer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ContainerSmall"]" SourceCode="@smallCode">
+        <ExampleContent>
+            <SbContainer MaxWidth="SbContainerMaxWidth.Sm">
+                <SbCard Elevation="2" style="background: var(--sb-color-primary-50);">
+                    <SbText Weight="SbFontWeight.Semibold">Small Container (640px)</SbText>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted">Perfect for narrow content like forms or articles.</SbText>
+                </SbCard>
+            </SbContainer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ContainerMedium"]" SourceCode="@mediumCode">
+        <ExampleContent>
+            <SbContainer MaxWidth="SbContainerMaxWidth.Md">
+                <SbCard Elevation="2" style="background: var(--sb-color-success-50);">
+                    <SbText Weight="SbFontWeight.Semibold">Medium Container (768px)</SbText>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted">Good for blog posts and documentation.</SbText>
+                </SbCard>
+            </SbContainer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ContainerLarge"]" SourceCode="@largeCode">
+        <ExampleContent>
+            <SbContainer MaxWidth="SbContainerMaxWidth.Lg">
+                <SbCard Elevation="2" style="background: var(--sb-color-info-50);">
+                    <SbText Weight="SbFontWeight.Semibold">Large Container (1024px)</SbText>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted">Default size, suitable for most pages.</SbText>
+                </SbCard>
+            </SbContainer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ContainerExtraLarge"]" SourceCode="@extraLargeCode">
+        <ExampleContent>
+            <SbContainer MaxWidth="SbContainerMaxWidth.Xl">
+                <SbCard Elevation="2" style="background: var(--sb-color-warning-50);">
+                    <SbText Weight="SbFontWeight.Semibold">Extra Large Container (1280px)</SbText>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted">For wider layouts and data displays.</SbText>
+                </SbCard>
+            </SbContainer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:Container2XLarge"]" SourceCode="@xxlCode">
+        <ExampleContent>
+            <SbContainer MaxWidth="SbContainerMaxWidth.Xxl">
+                <SbCard Elevation="2" style="background: var(--sb-color-secondary-50);">
+                    <SbText Weight="SbFontWeight.Semibold">2X Large Container (1536px)</SbText>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted">For very wide displays and dashboards.</SbText>
+                </SbCard>
+            </SbContainer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ContainerFluid"]" SourceCode="@fluidCode">
+        <ExampleContent>
+            <SbContainer MaxWidth="SbContainerMaxWidth.Fluid">
+                <SbCard Elevation="2" style="background: var(--sb-color-danger-50);">
+                    <SbText Weight="SbFontWeight.Semibold">Fluid Container (Full Width)</SbText>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted">No maximum width, spans the full available width.</SbText>
+                </SbCard>
+            </SbContainer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ContainerWithoutGutters"]" SourceCode="@noGuttersCode">
+        <ExampleContent>
+            <SbContainer DisableGutters="true">
+                <SbCard Elevation="2" style="background: var(--sb-color-primary-light);">
+                    <SbText Weight="SbFontWeight.Semibold">No Horizontal Padding</SbText>
+                    <SbText Size="SbSize.Sm" Color="SbColor.Muted">Content extends to the edges of the container.</SbText>
+                </SbCard>
+            </SbContainer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ContainerNestedContent"]" SourceCode="@nestedCode">
+        <ExampleContent>
+            <SbContainer MaxWidth="SbContainerMaxWidth.Lg">
+                <SbStack Gap="4">
+                    <SbCard Elevation="2">
+                        <SbHeading Level="2">Page Title</SbHeading>
+                        <SbText Color="SbColor.Muted">This is a typical page layout using a container.</SbText>
+                    </SbCard>
+                    
+                    <SbGrid Columns="12" Gap="4">
+                        <SbGridItem Span="12" SpanMd="8">
+                            <SbCard Elevation="2">
+                                <SbHeading Level="3">Main Content</SbHeading>
+                                <SbText>The container centers and constrains the width of your content, making it easier to read and more visually appealing.</SbText>
+                            </SbCard>
+                        </SbGridItem>
+                        
+                        <SbGridItem Span="12" SpanMd="4">
+                            <SbCard Elevation="2">
+                                <SbHeading Level="3">Sidebar</SbHeading>
+                                <SbText Size="SbSize.Sm" Color="SbColor.Muted">Additional content or navigation.</SbText>
+                            </SbCard>
+                        </SbGridItem>
+                    </SbGrid>
+                    
+                    <SbGrid Columns="3" Gap="4">
+                        <SbGridItem>
+                            <SbStatCard Label="Users" Value="1,234">
+                                <Icon>
+                                    <SbIcon Name="users" Size="SbSize.Xl" Color="SbColor.Primary" />
+                                </Icon>
+                            </SbStatCard>
+                        </SbGridItem>
+                        <SbGridItem>
+                            <SbStatCard Label="Revenue" Value="45,678" Prefix="$">
+                                <Icon>
+                                    <SbIcon Name="dollar-sign" Size="SbSize.Xl" Color="SbColor.Success" />
+                                </Icon>
+                            </SbStatCard>
+                        </SbGridItem>
+                        <SbGridItem>
+                            <SbStatCard Label="Orders" Value="890">
+                                <Icon>
+                                    <SbIcon Name="shopping-cart" Size="SbSize.Xl" Color="SbColor.Info" />
+                                </Icon>
+                            </SbStatCard>
+                        </SbGridItem>
+                    </SbGrid>
+                </SbStack>
+            </SbContainer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ContainerComparisonSizes"]" SourceCode="@comparisonCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbContainer MaxWidth="SbContainerMaxWidth.Sm">
+                    <div style="background: var(--sb-color-primary-light); padding: var(--sb-space-4); text-align: center; border-radius: var(--sb-radius-md);">
+                        <SbText Weight="SbFontWeight.Semibold">Sm (640px)</SbText>
+                    </div>
+                </SbContainer>
+                
+                <SbContainer MaxWidth="SbContainerMaxWidth.Md">
+                    <div style="background: var(--sb-color-primary-light); padding: var(--sb-space-4); text-align: center; border-radius: var(--sb-radius-md);">
+                        <SbText Weight="SbFontWeight.Semibold">Md (768px)</SbText>
+                    </div>
+                </SbContainer>
+                
+                <SbContainer MaxWidth="SbContainerMaxWidth.Lg">
+					<div style="background: var(--sb-color-primary-light); padding: var(--sb-space-4); text-align: center; border-radius: var(--sb-radius-md);">
+                        <SbText Weight="SbFontWeight.Semibold">Lg (1024px)</SbText>
+                    </div>
+                </SbContainer>
+                
+                <SbContainer MaxWidth="SbContainerMaxWidth.Xl">
+					<div style="background: var(--sb-color-primary-light); padding: var(--sb-space-4); text-align: center; border-radius: var(--sb-radius-md);">
+                        <SbText Weight="SbFontWeight.Semibold">Xl (1280px)</SbText>
+                    </div>
+                </SbContainer>
+                
+                <SbContainer MaxWidth="SbContainerMaxWidth.Xxl">
+					<div style="background: var(--sb-color-primary-light); padding: var(--sb-space-4); text-align: center; border-radius: var(--sb-radius-md);">
+                        <SbText Weight="SbFontWeight.Semibold">Xxl (1536px)</SbText>
+                    </div>
+                </SbContainer>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbContainer" />
+</DemoLayout>
+
+@code {
+    private const string defaultCode = @"<SbContainer>
+    <SbCard Elevation=""2"">
+        <SbText>Centered content with default max-width (1024px)</SbText>
+    </SbCard>
+</SbContainer>";
+
+    private const string smallCode = @"<SbContainer MaxWidth=""SbContainerMaxWidth.Sm"">
+    <SbCard Elevation=""2"">
+        <SbText>Small Container (640px)</SbText>
+    </SbCard>
+</SbContainer>";
+
+    private const string mediumCode = @"<SbContainer MaxWidth=""SbContainerMaxWidth.Md"">
+    <SbCard Elevation=""2"">
+        <SbText>Medium Container (768px)</SbText>
+    </SbCard>
+</SbContainer>";
+
+    private const string largeCode = @"<SbContainer MaxWidth=""SbContainerMaxWidth.Lg"">
+    <SbCard Elevation=""2"">
+        <SbText>Large Container (1024px)</SbText>
+    </SbCard>
+</SbContainer>";
+
+    private const string extraLargeCode = @"<SbContainer MaxWidth=""SbContainerMaxWidth.Xl"">
+    <SbCard Elevation=""2"">
+        <SbText>Extra Large Container (1280px)</SbText>
+    </SbCard>
+</SbContainer>";
+
+    private const string xxlCode = @"<SbContainer MaxWidth=""SbContainerMaxWidth.Xxl"">
+    <SbCard Elevation=""2"">
+        <SbText>2X Large Container (1536px)</SbText>
+    </SbCard>
+</SbContainer>";
+
+    private const string fluidCode = @"<SbContainer MaxWidth=""SbContainerMaxWidth.Fluid"">
+    <SbCard Elevation=""2"">
+        <SbText>Fluid Container (Full Width)</SbText>
+    </SbCard>
+</SbContainer>";
+
+    private const string noGuttersCode = @"<SbContainer DisableGutters=""true"">
+    <SbCard Elevation=""2"">
+        <SbText>No horizontal padding</SbText>
+    </SbCard>
+</SbContainer>";
+
+    private const string nestedCode = @"<SbContainer MaxWidth=""SbContainerMaxWidth.Lg"">
+    <SbStack Gap=""4"">
+        <SbCard Elevation=""2"">
+            <SbHeading Level=""2"">Page Title</SbHeading>
+        </SbCard>
+        
+        <SbGrid Columns=""12"" Gap=""4"">
+            <SbGridItem Span=""12"" SpanMd=""8"">
+                <SbCard Elevation=""2"">
+                    <SbHeading Level=""3"">Main Content</SbHeading>
+                </SbCard>
+            </SbGridItem>
+            <SbGridItem Span=""12"" SpanMd=""4"">
+                <SbCard Elevation=""2"">
+                    <SbHeading Level=""3"">Sidebar</SbHeading>
+                </SbCard>
+            </SbGridItem>
+        </SbGrid>
+    </SbStack>
+</SbContainer>";
+
+    private const string comparisonCode = @"<SbStack Gap=""4"">
+    <SbContainer MaxWidth=""SbContainerMaxWidth.Sm"">
+        <div style=""background: var(--sb-color-primary-light); padding: var(--sb-space-4); text-align: center;"">
+            Sm (640px)
+        </div>
+    </SbContainer>
+    
+    <SbContainer MaxWidth=""SbContainerMaxWidth.Md"">
+        <div style=""background: var(--sb-color-primary-light); padding: var(--sb-space-4); text-align: center;"">
+            Md (768px)
+        </div>
+    </SbContainer>
+    
+    <!-- More sizes... -->
+</SbStack>";
+}

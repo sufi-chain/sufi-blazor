@@ -1,0 +1,80 @@
+@page "/demo/sufi-blazor/banner"
+
+<PageTitle>@(L["Menu:Demo:Banner"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Banner"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:BannerDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:BasicBanner"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbBanner Title="@L["Demo:Information"]"
+                     Message="@L["Demo:BannerInfoMessage"]"
+                     Severity="SbBannerSeverity.Info" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SeverityTypes"]" SourceCode="@severityCode">
+        <ExampleContent>
+            <SbStack Gap="4">
+                <SbBanner Title="@L["Demo:SystemUpdate"]"
+                         Message="@L["Demo:BannerNewVersion"]"
+                         Severity="SbBannerSeverity.Info" />
+                <SbBanner Title="@L["Demo:ToastSuccessTitle"]"
+                         Message="@L["Demo:BannerProfileUpdated"]"
+                         Severity="SbBannerSeverity.Success" />
+                <SbBanner Title="@L["Demo:ToastWarningTitle"]"
+                         Message="@L["Demo:BannerSubscriptionExpire"]"
+                         Severity="SbBannerSeverity.Warning" />
+                <SbBanner Title="@L["Demo:ToastErrorTitle"]"
+                         Message="@L["Demo:BannerConnectionFailed"]"
+                         Severity="SbBannerSeverity.Error" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:WithAction"]" SourceCode="@actionsCode">
+        <ExampleContent>
+            <SbBanner Title="@L["Demo:NewFeaturesAvailable"]"
+                     Message="@L["Demo:BannerCheckFeatures"]"
+                     Severity="SbBannerSeverity.Info">
+                <Actions>
+                    <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Link">@L["Demo:BannerLearnMore"]</SbButton>
+                    <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Link">@L["Demo:BannerDismiss"]</SbButton>
+                </Actions>
+            </SbBanner>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:NonDismissible"]" SourceCode="@nonDismissCode">
+        <ExampleContent>
+            <SbBanner Title="@L["Demo:MaintenanceNotice"]"
+                     Message="@L["Demo:BannerMaintenanceMessage"]"
+                     Severity="SbBannerSeverity.Warning"
+                     Dismissible="false" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+    <DocViewer DocName="SbBanner" />
+</DemoLayout>
+
+@code {
+    private const string basicCode = @"<SbBanner Title=""Information"" 
+         Message=""This is a banner."" 
+         Severity=""SbBannerSeverity.Info"" />";
+
+    private const string severityCode = @"<SbBanner Title=""Success"" Message=""..."" Severity=""SbBannerSeverity.Success"" />
+<SbBanner Title=""Warning"" Message=""..."" Severity=""SbBannerSeverity.Warning"" />
+<SbBanner Title=""Error"" Message=""..."" Severity=""SbBannerSeverity.Error"" />";
+
+    private const string actionsCode = @"<SbBanner Title=""New Features"" Message=""..."">
+    <Actions>
+        <SbButton Size=""SbSize.Sm"">Learn More</SbButton>
+    </Actions>
+</SbBanner>";
+
+    private const string nonDismissCode = @"<SbBanner Title=""Notice"" Message=""..."" Dismissible=""false"" />";
+}

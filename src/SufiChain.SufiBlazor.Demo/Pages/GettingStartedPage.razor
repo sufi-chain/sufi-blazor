@@ -1,0 +1,66 @@
+@page "/demo/sufi-blazor/getting-started"
+
+<PageTitle>@(L["Menu:Demo:GettingStarted"] + " - " + L["Demo:PageTitle"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Demo:GettingStartedTitle"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:GettingStartedDescription"]</SbText>
+
+    <SbDivider />
+
+    <div class="demo-docs-block">
+        <h2 class="demo-docs-block__heading">@L["Demo:GettingStartedPrereqs"]</h2>
+        <p class="demo-docs-block__content">@L["Demo:GettingStartedPrereqsDesc"]</p>
+    </div>
+
+    <div class="demo-docs-block">
+        <h2 class="demo-docs-block__heading">@L["Demo:GettingStartedStep1Title"]</h2>
+        <p class="demo-docs-block__content">@L["Demo:GettingStartedStep1Desc"]</p>
+        <div class="docs-code-block">
+            <code>dotnet add package SufiChain.SufiBlazor</code>
+        </div>
+    </div>
+
+    <div class="demo-docs-block">
+        <h2 class="demo-docs-block__heading">@L["Demo:GettingStartedStep2Title"]</h2>
+        <p class="demo-docs-block__content">@L["Demo:GettingStartedStep2Desc"]</p>
+        <p><strong>In your &lt;head&gt;:</strong></p>
+        <div class="docs-code-block">
+            <code>&lt;link href="_content/SufiChain.SufiBlazor/sufiblazor.css" rel="stylesheet" /&gt;</code>
+        </div>
+        <p style="margin-top: var(--sb-space-4);"><strong>Before &lt;/body&gt;:</strong></p>
+        <div class="docs-code-block">
+            <code>&lt;script src="_content/SufiChain.SufiBlazor/sufiblazor.js"&gt;&lt;/script&gt;</code>
+        </div>
+    </div>
+
+    <div class="demo-docs-block">
+        <h2 class="demo-docs-block__heading">@L["Demo:GettingStartedStep3Title"]</h2>
+        <p class="demo-docs-block__content">@L["Demo:GettingStartedStep3Desc"]</p>
+        <p><strong>In _Imports.razor (add or ensure these usings):</strong></p>
+        <div class="docs-code-block">
+            <pre><code>@@using SufiChain.SufiBlazor.Components
+@@using SufiChain.SufiBlazor.Components.Actions
+@@using SufiChain.SufiBlazor.Components.Forms
+@@using SufiChain.SufiBlazor.Components.Layout
+@@using SufiChain.SufiBlazor.Components.Surfaces
+@@using SufiChain.SufiBlazor.Theming</code></pre>
+        </div>
+        <p style="margin-top: var(--sb-space-4);"><strong>Wrap your app with SbThemeProvider (e.g. in App.razor or root layout):</strong></p>
+        <div class="docs-code-block">
+            <pre><code>&lt;SbThemeProvider Theme="SbTheme.Light" Direction="SbDirection.Ltr"&gt;
+    &lt;Router AppAssembly="..."&gt;
+        ...
+    &lt;/Router&gt;
+&lt;/SbThemeProvider&gt;</code></pre>
+        </div>
+    </div>
+
+    <SbDivider />
+
+    <p>@L["Demo:IntroNextSteps"]</p>
+    <SbStack Direction="SbStackDirection.Row" Gap="3" Wrap="true">
+        <SbButton Variant="SbButtonVariant.Outline" Href="/demo/sufi-blazor">@L["Menu:Demo:Introduction"]</SbButton>
+        <SbButton Href="/demo/sufi-blazor/button">@L["Menu:Demo:Button"]</SbButton>
+    </SbStack>
+</DemoLayout>

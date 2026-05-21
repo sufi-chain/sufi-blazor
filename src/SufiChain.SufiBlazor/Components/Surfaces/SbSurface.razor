@@ -1,0 +1,65 @@
+@namespace SufiChain.SufiBlazor.Components.Surfaces
+
+<div class="sb-surface sb-surface--elevation-@Elevation @Class" style="@GetStyle()">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Surface content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Elevation level (0-5).
+    /// </summary>
+    [Parameter]
+    public int Elevation { get; set; } = 1;
+    
+    /// <summary>
+    /// Background color.
+    /// </summary>
+    [Parameter]
+    public string? Background { get; set; }
+    
+    /// <summary>
+    /// Border radius.
+    /// </summary>
+    [Parameter]
+    public string? BorderRadius { get; set; }
+    
+    /// <summary>
+    /// Padding.
+    /// </summary>
+    [Parameter]
+    public string? Padding { get; set; }
+    
+    /// <summary>
+    /// Whether the surface is outlined.
+    /// </summary>
+    [Parameter]
+    public bool Outlined { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string GetStyle()
+    {
+        var styles = new List<string>();
+        
+        if (!string.IsNullOrEmpty(Background))
+            styles.Add($"background-color: {Background}");
+        if (!string.IsNullOrEmpty(BorderRadius))
+            styles.Add($"border-radius: {BorderRadius}");
+        if (!string.IsNullOrEmpty(Padding))
+            styles.Add($"padding: {Padding}");
+        if (Outlined)
+            styles.Add("border: 1px solid var(--sb-color-border)");
+            
+        return string.Join("; ", styles);
+    }
+}

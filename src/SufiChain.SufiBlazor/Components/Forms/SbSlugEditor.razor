@@ -1,0 +1,254 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-slug-editor @(Error ? "sb-slug-editor--error" : "") @Class" style="@Style">
+    <div class="sb-slug-editor__input-row">
+        @if (!string.IsNullOrEmpty(BaseUrl))
+        {
+            <span class="sb-slug-editor__base-url">@BaseUrl</span>
+        }
+        <div class="sb-slug-editor__input-wrapper">
+            <input type="text"
+                   class="sb-slug-editor__input"
+                   value="@Value"
+                   @oninput="OnInput"
+                   @onblur="OnBlur"
+                   placeholder="@(Placeholder ?? L["EnterSlug_Placeholder"])"
+                   disabled="@Disabled"
+                   readonly="@ReadOnly" />
+        </div>
+    </div>
+    
+    @if (ShowPreview && !string.IsNullOrEmpty(Value))
+    {
+        <div class="sb-slug-editor__preview">
+            <span class="sb-slug-editor__preview-label">@L["Preview"]</span>
+            <span class="sb-slug-editor__preview-url">@GetPreviewUrl()</span>
+        </div>
+    }
+    
+    @if (!string.IsNullOrEmpty(_validationMessage))
+    {
+        <div class="sb-slug-editor__error">@_validationMessage</div>
+    }
+    
+    @if (ShowGenerateButton && !string.IsNullOrEmpty(SourceText))
+    {
+        <button type="button" 
+                class="sb-slug-editor__generate"
+                @onclick="GenerateSlug"
+                disabled="@Disabled">
+            @L["GenerateFromTitle"]
+        </button>
+    }
+</div>
+
+@code {
+    private string? _validationMessage;
+    
+    /// <summary>
+    /// The slug value.
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+    
+    /// <summary>
+    /// Callback when value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+    
+    /// <summary>
+    /// Base URL to display before the slug.
+    /// </summary>
+    [Parameter]
+    public string? BaseUrl { get; set; }
+    
+    /// <summary>
+    /// Source text to generate slug from (e.g., title).
+    /// </summary>
+    [Parameter]
+    public string? SourceText { get; set; }
+    
+    /// <summary>
+    /// Whether to show generate button.
+    /// </summary>
+    [Parameter]
+    public bool ShowGenerateButton { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to show URL preview.
+    /// </summary>
+    [Parameter]
+    public bool ShowPreview { get; set; } = true;
+    
+    /// <summary>
+    /// Whether to auto-generate slug when source changes.
+    /// </summary>
+    [Parameter]
+    public bool AutoGenerate { get; set; }
+    
+    /// <summary>
+    /// Minimum slug length.
+    /// </summary>
+    [Parameter]
+    public int MinLength { get; set; } = 1;
+    
+    /// <summary>
+    /// Maximum slug length.
+    /// </summary>
+    [Parameter]
+    public int MaxLength { get; set; } = 100;
+    
+    /// <summary>
+    /// Reserved slugs that cannot be used.
+    /// </summary>
+    [Parameter]
+    public string[] ReservedSlugs { get; set; } = Array.Empty<string>();
+    
+    /// <summary>
+    /// Async function to check if slug is available.
+    /// </summary>
+    [Parameter]
+    public Func<string, Task<bool>>? CheckAvailability { get; set; }
+    
+    /// <summary>
+    /// Placeholder text.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+    
+    /// <summary>
+    /// Whether the editor is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Whether the editor is read-only.
+    /// </summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
+    
+    /// <summary>
+    /// Whether there's a validation error.
+    /// </summary>
+    [Parameter]
+    public bool Error { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles for the wrapper element.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+    
+    private string? _previousSourceText;
+    
+    protected override void OnParametersSet()
+    {
+        if (AutoGenerate && SourceText != _previousSourceText && !string.IsNullOrEmpty(SourceText))
+        {
+            _previousSourceText = SourceText;
+            _ = GenerateSlug();
+        }
+    }
+    
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        var slugified = Slugify(value);
+        await ValueChanged.InvokeAsync(slugified);
+    }
+    
+    private async Task OnBlur()
+    {
+        await ValidateSlug();
+    }
+    
+    private async Task GenerateSlug()
+    {
+        if (string.IsNullOrEmpty(SourceText)) return;
+        
+        var slug = Slugify(SourceText);
+        await ValueChanged.InvokeAsync(slug);
+        await ValidateSlug();
+    }
+    
+    private string Slugify(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return "";
+        
+        // Convert to lowercase
+        var slug = text.ToLowerInvariant();
+        
+        // Replace spaces with hyphens
+        slug = System.Text.RegularExpressions.Regex.Replace(slug, @"\s+", "-");
+        
+        // Remove invalid characters
+        slug = System.Text.RegularExpressions.Regex.Replace(slug, @"[^a-z0-9\-]", "");
+        
+        // Remove multiple consecutive hyphens
+        slug = System.Text.RegularExpressions.Regex.Replace(slug, @"-+", "-");
+        
+        // Trim hyphens from ends
+        slug = slug.Trim('-');
+        
+        // Enforce max length
+        if (slug.Length > MaxLength)
+            slug = slug.Substring(0, MaxLength).TrimEnd('-');
+        
+        return slug;
+    }
+    
+    private async Task ValidateSlug()
+    {
+        _validationMessage = null;
+        
+        if (string.IsNullOrEmpty(Value))
+        {
+            _validationMessage = "Slug is required";
+            return;
+        }
+        
+        if (Value.Length < MinLength)
+        {
+            _validationMessage = $"Slug must be at least {MinLength} characters";
+            return;
+        }
+        
+        if (Value.Length > MaxLength)
+        {
+            _validationMessage = $"Slug must be at most {MaxLength} characters";
+            return;
+        }
+        
+        if (ReservedSlugs.Contains(Value, StringComparer.OrdinalIgnoreCase))
+        {
+            _validationMessage = "This slug is reserved and cannot be used";
+            return;
+        }
+        
+        if (CheckAvailability != null)
+        {
+            var isAvailable = await CheckAvailability(Value);
+            if (!isAvailable)
+            {
+                _validationMessage = "This slug is already in use";
+            }
+        }
+    }
+    
+    private string GetPreviewUrl()
+    {
+        var baseUrl = BaseUrl ?? "";
+        if (!baseUrl.EndsWith("/") && !string.IsNullOrEmpty(baseUrl))
+            baseUrl += "/";
+        return baseUrl + Value;
+    }
+}

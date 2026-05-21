@@ -1,0 +1,17 @@
+<Project>
+    <Import Project="versions.props" />
+    <Import Project="common.props" Condition="Exists('$(MSBuildThisFileDirectory)common.props')" />
+
+  <PropertyGroup>
+    <Company>Sufi Chain Intelligent Solutions</Company>
+    <Authors>SufiChain Team</Authors>
+    <Product>SufiBlazor</Product>
+    <Copyright>Copyright © Sufi Chain Intelligent Solutions $([System.DateTime]::Now.Year)</Copyright>
+    <PackageProjectUrl>https://git.sabp.ir/sufi-chain/sufi-blazor</PackageProjectUrl>
+    <RepositoryUrl>https://git.sabp.ir/sufi-chain/sufi-blazor.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+</Project>

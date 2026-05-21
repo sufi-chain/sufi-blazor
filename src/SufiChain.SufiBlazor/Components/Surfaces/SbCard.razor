@@ -1,0 +1,160 @@
+@namespace SufiChain.SufiBlazor.Components.Surfaces
+
+@if (!string.IsNullOrEmpty(Href))
+{
+    <a href="@Href"
+       class="@CssClass"
+       style="@Style"
+       @attributes="AdditionalAttributes">
+        @RenderCardContent
+    </a>
+}
+else if (OnClick.HasDelegate)
+{
+    <button type="button"
+            class="@CssClass"
+            style="@Style"
+            @onclick="OnClick"
+            @attributes="AdditionalAttributes">
+        @RenderCardContent
+    </button>
+}
+else
+{
+    <div class="@CssClass"
+         style="@Style"
+         @attributes="AdditionalAttributes">
+        @RenderCardContent
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Elevation level (0-5).
+    /// </summary>
+    [Parameter]
+    public int Elevation { get; set; } = 1;
+
+    /// <summary>
+    /// Whether to show an outline instead of shadow.
+    /// </summary>
+    [Parameter]
+    public bool Outlined { get; set; }
+
+    /// <summary>
+    /// Card header content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Header { get; set; }
+
+    /// <summary>
+    /// Card footer content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    /// <summary>
+    /// Card body content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// If set, renders as a link.
+    /// </summary>
+    [Parameter]
+    public string? Href { get; set; }
+
+    /// <summary>
+    /// Click event callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Whether to disable padding.
+    /// </summary>
+    [Parameter]
+    public bool NoPadding { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool IsClickable => !string.IsNullOrEmpty(Href) || OnClick.HasDelegate;
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-card" };
+
+            if (Outlined)
+            {
+                classes.Add("sb-card--outlined");
+            }
+            else if (Elevation > 0)
+            {
+                classes.Add($"sb-card--elevation-{Math.Clamp(Elevation, 0, 5)}");
+            }
+
+            if (IsClickable)
+            {
+                classes.Add("sb-card--clickable");
+            }
+
+            if (NoPadding)
+            {
+                classes.Add("sb-card--no-padding");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    private RenderFragment RenderCardContent => builder =>
+    {
+        if (Header != null)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "class", "sb-card__header");
+            builder.AddContent(2, Header);
+            builder.CloseElement();
+        }
+
+        if (ChildContent != null)
+        {
+            builder.OpenElement(3, "div");
+            builder.AddAttribute(4, "class", "sb-card__body");
+            builder.AddContent(5, ChildContent);
+            builder.CloseElement();
+        }
+
+        if (Footer != null)
+        {
+            builder.OpenElement(6, "div");
+            builder.AddAttribute(7, "class", "sb-card__footer");
+            builder.AddContent(8, Footer);
+            builder.CloseElement();
+        }
+    };
+}

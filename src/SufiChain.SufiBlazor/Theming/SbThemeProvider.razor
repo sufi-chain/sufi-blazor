@@ -1,0 +1,88 @@
+@namespace SufiChain.SufiBlazor.Theming
+
+<CascadingValue Value="_themeContext" IsFixed="false">
+    <div class="@CssClass" dir="@_themeContext.DirectionAttribute" @attributes="AdditionalAttributes">
+        @ChildContent
+    </div>
+</CascadingValue>
+
+@code {
+    private SbThemeContext _themeContext = new();
+
+    /// <summary>
+    /// Gets or sets the theme to apply.
+    /// </summary>
+    [Parameter]
+    public SbTheme? Theme { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether dark mode is enabled.
+    /// When set, overrides Theme.IsDark.
+    /// </summary>
+    [Parameter]
+    public bool IsDark { get; set; }
+
+    /// <summary>
+    /// Gets or sets the text/layout direction.
+    /// </summary>
+    [Parameter]
+    public SbDirection Direction { get; set; } = SbDirection.Ltr;
+
+    /// <summary>
+    /// Gets or sets the child content to render.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Gets or sets additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-theme-root" };
+
+            if (_themeContext.IsDark)
+            {
+                classes.Add("sb-theme-dark");
+            }
+            else
+            {
+                classes.Add("sb-theme-light");
+            }
+
+            if (Direction == SbDirection.Rtl)
+            {
+                classes.Add("sb-rtl");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        var effectiveTheme = Theme ?? (IsDark ? SbTheme.Dark : SbTheme.Light);
+
+        _themeContext = new SbThemeContext
+        {
+            Theme = effectiveTheme,
+            Direction = Direction
+        };
+    }
+}

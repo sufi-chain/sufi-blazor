@@ -1,0 +1,103 @@
+@page "/demo/sufi-blazor/autocomplete"
+
+<PageTitle>@(L["Menu:Demo:Autocomplete"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Autocomplete"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:AutocompletePageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection 
+        Title="@L["Demo:AutocompleteBasic"]"
+        SourceCode='@basicCode'>
+        <ExampleContent>
+            <SbAutocomplete TItem="string"
+                @bind-Value="selectedCountry"
+                Label="Country"
+                Placeholder="Type to search..."
+                Items="@countries" />
+            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">Selected: @(selectedCountry ?? "None")</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:AutocompleteWithSearch"]"
+        SourceCode='@filterCode'>
+        <ExampleContent>
+            <SbAutocomplete TItem="string"
+                @bind-Value="selectedEmail"
+                Label="Email"
+                Placeholder="Start typing email..."
+                Items="@emails" />
+            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">Selected: @(selectedEmail ?? "None")</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:AutocompleteMinLengthMaxResults"]"
+        SourceCode='@minLengthMaxResultsCode'>
+        <ExampleContent>
+            <SbAutocomplete TItem="string"
+                @bind-Value="selectedCity"
+                Label="City"
+                Placeholder="Type at least 2 characters..."
+                Items="@cities"
+                MinLength="2"
+                MaxResults="5" />
+            <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">Selected: @(selectedCity ?? "None")</SbText>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection 
+        Title="@L["Demo:AutocompleteDisabled"]"
+        SourceCode='@disabledCode'>
+        <ExampleContent>
+            <SbAutocomplete TItem="string"
+                Value="@("USA")"
+                Label="Disabled"
+                Items="@countries"
+                Disabled="true" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbAutocomplete" />
+</DemoLayout>
+
+@code {
+    private string? selectedCountry;
+    private string? selectedEmail;
+    private string? selectedCity;
+
+    private List<string> countries = new() { "USA", "Canada", "UK", "France", "Germany", "Italy", "Spain", "Japan", "Australia", "Brazil" };
+    private List<string> emails = new() { "user@example.com", "admin@example.com", "support@example.com", "info@example.com" };
+    private List<string> cities = new() { "New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose" };
+
+    private string basicCode = @"<SbAutocomplete TItem=""string""
+    @bind-Value=""selectedCountry""
+    Label=""Country""
+    Placeholder=""Type to search...""
+    Items=""@countries"" />";
+
+    private string filterCode = @"<SbAutocomplete TItem=""string""
+    @bind-Value=""selectedEmail""
+    Label=""Email""
+    Placeholder=""Start typing email...""
+    Items=""@emails"" />";
+
+    private string minLengthMaxResultsCode = @"<SbAutocomplete TItem=""string""
+    @bind-Value=""selectedCity""
+    Label=""City""
+    Placeholder=""Type at least 2 characters...""
+    Items=""@cities""
+    MinLength=""2""
+    MaxResults=""5"" />";
+
+    private string disabledCode = @"<SbAutocomplete TItem=""string""
+    Value=""USA""
+    Label=""Disabled""
+    Items=""@countries""
+    Disabled=""true"" />";
+}

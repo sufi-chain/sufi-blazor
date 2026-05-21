@@ -1,0 +1,1181 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using System.Globalization
+@using System.Text.Json
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Layout
+@using SufiChain.SufiBlazor.Components.Overlays
+@using SufiChain.SufiBlazor.Contracts.Editors
+@using SufiChain.SufiBlazor.Interop
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject IServiceProvider ServiceProvider
+@inject IStringLocalizer<SufiBlazorResource> L
+
+@* 
+    SbRichTextEditor - A rich text editor component built on Quill.js
+    
+    IMPORTANT: This component requires interactive render mode.
+    It will not work with static SSR rendering.
+    
+    Usage:
+    <SbRichTextEditor @bind-Value="content" />
+    
+    With custom toolbar:
+    <SbRichTextEditor @bind-Value="content" ToolbarItems="customToolbar" />
+*@
+
+<div class="@GetContainerClass()" 
+     style="@GetContainerStyle()"
+     dir="@(EffectiveRightToLeft ? "rtl" : "ltr")">
+    
+    @* Toolbar *@
+    @if (!HideToolbar)
+    {
+        <div class="sb-editor__toolbar" role="toolbar" aria-label="@ToolbarAriaLabel">
+            @foreach (var item in GetToolbarItems())
+            {
+                @if (item.IsSeparator)
+                {
+                    <span class="sb-editor__toolbar-separator" role="separator" aria-orientation="vertical"></span>
+                }
+                else if (item.Type == SbEditorToolbarItemType.Select && item.Options != null)
+                {
+                    <select class="sb-editor__toolbar-select"
+                            title="@item.Tooltip"
+                            disabled="@(Disabled || ReadOnly)"
+                            value="@GetSelectFormatValue(item)"
+                            @onchange="@(e => OnSelectFormatAsync(item.Format!, e))">
+                        @foreach (var option in item.Options)
+                        {
+                            <option value="@(option.Value?.ToString() ?? "")">@GetOptionLabel(option)</option>
+                        }
+                    </select>
+                }
+                else
+                {
+                    <button type="button"
+                            class="sb-editor__toolbar-btn @(IsFormatActive(item.Format) ? "sb-editor__toolbar-btn--active" : "")"
+                            title="@item.Tooltip"
+                            disabled="@(Disabled || ReadOnly)"
+                            @onclick="@(() => OnToolbarClickAsync(item))"
+                            aria-pressed="@(IsFormatActive(item.Format) ? "true" : "false")">
+                        @if (!string.IsNullOrEmpty(item.IconName))
+                        {
+                            <SbIcon Name="@item.IconName" Size="SbSize.Sm" Class="sb-editor__toolbar-icon" />
+                        }
+                        else if (!string.IsNullOrEmpty(item.Icon))
+                        {
+                            <span class="sb-editor__toolbar-icon @(item.Id == "strike" ? "sb-editor__toolbar-icon--strike" : "")">@item.Icon</span>
+                        }
+                    </button>
+                }
+            }
+        </div>
+    }
+    
+    @* Editor Content Area *@
+    <div @ref="_editorContainer" 
+         class="sb-editor__content"
+         role="textbox"
+         aria-multiline="true"
+         aria-label="@(Placeholder ?? EditorAriaLabel)"
+         aria-readonly="@(ReadOnly ? "true" : "false")"
+         aria-disabled="@(Disabled ? "true" : "false")">
+    </div>
+    
+    @* Character/Word Count (optional) *@
+    @if (ShowCharacterCount || ShowWordCount)
+    {
+        <div class="sb-editor__footer">
+            @if (ShowWordCount)
+            {
+                <span class="sb-editor__count">@string.Format(WordCountFormat, _wordCount)</span>
+            }
+            @if (ShowCharacterCount)
+            {
+                <span class="sb-editor__count">@string.Format(CharacterCountFormat, _charCount)</span>
+            }
+        </div>
+    }
+</div>
+
+@* Link dialog: open when user clicks the link toolbar button *@
+<SbDialog Open="_linkDialogOpen"
+         OpenChanged="OnLinkDialogOpenChanged"
+         Title="@LinkDialogTitle"
+         Size="SbDialogSize.Sm"
+         OnClose="OnLinkDialogClose">
+    <ChildContent>
+		<div class="sb-editor__link-dialog">
+			<div class="sb-editor__link-dialog-field">
+				<label for="rte-link-url">@UrlLabel</label>
+				<input id="rte-link-url"
+					   type="url"
+					   class="sb-editor__link-input"
+					   placeholder="https://"
+					   @bind="_linkUrl" />
+			</div>
+			@if (_linkHasSelection)
+			{
+				<div class="sb-editor__link-dialog-field">
+					<span class="sb-editor__link-selection-label">@SelectedTextLabel</span>
+					<span class="sb-editor__link-selection-text">@_linkSelectionText</span>
+				</div>
+			}
+			else
+			{
+				<div class="sb-editor__link-dialog-field">
+					<label for="rte-link-text">@LinkTextLabel</label>
+					<input id="rte-link-text"
+						   type="text"
+						   class="sb-editor__link-input"
+						   placeholder="@TextToDisplayPlaceholder"
+						   @bind="_linkText" />
+				</div>
+			}
+			<div class="sb-editor__link-dialog-field">
+				<label for="rte-link-target">@TargetLabel</label>
+				<select id="rte-link-target" class="sb-editor__link-input" @bind="_linkTarget">
+					<option value="">@SameWindowText</option>
+					<option value="_blank">@NewTabText</option>
+					<option value="_self">@SameWindowSelfText</option>
+					<option value="_parent">@ParentFrameText</option>
+					<option value="_top">@TopFrameText</option>
+				</select>
+			</div>
+			<div class="sb-editor__link-dialog-field">
+				<label for="rte-link-rel">@RelLabel</label>
+				<input id="rte-link-rel"
+					   type="text"
+					   class="sb-editor__link-input"
+					   placeholder="e.g. noopener noreferrer"
+					   @bind="_linkRel" />
+			</div>
+		</div>
+	</ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseLinkDialogAsync">@(CancelText ?? L["Cancel"])</SbButton>
+            <SbButton Variant="SbButtonVariant.Solid" OnClick="ApplyLinkAsync">@(ApplyText ?? L["Apply"])</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+@* Image dialog: open when user clicks the image toolbar button *@
+<SbDialog Open="_imageDialogOpen"
+         OpenChanged="OnImageDialogOpenChanged"
+         Title="@ImageDialogTitle"
+         Size="SbDialogSize.Sm"
+         OnClose="OnImageDialogClose">
+    <ChildContent>
+        <div class="sb-editor__link-dialog">
+            <div class="sb-editor__link-dialog-field">
+                <label for="rte-image-url">@ImageUrlLabel</label>
+                <input id="rte-image-url"
+                       type="url"
+                       class="sb-editor__link-input"
+                       placeholder="https://"
+                       @bind="_imageUrl" />
+            </div>
+            <div class="sb-editor__link-dialog-field">
+                <label for="rte-image-alt">@AltTextLabel</label>
+                <input id="rte-image-alt"
+                       type="text"
+                       class="sb-editor__link-input"
+                       placeholder="@DescribeImagePlaceholder"
+                       @bind="_imageAlt" />
+            </div>
+            <SbStack Direction="SbStackDirection.Row" Gap="4" Wrap="true">
+                <div class="sb-editor__link-dialog-field sb-editor__link-dialog-field--inline">
+                    <label for="rte-image-width">@WidthLabel</label>
+                    <input id="rte-image-width"
+                           type="text"
+                           class="sb-editor__link-input"
+                           placeholder="e.g. 200"
+                           @bind="_imageWidth" />
+                </div>
+                <div class="sb-editor__link-dialog-field sb-editor__link-dialog-field--inline">
+                    <label for="rte-image-height">@HeightLabel</label>
+                    <input id="rte-image-height"
+                           type="text"
+                           class="sb-editor__link-input"
+                           placeholder="e.g. 150"
+                           @bind="_imageHeight" />
+                </div>
+            </SbStack>
+        </div>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="CloseImageDialogAsync">@(CancelText ?? L["Cancel"])</SbButton>
+            <SbButton Variant="SbButtonVariant.Solid" OnClick="ApplyImageAsync">@InsertText</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+@code {
+    private ElementReference _editorContainer;
+    private SbEditorInterop? _editorInterop;
+    private DotNetObjectReference<SbRichTextEditor>? _dotNetRef;
+    private string? _editorId;
+    private bool _initialized;
+    private int _wordCount;
+    private int _charCount;
+    private Dictionary<string, object> _activeFormats = new();
+    
+    // Link dialog state
+    private bool _linkDialogOpen;
+    private string _linkUrl = "";
+    private string _linkText = "";
+    private string _linkTarget = "";
+    private string _linkRel = "";
+    private bool _linkHasSelection;
+    private string _linkSelectionText = "";
+    
+    // Image dialog state
+    private bool _imageDialogOpen;
+    private string _imageUrl = "";
+    private string _imageAlt = "";
+    private string _imageWidth = "";
+    private string _imageHeight = "";
+    
+    // Track previous parameter values to detect changes
+    private string? _previousValue;
+    private bool _previousReadOnly;
+    private bool _previousDisabled;
+    private bool _previousRightToLeft;
+    private SbPasteCleanupOptions? _previousPasteCleanupOptions;
+    
+    // Toolbar contributor support
+    private IRteToolbarService? _toolbarService;
+    private List<SbEditorToolbarItem>? _contributedToolbarItems;
+    private Dictionary<string, RteToolbarContributedItem> _contributedItemsMap = new();
+    
+    /// <summary>
+    /// The HTML content of the editor.
+    /// </summary>
+    [Parameter]
+    public string? Value { get; set; }
+    
+    /// <summary>
+    /// Callback when the value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> ValueChanged { get; set; }
+    
+    /// <summary>
+    /// The output format mode.
+    /// </summary>
+    [Parameter]
+    public SbEditorMode Mode { get; set; } = SbEditorMode.Html;
+    
+    /// <summary>
+    /// Custom toolbar items. If not specified, uses default toolbar.
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<SbEditorToolbarItem>? ToolbarItems { get; set; }
+    
+    /// <summary>
+    /// Options for cleaning up pasted content.
+    /// </summary>
+    [Parameter]
+    public SbPasteCleanupOptions? PasteCleanupOptions { get; set; }
+    
+    /// <summary>
+    /// Callback for handling image uploads. If not specified, images are inserted as base64.
+    /// </summary>
+    [Parameter]
+    public Func<IBrowserFile, Task<SbImageUploadResult>>? OnImageUpload { get; set; }
+    
+    /// <summary>
+    /// Placeholder text shown when the editor is empty.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+    
+    /// <summary>
+    /// Whether the editor is in read-only mode.
+    /// </summary>
+    [Parameter]
+    public bool ReadOnly { get; set; }
+    
+    /// <summary>
+    /// Whether the editor is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Whether to use right-to-left text direction.
+    /// When null, auto-detects from <see cref="CultureInfo.CurrentUICulture"/>.
+    /// </summary>
+    [Parameter]
+    public bool? RightToLeft { get; set; }
+    
+    /// <summary>
+    /// Effective RTL: explicit value or auto-detected from current culture.
+    /// </summary>
+    private bool EffectiveRightToLeft => RightToLeft ?? CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+    
+    /// <summary>
+    /// The height of the editor content area.
+    /// </summary>
+    [Parameter]
+    public string? Height { get; set; } = "300px";
+    
+    /// <summary>
+    /// Additional CSS classes for the container.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    /// <summary>
+    /// Whether to hide the toolbar.
+    /// </summary>
+    [Parameter]
+    public bool HideToolbar { get; set; }
+    
+    /// <summary>
+    /// Whether to show the character count.
+    /// </summary>
+    [Parameter]
+    public bool ShowCharacterCount { get; set; }
+    
+    /// <summary>
+    /// Whether to show the word count.
+    /// </summary>
+    [Parameter]
+    public bool ShowWordCount { get; set; }
+    
+    /// <summary>
+    /// Callback when the editor content changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> OnChange { get; set; }
+    
+    /// <summary>
+    /// Callback when the editor gains focus.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnFocus { get; set; }
+    
+    /// <summary>
+    /// Callback when the editor loses focus.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnBlur { get; set; }
+    
+    /// <summary>
+    /// Whether to use the pluggable toolbar contributor system.
+    /// When enabled, toolbar items from registered IRteToolbarContributor services will be included.
+    /// </summary>
+    [Parameter]
+    public bool UseToolbarContributors { get; set; } = false;
+    
+    /// <summary>
+    /// Whether to include default toolbar items when using contributors.
+    /// Only applies when UseToolbarContributors is true.
+    /// </summary>
+    [Parameter]
+    public bool IncludeDefaultToolbarItems { get; set; } = true;
+    
+    #region Localization Parameters
+    
+    /// <summary>
+    /// Aria label for the toolbar.
+    /// </summary>
+    [Parameter]
+    public string ToolbarAriaLabel { get; set; } = "Text formatting";
+    
+    /// <summary>
+    /// Aria label for the editor content area.
+    /// </summary>
+    [Parameter]
+    public string EditorAriaLabel { get; set; } = "Rich text editor";
+    
+    /// <summary>
+    /// Word count display format. Use {0} for count.
+    /// </summary>
+    [Parameter]
+    public string WordCountFormat { get; set; } = "{0} words";
+    
+    /// <summary>
+    /// Character count display format. Use {0} for count.
+    /// </summary>
+    [Parameter]
+    public string CharacterCountFormat { get; set; } = "{0} characters";
+    
+    /// <summary>
+    /// Link dialog title.
+    /// </summary>
+    [Parameter]
+    public string LinkDialogTitle { get; set; } = "Insert link";
+    
+    /// <summary>
+    /// Image dialog title.
+    /// </summary>
+    [Parameter]
+    public string ImageDialogTitle { get; set; } = "Insert image";
+    
+    /// <summary>
+    /// Cancel button text.
+    /// </summary>
+    [Parameter]
+    public string? CancelText { get; set; }
+    
+    /// <summary>
+    /// Apply button text. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? ApplyText { get; set; }
+    
+    /// <summary>
+    /// Insert button text.
+    /// </summary>
+    [Parameter]
+    public string InsertText { get; set; } = "Insert";
+    
+    /// <summary>
+    /// URL field label.
+    /// </summary>
+    [Parameter]
+    public string UrlLabel { get; set; } = "URL";
+    
+    /// <summary>
+    /// Selected text label.
+    /// </summary>
+    [Parameter]
+    public string SelectedTextLabel { get; set; } = "Selected text:";
+    
+    /// <summary>
+    /// Link text field label.
+    /// </summary>
+    [Parameter]
+    public string LinkTextLabel { get; set; } = "Link text (optional)";
+    
+    /// <summary>
+    /// Text to display placeholder.
+    /// </summary>
+    [Parameter]
+    public string TextToDisplayPlaceholder { get; set; } = "Text to display";
+    
+    /// <summary>
+    /// Target field label.
+    /// </summary>
+    [Parameter]
+    public string TargetLabel { get; set; } = "Target";
+    
+    /// <summary>
+    /// Rel field label.
+    /// </summary>
+    [Parameter]
+    public string RelLabel { get; set; } = "Rel";
+    
+    /// <summary>
+    /// Same window option text.
+    /// </summary>
+    [Parameter]
+    public string SameWindowText { get; set; } = "Same window";
+    
+    /// <summary>
+    /// New tab option text.
+    /// </summary>
+    [Parameter]
+    public string NewTabText { get; set; } = "New tab";
+    
+    /// <summary>
+    /// Same window (_self) option text.
+    /// </summary>
+    [Parameter]
+    public string SameWindowSelfText { get; set; } = "Same window (_self)";
+    
+    /// <summary>
+    /// Parent frame option text.
+    /// </summary>
+    [Parameter]
+    public string ParentFrameText { get; set; } = "Parent frame";
+    
+    /// <summary>
+    /// Top frame option text.
+    /// </summary>
+    [Parameter]
+    public string TopFrameText { get; set; } = "Top frame";
+    
+    /// <summary>
+    /// Image URL field label.
+    /// </summary>
+    [Parameter]
+    public string ImageUrlLabel { get; set; } = "Image URL";
+    
+    /// <summary>
+    /// Alt text field label.
+    /// </summary>
+    [Parameter]
+    public string AltTextLabel { get; set; } = "Alt text (optional)";
+    
+    /// <summary>
+    /// Describe image placeholder.
+    /// </summary>
+    [Parameter]
+    public string DescribeImagePlaceholder { get; set; } = "Describe the image";
+    
+    /// <summary>
+    /// Width field label.
+    /// </summary>
+    [Parameter]
+    public string WidthLabel { get; set; } = "Width (optional)";
+    
+    /// <summary>
+    /// Height field label.
+    /// </summary>
+    [Parameter]
+    public string HeightLabel { get; set; } = "Height (optional)";
+    
+    #endregion
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _editorInterop = new SbEditorInterop(JSRuntime);
+            
+            // Initialize toolbar contributor system if enabled
+            if (UseToolbarContributors)
+            {
+                await InitializeToolbarContributorsAsync();
+            }
+            
+            await InitializeEditorAsync();
+
+            // Re-render so contributor toolbar items appear (they load async and were null on first render)
+            if (UseToolbarContributors && _contributedToolbarItems != null)
+            {
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+    
+    private async Task InitializeToolbarContributorsAsync()
+    {
+        // Try to get the toolbar service from DI
+        _toolbarService = ServiceProvider.GetService(typeof(IRteToolbarService)) as IRteToolbarService;
+        
+        if (_toolbarService != null)
+        {
+            // Get contributed items
+            _contributedToolbarItems = await _toolbarService.GetToolbarItemsAsync(
+                _editorId,
+                IncludeDefaultToolbarItems);
+            
+            // Build a map of contributed items for click handling
+            var contributedItems = await _toolbarService.GetContributedItemsAsync(_editorId);
+            _contributedItemsMap = contributedItems
+                .Where(item => item.OnClickAsync != null)
+                .ToDictionary(item => item.Id, item => item);
+        }
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        // Only sync after initialization
+        if (!_initialized || _editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return;
+        
+        // Handle external Value changes (when parent updates the bound value)
+        if (Value != _previousValue)
+        {
+            _previousValue = Value;
+            await _editorInterop.SetContentAsync(_editorId, Value ?? "", Mode);
+        }
+        
+        // Handle ReadOnly/Disabled changes
+        if (ReadOnly != _previousReadOnly || Disabled != _previousDisabled)
+        {
+            _previousReadOnly = ReadOnly;
+            _previousDisabled = Disabled;
+            await _editorInterop.SetEnabledAsync(_editorId, !(ReadOnly || Disabled));
+        }
+        
+        // Handle RTL changes
+        if (EffectiveRightToLeft != _previousRightToLeft)
+        {
+            _previousRightToLeft = EffectiveRightToLeft;
+            await _editorInterop.SetDirectionAsync(_editorId, EffectiveRightToLeft ? "rtl" : "ltr");
+        }
+        
+        // Handle PasteCleanupOptions changes
+        if (PasteCleanupOptions != _previousPasteCleanupOptions)
+        {
+            _previousPasteCleanupOptions = PasteCleanupOptions;
+            await _editorInterop.SetPasteCleanupOptionsAsync(_editorId, PasteCleanupOptions ?? SbPasteCleanupOptions.Default);
+        }
+    }
+    
+    private async Task InitializeEditorAsync()
+    {
+        if (_initialized || _editorInterop == null)
+            return;
+            
+        var options = new SbEditorOptions
+        {
+            Placeholder = Placeholder,
+            ReadOnly = ReadOnly || Disabled,
+            Theme = "snow",
+            Direction = EffectiveRightToLeft ? "rtl" : "ltr",
+            PasteCleanup = PasteCleanupOptions ?? SbPasteCleanupOptions.Default
+        };
+        
+        _dotNetRef = DotNetObjectReference.Create(this);
+        _editorId = await _editorInterop.InitializeEditorAsync(_editorContainer, _dotNetRef, options);
+        
+        if (string.IsNullOrEmpty(_editorId))
+        {
+            // JS initialization failed
+            return;
+        }
+        
+        _initialized = true;
+        
+        // Store initial parameter values for change detection
+        _previousValue = Value;
+        _previousReadOnly = ReadOnly;
+        _previousDisabled = Disabled;
+        _previousRightToLeft = EffectiveRightToLeft;
+        _previousPasteCleanupOptions = PasteCleanupOptions;
+        
+        // Set initial content if provided
+        if (!string.IsNullOrEmpty(Value))
+        {
+            await _editorInterop.SetContentAsync(_editorId, Value, Mode);
+        }
+        
+        // In RTL mode, apply right alignment by default so content matches the dropdown display
+        if (EffectiveRightToLeft)
+        {
+            await _editorInterop.FormatAsync(_editorId, "align", "right");
+        }
+    }
+    
+    private IReadOnlyList<SbEditorToolbarItem> GetToolbarItems()
+    {
+        // If explicit ToolbarItems parameter is provided, use that (highest priority)
+        if (ToolbarItems != null && ToolbarItems.Count > 0)
+            return ToolbarItems;
+        
+        // If contributor system is enabled and items were loaded, use those
+        if (UseToolbarContributors && _contributedToolbarItems != null && _contributedToolbarItems.Count > 0)
+            return _contributedToolbarItems;
+            
+        // Default toolbar (fallback)
+        return new List<SbEditorToolbarItem>
+        {
+            SbEditorToolbarItem.Undo,
+            SbEditorToolbarItem.Redo,
+            SbEditorToolbarItem.Separator,
+            SbEditorToolbarItem.Header,
+            SbEditorToolbarItem.Separator,
+            SbEditorToolbarItem.Bold,
+            SbEditorToolbarItem.Italic,
+            SbEditorToolbarItem.Underline,
+            SbEditorToolbarItem.Strike,
+            SbEditorToolbarItem.Separator,
+            SbEditorToolbarItem.OrderedList,
+            SbEditorToolbarItem.BulletList,
+            SbEditorToolbarItem.Separator,
+            SbEditorToolbarItem.Align,
+            SbEditorToolbarItem.Separator,
+            SbEditorToolbarItem.Link,
+            SbEditorToolbarItem.Image,
+            SbEditorToolbarItem.Separator,
+            SbEditorToolbarItem.Blockquote,
+            SbEditorToolbarItem.CodeBlock,
+            SbEditorToolbarItem.Separator,
+            SbEditorToolbarItem.Clean
+        };
+    }
+    
+    private async Task OnToolbarClickAsync(SbEditorToolbarItem item)
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return;
+        
+        // Check if this is a contributed item with a custom click handler
+        if (_contributedItemsMap.TryGetValue(item.Id, out var contributedItem) && contributedItem.OnClickAsync != null)
+        {
+            var actionContext = CreateActionContext();
+            await _toolbarService!.ExecuteItemActionAsync(contributedItem, actionContext);
+            return;
+        }
+            
+        // Link is special: open dialog to enter URL instead of applying format directly
+        if (item.Format == "link")
+        {
+            await OpenLinkDialogAsync();
+            return;
+        }
+        
+        // Image is special: open dialog to enter URL instead of inserting empty embed
+        if (item.Format == "image")
+        {
+            await OpenImageDialogAsync();
+            return;
+        }
+        
+        if (!string.IsNullOrEmpty(item.CustomAction))
+        {
+            switch (item.CustomAction)
+            {
+                case "undo":
+                    await _editorInterop.UndoAsync(_editorId);
+                    break;
+                case "redo":
+                    await _editorInterop.RedoAsync(_editorId);
+                    break;
+                case "clean":
+                    await _editorInterop.ClearFormattingAsync(_editorId);
+                    break;
+            }
+        }
+        else if (!string.IsNullOrEmpty(item.Format))
+        {
+            await _editorInterop.FormatAsync(_editorId, item.Format, item.FormatValue);
+        }
+    }
+    
+    private async Task OpenLinkDialogAsync()
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return;
+        
+        var selectionText = await _editorInterop.GetSelectionTextAsync(_editorId);
+        var format = await _editorInterop.GetFormatAsync(_editorId);
+        
+        _linkHasSelection = !string.IsNullOrEmpty(selectionText);
+        _linkSelectionText = selectionText ?? "";
+        
+        // Pre-fill URL when editing an existing link (and avoid the bad "true" value)
+        if (format.TryGetValue("link", out var linkObj) && linkObj is string linkUrl && linkUrl != "true" && !string.IsNullOrWhiteSpace(linkUrl))
+            _linkUrl = linkUrl;
+        else
+            _linkUrl = "";
+        
+        // Pre-fill target and rel from existing link (read from DOM in JS)
+        _linkTarget = format.TryGetValue("target", out var t) && t is string target ? target : "";
+        _linkRel = format.TryGetValue("rel", out var r) && r is string rel ? rel : "";
+        
+        _linkText = "";
+        _linkDialogOpen = true;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task OnLinkDialogOpenChanged(bool open)
+    {
+        _linkDialogOpen = open;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private Task OnLinkDialogClose(SbDialogCloseReason _)
+    {
+        _linkDialogOpen = false;
+        return Task.CompletedTask;
+    }
+    
+    private async Task CloseLinkDialogAsync()
+    {
+        _linkDialogOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task ApplyLinkAsync()
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return;
+        
+        var url = _linkUrl?.Trim() ?? "";
+        if (string.IsNullOrEmpty(url))
+            return;
+        
+        // When there is a selection, apply link to selection (pass null for text).
+        // When there is no selection, insert link with optional text (or URL as text).
+        var text = _linkHasSelection ? null : (_linkText?.Trim());
+        var target = string.IsNullOrWhiteSpace(_linkTarget) ? null : _linkTarget.Trim();
+        var rel = string.IsNullOrWhiteSpace(_linkRel) ? null : _linkRel.Trim();
+        await _editorInterop.InsertLinkAsync(_editorId, url, text, target, rel);
+        
+        _linkDialogOpen = false;
+        _linkUrl = "";
+        _linkText = "";
+        _linkTarget = "";
+        _linkRel = "";
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task OpenImageDialogAsync()
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return;
+        _imageUrl = "";
+        _imageAlt = "";
+        _imageWidth = "";
+        _imageHeight = "";
+        _imageDialogOpen = true;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task OnImageDialogOpenChanged(bool open)
+    {
+        _imageDialogOpen = open;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private Task OnImageDialogClose(SbDialogCloseReason _)
+    {
+        _imageDialogOpen = false;
+        return Task.CompletedTask;
+    }
+    
+    private async Task CloseImageDialogAsync()
+    {
+        _imageDialogOpen = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task ApplyImageAsync()
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return;
+        var url = _imageUrl?.Trim() ?? "";
+        if (string.IsNullOrEmpty(url))
+            return;
+        var alt = string.IsNullOrWhiteSpace(_imageAlt) ? null : _imageAlt.Trim();
+        var width = string.IsNullOrWhiteSpace(_imageWidth) ? null : _imageWidth.Trim();
+        var height = string.IsNullOrWhiteSpace(_imageHeight) ? null : _imageHeight.Trim();
+        await _editorInterop.InsertImageAsync(_editorId, url, alt, width, height);
+        _imageDialogOpen = false;
+        _imageUrl = "";
+        _imageAlt = "";
+        _imageWidth = "";
+        _imageHeight = "";
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private RteToolbarActionContext CreateActionContext()
+    {
+        var context = new RteToolbarActionContext(_editorId!, ServiceProvider);
+        
+        // Wire up the action delegates
+        context.InsertHtmlAsync = async (html) =>
+        {
+            if (_editorInterop != null)
+            {
+                await _editorInterop.InsertHtmlAsync(_editorId!, html);
+            }
+        };
+        
+        context.InsertImageAsync = async (url, alt) =>
+        {
+            if (_editorInterop != null)
+            {
+                await _editorInterop.InsertImageAsync(_editorId!, url, alt);
+            }
+        };
+        
+        context.InsertLinkAsync = async (url, text) =>
+        {
+            if (_editorInterop != null)
+            {
+                await _editorInterop.InsertLinkAsync(_editorId!, url, text);
+            }
+        };
+        
+        context.GetHtmlAsync = async () =>
+        {
+            if (_editorInterop != null)
+            {
+                return await _editorInterop.GetContentAsync(_editorId!, SbEditorMode.Html);
+            }
+            return null;
+        };
+        
+        context.GetSelectionAsync = async () =>
+        {
+            if (_editorInterop != null)
+            {
+                return await _editorInterop.GetSelectionTextAsync(_editorId!);
+            }
+            return null;
+        };
+        
+        return context;
+    }
+    
+    private async Task OnSelectFormatAsync(string format, ChangeEventArgs e)
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return;
+            
+        var value = e.Value?.ToString();
+        object? formatValue = value switch
+        {
+            "" or "false" or "False" => false,
+            "true" or "True" => true,
+            _ when int.TryParse(value, out var intVal) => intVal,
+            _ => value
+        };
+        
+        await _editorInterop.FormatAsync(_editorId, format, formatValue);
+    }
+    
+    private string GetOptionLabel(SbEditorToolbarOption option)
+    {
+        if (!string.IsNullOrEmpty(option.LabelKey))
+            return L[option.LabelKey];
+        return option.Label ?? "";
+    }
+    
+    private bool IsFormatActive(string? format)
+    {
+        if (string.IsNullOrEmpty(format))
+            return false;
+        if (!_activeFormats.TryGetValue(format, out var val) || val == null)
+            return false;
+        if (val is bool b)
+            return b;
+        if (val is string s)
+            return !string.IsNullOrEmpty(s);
+        return true;
+    }
+    
+    /// <summary>
+    /// Gets the current value for a select-format toolbar item (align, header) for binding the dropdown.
+    /// In RTL mode, align defaults to "right" when no explicit alignment is set.
+    /// </summary>
+    private string GetSelectFormatValue(SbEditorToolbarItem item)
+    {
+        if (item.Options == null || string.IsNullOrEmpty(item.Format))
+            return "";
+        if (!_activeFormats.TryGetValue(item.Format, out var raw))
+            return GetSelectFormatValueDefault(item, null);
+        var value = raw;
+        if (value is JsonElement je)
+        {
+            value = je.ValueKind switch
+            {
+                JsonValueKind.False => false,
+                JsonValueKind.True => true,
+                JsonValueKind.String => je.GetString(),
+                JsonValueKind.Number => je.TryGetInt32(out var i) ? i : je.GetDouble(),
+                _ => value
+            };
+        }
+        return GetSelectFormatValueDefault(item, value);
+    }
+    
+    private string GetSelectFormatValueDefault(SbEditorToolbarItem item, object? value)
+    {
+        // Option values use ToString(): false -> "False", "right" -> "right", etc.
+        var str = value == null ? "" : value.ToString() ?? "";
+        if (item.Id == "align")
+        {
+            var isUnsetOrLeft = string.IsNullOrEmpty(str) || str == "False";
+            if (isUnsetOrLeft && EffectiveRightToLeft)
+                return "right";
+            if (isUnsetOrLeft)
+                return "False"; // Left option has Value = false -> "False"
+        }
+        // Font: when no font applied, show Default (Value = false -> "False")
+        if (item.Id == "font" && string.IsNullOrEmpty(str))
+            return "False";
+        // Header: when no heading applied, show Normal (Value = false -> "False")
+        if (item.Id == "header" && string.IsNullOrEmpty(str))
+            return "False";
+        return str;
+    }
+    
+    /// <summary>
+    /// Called from JavaScript when the editor content changes.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnEditorChangeAsync(string html, string text)
+    {
+        var newValue = Mode switch
+        {
+            SbEditorMode.Html => html,
+            SbEditorMode.PlainText => text,
+            SbEditorMode.Markdown => await GetMarkdownContentAsync() ?? html,
+            _ => html
+        };
+        
+        // Update tracking to prevent re-sync in OnParametersSetAsync
+        _previousValue = newValue;
+        Value = newValue;
+        
+        _charCount = text?.Length ?? 0;
+        _wordCount = string.IsNullOrWhiteSpace(text) ? 0 : text.Split(new[] { ' ', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length;
+        
+        await ValueChanged.InvokeAsync(Value);
+        await OnChange.InvokeAsync(Value);
+        StateHasChanged();
+    }
+    
+    /// <summary>
+    /// Called from JavaScript when selection/format changes.
+    /// </summary>
+    [JSInvokable]
+    public void OnSelectionChange(Dictionary<string, object> formats)
+    {
+        _activeFormats = formats ?? new();
+        StateHasChanged();
+    }
+    
+    /// <summary>
+    /// Called from JavaScript when the editor gains focus.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnEditorFocusAsync()
+    {
+        await OnFocus.InvokeAsync();
+    }
+    
+    /// <summary>
+    /// Called from JavaScript when the editor loses focus.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnEditorBlurAsync()
+    {
+        await OnBlur.InvokeAsync();
+    }
+    
+    /// <summary>
+    /// Gets the current content as HTML.
+    /// </summary>
+    public async Task<string?> GetHtmlAsync()
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return null;
+        return await _editorInterop.GetContentAsync(_editorId, SbEditorMode.Html);
+    }
+    
+    /// <summary>
+    /// Gets the current content as Markdown.
+    /// </summary>
+    public async Task<string?> GetMarkdownContentAsync()
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return null;
+        return await _editorInterop.GetContentAsync(_editorId, SbEditorMode.Markdown);
+    }
+    
+    /// <summary>
+    /// Gets the current content as plain text.
+    /// </summary>
+    public async Task<string?> GetPlainTextAsync()
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return null;
+        return await _editorInterop.GetContentAsync(_editorId, SbEditorMode.PlainText);
+    }
+    
+    /// <summary>
+    /// Sets the editor content.
+    /// </summary>
+    public async Task SetContentAsync(string content, SbEditorMode? mode = null)
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return;
+        await _editorInterop.SetContentAsync(_editorId, content, mode ?? Mode);
+    }
+    
+    /// <summary>
+    /// Focuses the editor.
+    /// </summary>
+    public async Task FocusAsync()
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+            return;
+        await _editorInterop.FocusAsync(_editorId);
+    }
+    
+    /// <summary>
+    /// Inserts an image at the current cursor position.
+    /// </summary>
+    /// <param name="url">The image URL.</param>
+    /// <param name="alt">Optional alt text.</param>
+    /// <param name="width">Optional width (e.g. "200" for pixels).</param>
+    /// <param name="height">Optional height (e.g. "150" for pixels).</param>
+    public async Task InsertImageAsync(string url, string? alt = null, string? width = null, string? height = null)
+    {
+        if (_editorInterop == null || string.IsNullOrEmpty(_editorId))
+        {
+            return;
+        }
+        await _editorInterop.InsertImageAsync(_editorId, url, alt, width, height);
+    }
+    
+    private string GetContainerClass()
+    {
+        var classes = new List<string> { "sb-editor" };
+        
+        if (Disabled) classes.Add("sb-editor--disabled");
+        if (ReadOnly) classes.Add("sb-editor--readonly");
+        if (EffectiveRightToLeft) classes.Add("sb-editor--rtl");
+        if (!string.IsNullOrEmpty(Class)) classes.Add(Class);
+        
+        return string.Join(" ", classes);
+    }
+    
+    private string? GetContainerStyle()
+    {
+        if (string.IsNullOrEmpty(Height))
+            return null;
+        return $"--sb-editor-height: {Height};";
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (_editorInterop != null)
+        {
+            if (!string.IsNullOrEmpty(_editorId))
+            {
+                try
+                {
+                    await _editorInterop.DestroyEditorAsync(_editorId);
+                }
+                catch (JSDisconnectedException)
+                {
+                    // Circuit disconnected, ignore
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Already disposed, ignore
+                }
+                catch
+                {
+                    // Ignore other disposal errors
+                }
+            }
+            
+            try
+            {
+                await _editorInterop.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // Circuit disconnected, ignore
+            }
+            catch (ObjectDisposedException)
+            {
+                // Already disposed, ignore
+            }
+            catch
+            {
+                // Ignore other disposal errors
+            }
+        }
+        
+        _dotNetRef?.Dispose();
+    }
+}

@@ -1,0 +1,148 @@
+@namespace SufiChain.SufiBlazor.Components.Typography
+
+@switch (ResolvedTag)
+{
+    case "p":
+        <p class="@CssClass" style="@Style" @attributes="AdditionalAttributes">@ChildContent</p>
+        break;
+    case "span":
+        <span class="@CssClass" style="@Style" @attributes="AdditionalAttributes">@ChildContent</span>
+        break;
+    case "div":
+        <div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">@ChildContent</div>
+        break;
+    case "label":
+        <label class="@CssClass" style="@Style" @attributes="AdditionalAttributes">@ChildContent</label>
+        break;
+    case "small":
+        <small class="@CssClass" style="@Style" @attributes="AdditionalAttributes">@ChildContent</small>
+        break;
+    case "code":
+        <code class="@CssClass" style="@Style" @attributes="AdditionalAttributes">@ChildContent</code>
+        break;
+    default:
+        <span class="@CssClass" style="@Style" @attributes="AdditionalAttributes">@ChildContent</span>
+        break;
+}
+
+@code {
+    /// <summary>
+    /// Typography variant.
+    /// </summary>
+    [Parameter]
+    public SbTextVariant Variant { get; set; } = SbTextVariant.Body;
+
+    /// <summary>
+    /// Override the semantic HTML tag.
+    /// </summary>
+    [Parameter]
+    public string? Tag { get; set; }
+
+    /// <summary>
+    /// Text size (overrides variant font-size when set).
+    /// </summary>
+    [Parameter]
+    public SbSize? Size { get; set; }
+
+    /// <summary>
+    /// Text color.
+    /// </summary>
+    [Parameter]
+    public SbColor Color { get; set; } = SbColor.Default;
+
+    /// <summary>
+    /// Font weight.
+    /// </summary>
+    [Parameter]
+    public SbFontWeight? Weight { get; set; }
+
+    /// <summary>
+    /// Text alignment.
+    /// </summary>
+    [Parameter]
+    public SbTextAlign Align { get; set; } = SbTextAlign.Start;
+
+    /// <summary>
+    /// Whether to truncate text with ellipsis.
+    /// </summary>
+    [Parameter]
+    public bool Truncate { get; set; }
+
+    /// <summary>
+    /// The content to render.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string ResolvedTag => Tag ?? GetDefaultTag(Variant);
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-text" };
+
+            classes.Add($"sb-text--{Variant.ToString().ToLowerInvariant()}");
+
+            if (Color != SbColor.Default)
+            {
+                classes.Add($"sb-text--{Color.ToString().ToLowerInvariant()}");
+            }
+
+            if (Align != SbTextAlign.Start)
+            {
+                classes.Add($"sb-text--align-{Align.ToString().ToLowerInvariant()}");
+            }
+
+            if (Size.HasValue)
+            {
+                classes.Add($"sb-text--size-{Size.Value.ToString().ToLowerInvariant()}");
+            }
+
+            if (Weight.HasValue)
+            {
+                classes.Add($"sb-text--weight-{Weight.Value.ToString().ToLowerInvariant()}");
+            }
+
+            if (Truncate)
+            {
+                classes.Add("sb-text--truncate");
+            }
+
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+
+            return string.Join(" ", classes);
+        }
+    }
+
+    private static string GetDefaultTag(SbTextVariant variant) => variant switch
+    {
+        SbTextVariant.Body => "p",
+        SbTextVariant.BodySmall => "p",
+        SbTextVariant.Caption => "span",
+        SbTextVariant.Overline => "span",
+        SbTextVariant.Code => "code",
+        _ => "span"
+    };
+}

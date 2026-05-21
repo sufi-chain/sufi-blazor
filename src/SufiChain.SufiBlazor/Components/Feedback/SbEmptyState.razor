@@ -1,0 +1,84 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+
+<div class="sb-empty-state @Class">
+    @if (Icon != null)
+    {
+        <div class="sb-empty-state__icon">
+            @Icon
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(IconText))
+    {
+        <div class="sb-empty-state__icon">
+            <span class="sb-empty-state__icon-text">@IconText</span>
+        </div>
+    }
+    
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <h3 class="sb-empty-state__title">@Title</h3>
+    }
+    
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <p class="sb-empty-state__description">@Description</p>
+    }
+    
+    @if (ChildContent != null)
+    {
+        <div class="sb-empty-state__content">
+            @ChildContent
+        </div>
+    }
+    
+    @if (Actions != null)
+    {
+        <div class="sb-empty-state__actions">
+            @Actions
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Icon content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+    
+    /// <summary>
+    /// Icon text (emoji or symbol).
+    /// </summary>
+    [Parameter]
+    public string? IconText { get; set; } = "📭";
+    
+    /// <summary>
+    /// Title text.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; } = "No items found";
+    
+    /// <summary>
+    /// Description text.
+    /// </summary>
+    [Parameter]
+    public string? Description { get; set; }
+    
+    /// <summary>
+    /// Additional content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Action buttons.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+}

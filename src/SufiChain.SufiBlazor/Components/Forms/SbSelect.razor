@@ -1,0 +1,293 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@typeparam TItem
+@typeparam TValue
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-select-anchor" @ref="_anchorRef">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-select__label" for="@Id">
+            @Label
+            @if (Required)
+            {
+                <span class="sb-select__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+    <button type="button"
+            class="sb-select-trigger"
+            @onclick="Toggle"
+            @onkeydown="HandleKeyDown"
+            disabled="@Disabled"
+            aria-haspopup="listbox"
+            aria-expanded="@_isOpen"
+            aria-labelledby="@Id">
+        <span class="@(HasValue ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
+            @(HasValue ? GetDisplayText() : (Placeholder ?? L["Select_Placeholder"]))
+        </span>
+        <span class="@IconClass"><SbIcon Name="chevron-down" Size="SbSize.Sm" /></span>
+    </button>
+
+    @if (_isOpen)
+    {
+        <div class="@DropdownClass" role="listbox">
+            @if (Searchable)
+            {
+                <div class="sb-select-search">
+                    <input type="text"
+                           class="sb-select-search__input"
+                           placeholder="@L["Search_Placeholder"]"
+                           @bind="_searchText"
+                           @bind:event="oninput"
+                           @ref="_searchRef" />
+                </div>
+            }
+            <div class="sb-select-options">
+                @if (FilteredItems.Any())
+                {
+                    @foreach (var item in FilteredItems)
+                    {
+                        var itemValue = ValueField(item);
+                        var isSelected = EqualityComparer<TValue>.Default.Equals(itemValue, Value);
+                        <button type="button"
+                                class="@GetOptionClass(isSelected)"
+                                role="option"
+                                aria-selected="@isSelected"
+                                @onclick="() => SelectItem(item)">
+                            @if (ItemTemplate != null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                @TextField(item)
+                            }
+                        </button>
+                    }
+                }
+                else
+                {
+                    <div class="sb-select-empty">
+                        @if (NoResultsTemplate != null)
+                        {
+                            @NoResultsTemplate
+                        }
+                        else
+                        {
+                            <span>@L["NoResultsFound"]</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+
+@code {
+    private ElementReference _anchorRef;
+    private ElementReference _searchRef;
+    private DotNetObjectReference<SbSelect<TItem, TValue>>? _dotNetRef;
+    private bool _isOpen;
+    private string _searchText = "";
+    private bool _shouldFlip;
+
+    /// <summary>
+    /// Selected value.
+    /// </summary>
+    [Parameter]
+    public TValue? Value { get; set; }
+
+    /// <summary>
+    /// Callback when value changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<TValue?> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Items to select from.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<TItem>? Items { get; set; }
+
+    /// <summary>
+    /// Function to get display text from item.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, string> TextField { get; set; } = item => item?.ToString() ?? "";
+
+    /// <summary>
+    /// Function to get value from item.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, TValue> ValueField { get; set; } = item => (TValue)(object)item!;
+
+    /// <summary>
+    /// Placeholder text when no selection. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Whether the select is searchable.
+    /// </summary>
+    [Parameter]
+    public bool Searchable { get; set; }
+
+    /// <summary>
+    /// Whether the select allows clearing.
+    /// </summary>
+    [Parameter]
+    public bool Clearable { get; set; }
+
+    /// <summary>
+    /// Whether the select is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Custom item template.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// Template for no results.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? NoResultsTemplate { get; set; }
+
+    /// <summary>
+    /// Element ID for form association.
+    /// </summary>
+    [Parameter]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Label text displayed above the select.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Whether the field is required (shows asterisk).
+    /// </summary>
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    private bool HasValue =>
+        Value != null
+        && (Items == null || !Items.Any()
+            ? !EqualityComparer<TValue>.Default.Equals(Value, default)
+            : Items.Any(item => EqualityComparer<TValue>.Default.Equals(ValueField(item), Value)));
+
+    private string IconClass => $"sb-select-trigger__icon{(_isOpen ? " sb-select-trigger__icon--open" : "")}";
+
+    private string DropdownClass => _shouldFlip ? "sb-select-dropdown sb-select-dropdown--flip-up" : "sb-select-dropdown";
+
+
+    private IEnumerable<TItem> FilteredItems
+    {
+        get
+        {
+            if (Items == null) return Enumerable.Empty<TItem>();
+            
+            if (string.IsNullOrWhiteSpace(_searchText))
+                return Items;
+
+            return Items.Where(item => 
+                TextField(item).Contains(_searchText, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private string GetDisplayText()
+    {
+        if (Items == null || Value == null) return "";
+        
+        var selectedItem = Items.FirstOrDefault(item => 
+            EqualityComparer<TValue>.Default.Equals(ValueField(item), Value));
+        
+        return selectedItem != null ? TextField(selectedItem) : "";
+    }
+
+    private string GetOptionClass(bool isSelected)
+    {
+        var classes = new List<string> { "sb-select-option" };
+        if (isSelected)
+        {
+            classes.Add("sb-select-option--selected");
+        }
+        return string.Join(" ", classes);
+    }
+
+    private async Task Toggle()
+    {
+        if (Disabled) return;
+        
+        _isOpen = !_isOpen;
+        _searchText = "";
+
+        if (_isOpen)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
+            
+            // Check if dropdown should flip up
+            _shouldFlip = await JSRuntime.InvokeAsync<bool>("SufiBlazor.select.shouldFlipUp", _anchorRef, 300);
+            StateHasChanged();
+        }
+        else
+        {
+            _shouldFlip = false;
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+        }
+    }
+
+
+    private async Task SelectItem(TItem item)
+    {
+        var value = ValueField(item);
+        await ValueChanged.InvokeAsync(value);
+        _isOpen = false;
+        _searchText = "";
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Escape" && _isOpen)
+        {
+            _isOpen = false;
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+        }
+        else if (args.Key is "Enter" or " " or "ArrowDown" && !_isOpen)
+        {
+            await Toggle();
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            _searchText = "";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}

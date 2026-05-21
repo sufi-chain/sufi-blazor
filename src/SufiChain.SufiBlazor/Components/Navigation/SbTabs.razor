@@ -1,0 +1,171 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+
+<div class="@CssClass">
+    <div class="sb-tabs__list" role="tablist">
+        @foreach (var tab in _tabs)
+        {
+            var isActive = tab == _activeTab;
+            <button type="button"
+                    class="sb-tabs__tab @(isActive ? "sb-tabs__tab--active" : "") @(tab.Disabled ? "sb-tabs__tab--disabled" : "")"
+                    role="tab"
+                    aria-selected="@isActive"
+                    aria-controls="@tab.PanelId"
+                    disabled="@tab.Disabled"
+                    @onclick="() => SelectTab(tab)">
+                @if (tab.Icon != null)
+                {
+                    <span class="sb-tabs__tab-icon">@tab.Icon</span>
+                }
+                <span class="sb-tabs__tab-label">@tab.Label</span>
+                @if (tab.Badge != null)
+                {
+                    <span class="sb-tabs__tab-badge">@tab.Badge</span>
+                }
+            </button>
+        }
+    </div>
+    
+    <div class="sb-tabs__content">
+        <CascadingValue Value="this">
+            @ChildContent
+        </CascadingValue>
+    </div>
+</div>
+
+@code {
+    private List<SbTab> _tabs = new();
+    private SbTab? _activeTab;
+    
+    /// <summary>
+    /// Tab content (SbTab components).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// The active tab index.
+    /// </summary>
+    [Parameter]
+    public int ActiveIndex { get; set; }
+    
+    /// <summary>
+    /// Callback when active tab index changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> ActiveIndexChanged { get; set; }
+    
+    /// <summary>
+    /// The active tab ID. Use this for string-based tab selection.
+    /// </summary>
+    [Parameter]
+    public string? ActiveTab { get; set; }
+    
+    /// <summary>
+    /// Callback when active tab ID changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string?> ActiveTabChanged { get; set; }
+    
+    /// <summary>
+    /// Whether to lazy-load tab content.
+    /// </summary>
+    [Parameter]
+    public bool LazyLoad { get; set; }
+    
+    /// <summary>
+    /// When true, tabs are displayed vertically (side-by-side with content). Default is false (horizontal tabs).
+    /// </summary>
+    [Parameter]
+    public bool Vertical { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-tabs" };
+            if (Vertical) classes.Add("sb-tabs--vertical");
+            if (!string.IsNullOrWhiteSpace(Class)) classes.Add(Class);
+            return string.Join(" ", classes);
+        }
+    }
+    
+    internal void RegisterTab(SbTab tab)
+    {
+        if (!_tabs.Contains(tab))
+        {
+            _tabs.Add(tab);
+            
+            // Check if this tab should be active (by ID or index)
+            var shouldActivate = _tabs.Count == 1;
+            
+            if (!string.IsNullOrEmpty(ActiveTab) && tab.Id == ActiveTab)
+            {
+                shouldActivate = true;
+            }
+            else if (string.IsNullOrEmpty(ActiveTab) && _tabs.IndexOf(tab) == ActiveIndex)
+            {
+                shouldActivate = true;
+            }
+            
+            if (shouldActivate)
+            {
+                _activeTab = tab;
+            }
+            
+            StateHasChanged();
+        }
+    }
+    
+    internal void UnregisterTab(SbTab tab)
+    {
+        _tabs.Remove(tab);
+        if (_activeTab == tab && _tabs.Any())
+        {
+            _activeTab = _tabs.First();
+        }
+        StateHasChanged();
+    }
+    
+    internal bool IsTabActive(SbTab tab) => tab == _activeTab;
+    internal bool ShouldRenderTab(SbTab tab) => !LazyLoad || tab == _activeTab || tab.HasBeenActivated;
+    
+    private async Task SelectTab(SbTab tab)
+    {
+        if (tab.Disabled) return;
+        
+        _activeTab = tab;
+        tab.MarkActivated();
+        
+        var index = _tabs.IndexOf(tab);
+        await ActiveIndexChanged.InvokeAsync(index);
+        await ActiveTabChanged.InvokeAsync(tab.Id);
+    }
+    
+    protected override void OnParametersSet()
+    {
+        if (!_tabs.Any()) return;
+        
+        // Prefer ID-based selection if ActiveTab is set
+        if (!string.IsNullOrEmpty(ActiveTab))
+        {
+            var tabById = _tabs.FirstOrDefault(t => t.Id == ActiveTab);
+            if (tabById != null)
+            {
+                _activeTab = tabById;
+                return;
+            }
+        }
+        
+        // Fall back to index-based selection
+        if (ActiveIndex >= 0 && ActiveIndex < _tabs.Count)
+        {
+            _activeTab = _tabs[ActiveIndex];
+        }
+    }
+}

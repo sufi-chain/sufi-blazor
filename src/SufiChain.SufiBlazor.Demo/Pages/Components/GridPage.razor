@@ -1,0 +1,355 @@
+@page "/demo/sufi-blazor/grid"
+
+<PageTitle>@(L["Menu:Demo:Grid"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Grid"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:GridDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:GridBasic"]" SourceCode="@basicCode">
+        <ExampleContent>
+            <SbGrid Columns="3" Gap="4">
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>Item 1</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>Item 2</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>Item 3</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>Item 4</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>Item 5</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>Item 6</SbText>
+                    </SbCard>
+                </SbGridItem>
+            </SbGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:GridResponsiveColumns"]" SourceCode="@responsiveCode">
+        <ExampleContent>
+            <SbGrid Columns="1" ColumnsSm="2" ColumnsMd="3" ColumnsLg="4" Gap="4">
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>1 col on mobile</SbText>
+                        <SbText Size="SbSize.Sm" Color="SbColor.Muted">2 cols on tablet</SbText>
+                        <SbText Size="SbSize.Sm" Color="SbColor.Muted">3 cols on desktop</SbText>
+                        <SbText Size="SbSize.Sm" Color="SbColor.Muted">4 cols on large</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>Item 2</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>Item 3</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem>
+                    <SbCard Elevation="2">
+                        <SbText>Item 4</SbText>
+                    </SbCard>
+                </SbGridItem>
+            </SbGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:GridColumnSpans"]" SourceCode="@spansCode">
+        <ExampleContent>
+            <SbGrid Columns="12" Gap="4">
+                <SbGridItem Span="12">
+                    <SbCard Elevation="2" style="background: var(--sb-color-primary-100);">
+                        <SbText>Span 12 (Full Width)</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem Span="6">
+                    <SbCard Elevation="2" style="background: var(--sb-color-success-100);">
+                        <SbText>Span 6 (Half)</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem Span="6">
+                    <SbCard Elevation="2" style="background: var(--sb-color-success-100);">
+                        <SbText>Span 6 (Half)</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem Span="4">
+                    <SbCard Elevation="2" style="background: var(--sb-color-info-100);">
+                        <SbText>Span 4</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem Span="4">
+                    <SbCard Elevation="2" style="background: var(--sb-color-info-100);">
+                        <SbText>Span 4</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem Span="4">
+                    <SbCard Elevation="2" style="background: var(--sb-color-info-100);">
+                        <SbText>Span 4</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem Span="3">
+                    <SbCard Elevation="2" style="background: var(--sb-color-warning-100);">
+                        <SbText>Span 3</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem Span="9">
+                    <SbCard Elevation="2" style="background: var(--sb-color-secondary-100);">
+                        <SbText>Span 9</SbText>
+                    </SbCard>
+                </SbGridItem>
+            </SbGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:GridResponsiveSpans"]" SourceCode="@responsiveSpansCode">
+        <ExampleContent>
+            <SbGrid Columns="12" Gap="4">
+                <SbGridItem Span="12" SpanMd="8" SpanLg="9">
+                    <SbCard Elevation="2">
+                        <SbText Weight="SbFontWeight.Semibold">Main Content</SbText>
+                        <SbText Size="SbSize.Sm" Color="SbColor.Muted">Full width on mobile, 8 cols on tablet, 9 cols on desktop</SbText>
+                    </SbCard>
+                </SbGridItem>
+                <SbGridItem Span="12" SpanMd="4" SpanLg="3">
+                    <SbCard Elevation="2">
+                        <SbText Weight="SbFontWeight.Semibold">Sidebar</SbText>
+                        <SbText Size="SbSize.Sm" Color="SbColor.Muted">Full width on mobile, 4 cols on tablet, 3 cols on desktop</SbText>
+                    </SbCard>
+                </SbGridItem>
+            </SbGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:GridCustomGaps"]" SourceCode="@gapsCode">
+        <ExampleContent>
+            <SbStack Gap="6">
+                <div>
+                    <SbText Weight="SbFontWeight.Semibold" style="margin-bottom: var(--sb-space-2);">@string.Format(L["Demo:GridGapValue"], 2)</SbText>
+                    <SbGrid Columns="3" Gap="2">
+                        <SbGridItem><SbCard Elevation="2"><SbText>Item 1</SbText></SbCard></SbGridItem>
+                        <SbGridItem><SbCard Elevation="2"><SbText>Item 2</SbText></SbCard></SbGridItem>
+                        <SbGridItem><SbCard Elevation="2"><SbText>Item 3</SbText></SbCard></SbGridItem>
+                    </SbGrid>
+                </div>
+
+                <div>
+                    <SbText Weight="SbFontWeight.Semibold" style="margin-bottom: var(--sb-space-2);">@string.Format(L["Demo:GridGapValue"], 8)</SbText>
+                    <SbGrid Columns="3" Gap="8">
+                        <SbGridItem><SbCard Elevation="2"><SbText>Item 1</SbText></SbCard></SbGridItem>
+                        <SbGridItem><SbCard Elevation="2"><SbText>Item 2</SbText></SbCard></SbGridItem>
+                        <SbGridItem><SbCard Elevation="2"><SbText>Item 3</SbText></SbCard></SbGridItem>
+                    </SbGrid>
+                </div>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:GridDifferentGaps"]" SourceCode="@differentGapsCode">
+        <ExampleContent>
+            <SbGrid Columns="3" RowGap="8" ColumnGap="2">
+                <SbGridItem><SbCard Elevation="2"><SbText>Large row gap</SbText></SbCard></SbGridItem>
+                <SbGridItem><SbCard Elevation="2"><SbText>Small column gap</SbText></SbCard></SbGridItem>
+                <SbGridItem><SbCard Elevation="2"><SbText>Item 3</SbText></SbCard></SbGridItem>
+                <SbGridItem><SbCard Elevation="2"><SbText>Item 4</SbText></SbCard></SbGridItem>
+                <SbGridItem><SbCard Elevation="2"><SbText>Item 5</SbText></SbCard></SbGridItem>
+                <SbGridItem><SbCard Elevation="2"><SbText>Item 6</SbText></SbCard></SbGridItem>
+            </SbGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:GridDashboardLayout"]" SourceCode="@dashboardCode">
+        <ExampleContent>
+            <SbGrid Columns="12" Gap="4">
+                <SbGridItem Span="12">
+                    <SbCard Elevation="2" style="background: var(--sb-color-primary-50);">
+                        <SbHeading Level="2">Dashboard Header</SbHeading>
+                    </SbCard>
+                </SbGridItem>
+                
+                <SbGridItem Span="12" SpanMd="3">
+                    <SbStatCard Label="Total Sales"
+                              Value="24,567"
+                              Prefix="$"
+                              Trend="12.5"
+                              TrendLabel="vs last month">
+                        <Icon>
+                            <SbIcon Name="dollar-sign" Size="SbSize.Xl" Color="SbColor.Success" />
+                        </Icon>
+                    </SbStatCard>
+                </SbGridItem>
+                
+                <SbGridItem Span="12" SpanMd="3">
+                    <SbStatCard Label="Orders"
+                              Value="1,234"
+                              Trend="8.2"
+                              TrendLabel="vs last month">
+                        <Icon>
+                            <SbIcon Name="shopping-cart" Size="SbSize.Xl" Color="SbColor.Primary" />
+                        </Icon>
+                    </SbStatCard>
+                </SbGridItem>
+                
+                <SbGridItem Span="12" SpanMd="3">
+                    <SbStatCard Label="Customers"
+                              Value="5,678"
+                              Trend="15.3"
+                              TrendLabel="vs last month">
+                        <Icon>
+                            <SbIcon Name="users" Size="SbSize.Xl" Color="SbColor.Info" />
+                        </Icon>
+                    </SbStatCard>
+                </SbGridItem>
+                
+                <SbGridItem Span="12" SpanMd="3">
+                    <SbStatCard Label="Conversion"
+                              Value="3.4"
+                              Suffix="%"
+                              Trend="-2.1"
+                              TrendLabel="vs last month">
+                        <Icon>
+                            <SbIcon Name="trending-up" Size="SbSize.Xl" Color="SbColor.Warning" />
+                        </Icon>
+                    </SbStatCard>
+                </SbGridItem>
+
+                <SbGridItem Span="12" SpanMd="8">
+                    <SbCard Elevation="2">
+                        <SbHeading Level="3">Recent Activity</SbHeading>
+                        <SbText Color="SbColor.Muted">Main content area</SbText>
+                    </SbCard>
+                </SbGridItem>
+                
+                <SbGridItem Span="12" SpanMd="4">
+                    <SbCard Elevation="2">
+                        <SbHeading Level="3">Quick Actions</SbHeading>
+                        <SbText Color="SbColor.Muted">Sidebar content</SbText>
+                    </SbCard>
+                </SbGridItem>
+            </SbGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbGrid" />
+</DemoLayout>
+
+@code {
+    private const string basicCode = @"<SbGrid Columns=""3"" Gap=""4"">
+    <SbGridItem>
+        <SbCard Elevation=""2""><SbText>Item 1</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem>
+        <SbCard Elevation=""2""><SbText>Item 2</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem>
+        <SbCard Elevation=""2""><SbText>Item 3</SbText></SbCard>
+    </SbGridItem>
+</SbGrid>";
+
+    private const string responsiveCode = @"<SbGrid Columns=""1"" ColumnsSm=""2"" ColumnsMd=""3"" ColumnsLg=""4"" Gap=""4"">
+    <SbGridItem>
+        <SbCard Elevation=""2""><SbText>Item 1</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem>
+        <SbCard Elevation=""2""><SbText>Item 2</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem>
+        <SbCard Elevation=""2""><SbText>Item 3</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem>
+        <SbCard Elevation=""2""><SbText>Item 4</SbText></SbCard>
+    </SbGridItem>
+</SbGrid>";
+
+    private const string spansCode = @"<SbGrid Columns=""12"" Gap=""4"">
+    <SbGridItem Span=""12"">
+        <SbCard Elevation=""2""><SbText>Span 12 (Full Width)</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem Span=""6"">
+        <SbCard Elevation=""2""><SbText>Span 6 (Half)</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem Span=""6"">
+        <SbCard Elevation=""2""><SbText>Span 6 (Half)</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem Span=""4"">
+        <SbCard Elevation=""2""><SbText>Span 4</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem Span=""4"">
+        <SbCard Elevation=""2""><SbText>Span 4</SbText></SbCard>
+    </SbGridItem>
+    <SbGridItem Span=""4"">
+        <SbCard Elevation=""2""><SbText>Span 4</SbText></SbCard>
+    </SbGridItem>
+</SbGrid>";
+
+    private const string responsiveSpansCode = @"<SbGrid Columns=""12"" Gap=""4"">
+    <SbGridItem Span=""12"" SpanMd=""8"" SpanLg=""9"">
+        <SbCard Elevation=""2"">
+            <SbText>Main Content</SbText>
+            <SbText Size=""SbSize.Sm"">Full on mobile, 8 cols on tablet, 9 on desktop</SbText>
+        </SbCard>
+    </SbGridItem>
+    <SbGridItem Span=""12"" SpanMd=""4"" SpanLg=""3"">
+        <SbCard Elevation=""2"">
+            <SbText>Sidebar</SbText>
+            <SbText Size=""SbSize.Sm"">Full on mobile, 4 cols on tablet, 3 on desktop</SbText>
+        </SbCard>
+    </SbGridItem>
+</SbGrid>";
+
+    private const string gapsCode = @"<SbGrid Columns=""3"" Gap=""2"">
+    <SbGridItem><SbCard><SbText>Small gap</SbText></SbCard></SbGridItem>
+    <!-- more items -->
+</SbGrid>
+
+<SbGrid Columns=""3"" Gap=""8"">
+    <SbGridItem><SbCard><SbText>Large gap</SbText></SbCard></SbGridItem>
+    <!-- more items -->
+</SbGrid>";
+
+    private const string differentGapsCode = @"<SbGrid Columns=""3"" RowGap=""8"" ColumnGap=""2"">
+    <SbGridItem><SbCard><SbText>Large row gap</SbText></SbCard></SbGridItem>
+    <SbGridItem><SbCard><SbText>Small column gap</SbText></SbCard></SbGridItem>
+    <!-- more items -->
+</SbGrid>";
+
+    private const string dashboardCode = @"<SbGrid Columns=""12"" Gap=""4"">
+    <SbGridItem Span=""12"">
+        <SbCard Elevation=""2""><SbHeading Level=""2"">Dashboard Header</SbHeading></SbCard>
+    </SbGridItem>
+    
+    <SbGridItem Span=""12"" SpanMd=""3"">
+        <SbStatCard Label=""Total Sales"" Value=""24,567"" Prefix=""$"" />
+    </SbGridItem>
+    
+    <SbGridItem Span=""12"" SpanMd=""8"">
+        <SbCard Elevation=""2""><SbHeading Level=""3"">Recent Activity</SbHeading></SbCard>
+    </SbGridItem>
+    
+    <SbGridItem Span=""12"" SpanMd=""4"">
+        <SbCard Elevation=""2""><SbHeading Level=""3"">Quick Actions</SbHeading></SbCard>
+    </SbGridItem>
+</SbGrid>";
+}

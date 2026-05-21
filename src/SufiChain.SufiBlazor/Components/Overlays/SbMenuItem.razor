@@ -1,0 +1,132 @@
+@namespace SufiChain.SufiBlazor.Components.Overlays
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+
+<button type="button"
+        class="@CssClass"
+        role="menuitem"
+        disabled="@Disabled"
+        tabindex="@(Disabled ? -1 : 0)"
+        @ref="_elementRef"
+        @onclick="HandleClick"
+        @onkeydown="HandleKeyDown">
+    @if (Icon != null)
+    {
+        <span class="sb-menu-item__icon">@Icon</span>
+    }
+    <span class="sb-menu-item__text">
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            @Text
+        }
+    </span>
+    @if (!string.IsNullOrEmpty(Shortcut))
+    {
+        <span class="sb-menu-item__shortcut">@Shortcut</span>
+    }
+</button>
+
+@code {
+    private ElementReference _elementRef;
+
+    [CascadingParameter]
+    private SbMenu? ParentMenu { get; set; }
+
+    /// <summary>
+    /// Menu item text.
+    /// </summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>
+    /// Menu item content (replaces Text).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Icon content.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+
+    /// <summary>
+    /// Keyboard shortcut hint.
+    /// </summary>
+    [Parameter]
+    public string? Shortcut { get; set; }
+
+    /// <summary>
+    /// Whether the item is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Click handler.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-menu-item" };
+            if (Disabled)
+            {
+                classes.Add("sb-menu-item--disabled");
+            }
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(" ", classes);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        ParentMenu?.RegisterItem(this);
+    }
+
+    private async Task HandleClick()
+    {
+        if (!Disabled)
+        {
+            await OnClick.InvokeAsync();
+            if (ParentMenu != null)
+            {
+                await ParentMenu.OnItemClickAsync();
+            }
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter" or " " && !Disabled)
+        {
+            await HandleClick();
+        }
+    }
+
+    internal async Task FocusAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.focus.set", _elementRef);
+    }
+
+    public void Dispose()
+    {
+        ParentMenu?.UnregisterItem(this);
+    }
+}

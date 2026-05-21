@@ -1,0 +1,203 @@
+@namespace SufiChain.SufiBlazor.Components.Overlays
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+
+<div class="sb-menu-anchor" @ref="_anchorRef">
+    <div @onkeydown="HandleAnchorKeyDown">
+        @AnchorContent
+    </div>
+    @if (Open)
+    {
+        <div class="@MenuCssClass"
+             role="menu"
+             @onkeydown="HandleMenuKeyDown"
+             @onclick:stopPropagation="true"
+             tabindex="-1"
+             @ref="_menuRef">
+            <CascadingValue Value="this">
+                @ChildContent
+            </CascadingValue>
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _anchorRef;
+    private ElementReference _menuRef;
+    private DotNetObjectReference<SbMenu>? _dotNetRef;
+    private int _focusedIndex = -1;
+    private List<SbMenuItem> _items = new();
+
+    /// <summary>
+    /// Whether the menu is open.
+    /// </summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>
+    /// Callback when open state changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>
+    /// Content that triggers the menu.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? AnchorContent { get; set; }
+
+    /// <summary>
+    /// Menu items.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Menu placement.
+    /// </summary>
+    [Parameter]
+    public SbPlacement Placement { get; set; } = SbPlacement.BottomStart;
+
+    /// <summary>
+    /// Close when clicking a menu item.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnItemClick { get; set; } = true;
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    private string MenuCssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-menu" };
+            classes.Add($"sb-menu--{Placement.ToCssClass()}");
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(" ", classes);
+        }
+    }
+
+    internal void RegisterItem(SbMenuItem item)
+    {
+        if (!_items.Contains(item))
+        {
+            _items.Add(item);
+        }
+    }
+
+    internal void UnregisterItem(SbMenuItem item)
+    {
+        _items.Remove(item);
+    }
+
+    internal async Task OnItemClickAsync()
+    {
+        if (CloseOnItemClick)
+        {
+            await CloseAsync();
+        }
+    }
+
+    private async Task Toggle()
+    {
+        await OpenChanged.InvokeAsync(!Open);
+    }
+
+    private async Task CloseAsync()
+    {
+        _focusedIndex = -1;
+        await OpenChanged.InvokeAsync(false);
+    }
+
+    private async Task HandleAnchorKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key is "Enter" or " " or "ArrowDown")
+        {
+            await OpenChanged.InvokeAsync(true);
+        }
+    }
+
+    private async Task HandleMenuKeyDown(KeyboardEventArgs args)
+    {
+        var enabledItems = _items.Where(i => !i.Disabled).ToList();
+        if (enabledItems.Count == 0) return;
+
+        switch (args.Key)
+        {
+            case "ArrowDown":
+                _focusedIndex = (_focusedIndex + 1) % enabledItems.Count;
+                await FocusItemAsync(_focusedIndex);
+                break;
+
+            case "ArrowUp":
+                _focusedIndex = _focusedIndex <= 0 ? enabledItems.Count - 1 : _focusedIndex - 1;
+                await FocusItemAsync(_focusedIndex);
+                break;
+
+            case "Home":
+                _focusedIndex = 0;
+                await FocusItemAsync(_focusedIndex);
+                break;
+
+            case "End":
+                _focusedIndex = enabledItems.Count - 1;
+                await FocusItemAsync(_focusedIndex);
+                break;
+
+            case "Escape":
+                await CloseAsync();
+                break;
+
+            case "Tab":
+                await CloseAsync();
+                break;
+        }
+    }
+
+    private async Task FocusItemAsync(int index)
+    {
+        var enabledItems = _items.Where(i => !i.Disabled).ToList();
+        if (index >= 0 && index < enabledItems.Count)
+        {
+            await enabledItems[index].FocusAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+        }
+
+        if (Open)
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (Open)
+        {
+            await CloseAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}

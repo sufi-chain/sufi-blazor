@@ -1,0 +1,122 @@
+@page "/demo/sufi-blazor/slider"
+
+<PageTitle>@(L["Menu:Demo:Slider"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Slider"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:SliderPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:SliderBasic"]" SourceCode="@basicCode" RelatedCode="@basicCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:SliderVolume"]">
+                    <SbSlider TNumber="int" @bind-Value="_volume" Min="0" Max="100" />
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:SliderValue"]: @_volume</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SliderWithStep"]" SourceCode="@stepCode" RelatedCode="@stepCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:SliderBrightness"]">
+                    <SbSlider TNumber="int" @bind-Value="_brightness" Min="0" Max="100" Step="10" />
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:SliderValue"]: @_brightness</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SliderDecimal"]" SourceCode="@decimalCode" RelatedCode="@decimalCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:SliderRating"]">
+                    <SbSlider TNumber="decimal" @bind-Value="_rating" Min="0m" Max="5m" Step="0.5m" />
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:SliderValue"]: @_rating</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SliderNoValueDisplay"]" SourceCode="@noValueCode" RelatedCode="@noValueCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:SliderOpacity"]">
+                    <SbSlider TNumber="int" @bind-Value="_opacity" Min="0" Max="10" ShowValue="false" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SliderCustomRange"]" SourceCode="@customRangeCode" RelatedCode="@customRangeCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:SliderYear"]">
+                    <SbSlider TNumber="int" @bind-Value="_year" Min="2000" Max="2030" />
+                </SbFormField>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:SliderValue"]: @_year</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SliderDisabled"]" SourceCode="@disabledCode" RelatedCode="@disabledCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="4" style="max-width: 400px;">
+                <SbFormField Label="@L["Demo:SliderLockedValue"]">
+                    <SbSlider TNumber="int" Value="75" Min="0" Max="100" Disabled="true" />
+                </SbFormField>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbSlider" />
+</DemoLayout>
+
+@code {
+    private int? _volume = 50;
+    private int? _brightness = 50;
+    private decimal? _rating = 2.5m;
+    private int? _opacity = 5;
+    private int? _year = 2025;
+
+    private const string basicCodeBehind = @"private int? _volume = 50;";
+
+    private const string basicCode = @"<SbFormField Label=""Volume"">
+    <SbSlider TNumber=""int"" @bind-Value=""_volume"" Min=""0"" Max=""100"" />
+</SbFormField>";
+
+    private const string stepCodeBehind = @"private int? _brightness = 50;";
+
+    private const string stepCode = @"<SbFormField Label=""Brightness"">
+    <SbSlider TNumber=""int"" @bind-Value=""_brightness"" Min=""0"" Max=""100"" Step=""10"" />
+</SbFormField>";
+
+    private const string decimalCodeBehind = @"private decimal? _rating = 2.5m;";
+
+    private const string decimalCode = @"<SbFormField Label=""Rating"">
+    <SbSlider TNumber=""decimal"" @bind-Value=""_rating"" Min=""0m"" Max=""5m"" Step=""0.5m"" />
+</SbFormField>";
+
+    private const string noValueCodeBehind = @"private int? _opacity = 5;";
+
+    private const string noValueCode = @"<SbFormField Label=""Opacity"">
+    <SbSlider TNumber=""int"" @bind-Value=""_opacity"" Min=""0"" Max=""10"" ShowValue=""false"" />
+</SbFormField>";
+
+    private const string customRangeCodeBehind = @"private int? _year = 2025;";
+
+    private const string customRangeCode = @"<SbFormField Label=""Year"">
+    <SbSlider TNumber=""int"" @bind-Value=""_year"" Min=""2000"" Max=""2030"" />
+</SbFormField>";
+
+    private const string disabledCodeBehind = @"// Fixed value for disabled demo; no binding needed";
+
+    private const string disabledCode = @"<SbFormField Label=""Locked Value"">
+    <SbSlider TNumber=""int"" Value=""75"" Min=""0"" Max=""100"" Disabled=""true"" />
+</SbFormField>";
+}

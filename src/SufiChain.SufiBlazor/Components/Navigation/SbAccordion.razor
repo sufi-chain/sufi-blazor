@@ -1,0 +1,67 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+
+<div class="sb-accordion @Class">
+    <CascadingValue Value="this">
+        @ChildContent
+    </CascadingValue>
+</div>
+
+@code {
+    private HashSet<SbAccordionItem> _expandedItems = new();
+    
+    /// <summary>
+    /// Accordion items.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// Whether multiple items can be expanded.
+    /// </summary>
+    [Parameter]
+    public bool Multiple { get; set; }
+    
+    /// <summary>
+    /// Callback when expanded items change.
+    /// </summary>
+    [Parameter]
+    public EventCallback<HashSet<SbAccordionItem>> OnExpandedChanged { get; set; }
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+    
+    internal bool IsExpanded(SbAccordionItem item) => _expandedItems.Contains(item);
+    
+    /// <summary>
+    /// Ensures an item is in the expanded set when it has DefaultExpanded (called by the item).
+    /// </summary>
+    internal void EnsureDefaultExpanded(SbAccordionItem item)
+    {
+        if (!item.DefaultExpanded || _expandedItems.Contains(item)) return;
+        if (!Multiple)
+            _expandedItems.Clear();
+        _expandedItems.Add(item);
+    }
+    
+    internal async Task ToggleItem(SbAccordionItem item)
+    {
+        if (_expandedItems.Contains(item))
+        {
+            _expandedItems.Remove(item);
+        }
+        else
+        {
+            if (!Multiple)
+            {
+                _expandedItems.Clear();
+            }
+            _expandedItems.Add(item);
+        }
+        
+        StateHasChanged();
+        await OnExpandedChanged.InvokeAsync(_expandedItems);
+    }
+}

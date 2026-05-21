@@ -1,0 +1,152 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+@implements IDisposable
+
+<div class="sb-toast-host sb-toast-host--@GetPositionClass() @Class">
+    @foreach (var toast in _toasts)
+    {
+        <div class="sb-toast-host__item @(toast.IsLeaving ? "sb-toast-host__item--leaving" : "sb-toast-host__item--entering")">
+            <SbToast Title="@toast.Title"
+                     Message="@toast.Message"
+                     Severity="@toast.Severity"
+                     ShowCloseButton="true"
+                     OnClose="() => RemoveToast(toast.Id)" />
+        </div>
+    }
+</div>
+
+@code {
+    private List<ToastItem> _toasts = new();
+    private int _nextId = 0;
+    
+    /// <summary>
+    /// Position of the toast host.
+    /// </summary>
+    [Parameter]
+    public SbToastPosition Position { get; set; } = SbToastPosition.TopRight;
+    
+    /// <summary>
+    /// Default duration in milliseconds.
+    /// </summary>
+    [Parameter]
+    public int DefaultDuration { get; set; } = 5000;
+    
+    /// <summary>
+    /// Maximum number of toasts to show.
+    /// </summary>
+    [Parameter]
+    public int MaxToasts { get; set; } = 5;
+    
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    private string GetPositionClass() => Position switch
+    {
+        SbToastPosition.TopLeft => "top-left",
+        SbToastPosition.TopCenter => "top-center",
+        SbToastPosition.TopRight => "top-right",
+        SbToastPosition.BottomLeft => "bottom-left",
+        SbToastPosition.BottomCenter => "bottom-center",
+        SbToastPosition.BottomRight => "bottom-right",
+        _ => "top-right"
+    };
+
+    /// <summary>
+    /// Show a toast message.
+    /// </summary>
+    public async Task ShowAsync(string message, SbToastSeverity severity = SbToastSeverity.Info, string? title = null, int? duration = null)
+    {
+        var toast = new ToastItem
+        {
+            Id = _nextId++,
+            Message = message,
+            Title = title,
+            Severity = severity,
+            Duration = duration ?? DefaultDuration
+        };
+        
+        // Remove oldest if at max
+        while (_toasts.Count >= MaxToasts)
+        {
+            _toasts.RemoveAt(0);
+        }
+        
+        _toasts.Add(toast);
+        StateHasChanged();
+        
+        // Auto-dismiss
+        if (toast.Duration > 0)
+        {
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(toast.Duration);
+                await InvokeAsync(() => RemoveToast(toast.Id));
+            });
+        }
+    }
+    
+    /// <summary>
+    /// Show an info toast.
+    /// </summary>
+    public Task ShowInfoAsync(string message, string? title = null) =>
+        ShowAsync(message, SbToastSeverity.Info, title);
+    
+    /// <summary>
+    /// Show a success toast.
+    /// </summary>
+    public Task ShowSuccessAsync(string message, string? title = null) =>
+        ShowAsync(message, SbToastSeverity.Success, title);
+    
+    /// <summary>
+    /// Show a warning toast.
+    /// </summary>
+    public Task ShowWarningAsync(string message, string? title = null) =>
+        ShowAsync(message, SbToastSeverity.Warning, title);
+    
+    /// <summary>
+    /// Show an error toast.
+    /// </summary>
+    public Task ShowErrorAsync(string message, string? title = null) =>
+        ShowAsync(message, SbToastSeverity.Error, title);
+    
+    private async Task RemoveToast(int id)
+    {
+        var toast = _toasts.FirstOrDefault(t => t.Id == id);
+        if (toast != null)
+        {
+            toast.IsLeaving = true;
+            StateHasChanged();
+            
+            await Task.Delay(300); // Animation duration
+            _toasts.Remove(toast);
+            StateHasChanged();
+        }
+    }
+    
+    /// <summary>
+    /// Clear all toasts.
+    /// </summary>
+    public void Clear()
+    {
+        _toasts.Clear();
+        StateHasChanged();
+    }
+    
+    public void Dispose()
+    {
+        _toasts.Clear();
+    }
+    
+    private class ToastItem
+    {
+        public int Id { get; set; }
+        public string Message { get; set; } = "";
+        public string? Title { get; set; }
+        public SbToastSeverity Severity { get; set; }
+        public int Duration { get; set; }
+        public bool IsLeaving { get; set; }
+    }
+}
+
