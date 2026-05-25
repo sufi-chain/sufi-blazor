@@ -27,13 +27,13 @@ Feature-oriented catalog. See **SufiChain.SufiBlazorDemo** and component XML doc
 
 - **SbStack** — Flex row/column, gap, justify, align.  
 - **SbGrid** — CSS grid; column counts, gap.  
-- **SbAppShell**, **SbSidebar** — App chrome; Wish Theme uses these.
+- **SbAppShell**, **SbSidebar** — App chrome; KomTheme uses these.
 
 ## Navigation
 
 - **SbTabs** / **SbTab** — Tabbed content.  
 - **SbBreadcrumb** / **SbBreadcrumbItem** — Breadcrumbs.  
-- **SbNavMenu** / **SbNavItem** — Hierarchical nav; used in Wish layouts.
+- **SbNavMenu** / **SbNavItem** — Hierarchical nav; used in Kom layouts.
 
 ## Overlays
 

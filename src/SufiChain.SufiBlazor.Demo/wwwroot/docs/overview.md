@@ -44,7 +44,7 @@ You can use SufiBlazor in:
 When SufiBlazor is used inside Sufi Platform:
 
 - it provides the base interactive component layer
-- Wish Theme builds the host shell and layout on top of it
+- KomTheme builds the host shell and layout on top of it
 - SufiAbp provides the platform abstractions, host wiring, and module composition rules around it
 
 That relationship matters for platform developers, but the library remains usable outside that stack.

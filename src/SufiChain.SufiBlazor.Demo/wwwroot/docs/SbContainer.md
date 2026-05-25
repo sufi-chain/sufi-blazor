@@ -84,7 +84,7 @@ public enum SbContainerMaxWidth
 
 ### Page Layout
 
-Use `SbContainer` inside your layout (e.g. Wish theme layouts use it for main content):
+Use `SbContainer` inside your layout (e.g. KomTheme layouts use it for main content):
 
 ```razor
 <SbContainer MaxWidth="SbContainerMaxWidth.Xl">

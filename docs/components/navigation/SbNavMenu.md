@@ -55,7 +55,7 @@ A navigation menu container component for organizing navigation items.
 
 ### Inside a layout sidebar
 
-Use `SbNavMenu` inside the Wish theme's sidebar (e.g. `WishSidebar` or `WishExpandPanel`):
+Use `SbNavMenu` inside the KomTheme's sidebar (e.g. `KomSidebar` or `KomExpandPanel`):
 
 ```razor
 <SbNavMenu>

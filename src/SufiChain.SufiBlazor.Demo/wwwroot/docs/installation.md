@@ -59,10 +59,10 @@ Create a simple page with a few components such as `SbCard`, `SbButton`, and `Sb
 If the host already uses Sufi Platform conventions:
 
 - SufiBlazor is usually part of the expected UI stack already
-- Wish Theme builds on top of SufiBlazor rather than replacing it
+- KomTheme builds on top of SufiBlazor rather than replacing it
 - the same package, static asset, and theme-provider concepts still apply
 
 ## Optional notes
 
 - If your app uses dialog, toast, or similar UI services, follow the host-specific registration guidance used by your application.
-- If Wish Theme is part of the host, it still depends on SufiBlazor as the base component system.
+- If KomTheme is part of the host, it still depends on SufiBlazor as the base component system.

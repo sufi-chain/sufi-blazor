@@ -1,11 +1,12 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path="NuGet.Config" />
     <File Path="versions.props" />
   </Folder>
   <Folder Name="/src/">
-    <Project Path="src/SufiChain.SufiBlazor/SufiChain.SufiBlazor.csproj" />
     <Project Path="src/SufiChain.SufiBlazor.Demo.Localization/SufiChain.SufiBlazor.Demo.Localization.csproj" />
     <Project Path="src/SufiChain.SufiBlazor.Demo/SufiChain.SufiBlazor.Demo.csproj" />
+    <Project Path="src/SufiChain.SufiBlazor/SufiChain.SufiBlazor.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SufiChain.SufiBlazor.Tests.csproj" />
