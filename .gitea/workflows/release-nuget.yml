@@ -8,14 +8,12 @@ on:
 env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   NUGET_SOURCE_URL: https://nuget.sabp.ir/v3/index.json
+  NUGET_PUSH_PARALLELISM: 4
   PACKAGE_OUTPUT: ./artifacts/nuget
   PACKAGE_PROJECTS: src/SufiChain.SufiBlazor/SufiChain.SufiBlazor.csproj
-  # TODO: Uncomment these when demo packages are ready to build and release.
-  # PACKAGE_PROJECTS: >-
-  #   src/SufiChain.SufiBlazor/SufiChain.SufiBlazor.csproj
-  #   src/SufiChain.SufiBlazor.Demo.Localization/SufiChain.SufiBlazor.Demo.Localization.csproj
-  #   src/SufiChain.SufiBlazor.Demo/SufiChain.SufiBlazor.Demo.csproj
+  # TODO: Add demo packages here when they are ready for release.
   RELEASE_TAG: ${{ gitea.event.release.tag_name }}
   REF_NAME: ${{ gitea.ref_name }}
   REPOSITORY: ${{ gitea.repository }}
@@ -32,46 +30,46 @@ jobs:
         run: |
           set -euo pipefail
           git clone --depth 1 https://git.sabp.ir/sufi-chain/sufi-blazor.git .
-          echo "=== Workspace contents ==="
-          ls -la
 
-      - name: Restore selected projects
+      - name: Set package version
         shell: bash
         run: |
           set -euo pipefail
-          for project in $PACKAGE_PROJECTS; do
-            dotnet restore "$project"
-          done
-
-      - name: Build selected projects
-        shell: bash
-        run: |
-          set -euo pipefail
-          for project in $PACKAGE_PROJECTS; do
-            dotnet build "$project" --configuration Release --no-restore
-          done
-
-      - name: Pack selected projects
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$PACKAGE_OUTPUT"
-
           if [ -n "${RELEASE_TAG:-}" ]; then
             version="$RELEASE_TAG"
           else
             version="0.0.0-dev.$(date +%Y%m%d%H%M%S)"
           fi
           version="${version#v}"
-          echo "=== Packing version: $version ==="
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          echo "Package version: $version"
 
+      - name: Restore selected projects
+        shell: bash
+        run: |
+          set -euo pipefail
           for project in $PACKAGE_PROJECTS; do
-            dotnet pack "$project" \
+            dotnet restore "$project" \
+              --verbosity minimal \
+              -p:NuGetAudit=false
+          done
+
+      - name: Build and pack selected projects
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$PACKAGE_OUTPUT"
+          for project in $PACKAGE_PROJECTS; do
+            dotnet build "$project" \
               --configuration Release \
-              --no-build \
-              --output "$PACKAGE_OUTPUT" \
-              -p:PackageVersion="$version" \
-              -p:ContinuousIntegrationBuild=true
+              --no-restore \
+              --verbosity minimal \
+              -m \
+              -p:PackageVersion="$VERSION" \
+              -p:ContinuousIntegrationBuild=true \
+              -p:BuildInParallel=true \
+              -p:PackageOutputPath="$PWD/$PACKAGE_OUTPUT" \
+              -p:GeneratePackageOnBuild=true
           done
 
       - name: Push packages to BaGet
@@ -85,16 +83,15 @@ jobs:
             exit 1
           fi
 
-          shopt -s nullglob
-          packages=("$PACKAGE_OUTPUT"/*.nupkg)
+          mapfile -t packages < <(find "$PACKAGE_OUTPUT" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' | sort)
           if [ ${#packages[@]} -eq 0 ]; then
             echo "No NuGet packages were produced."
             exit 1
           fi
 
-          for package in "${packages[@]}"; do
-            dotnet nuget push "$package" \
+          printf '%s\0' "${packages[@]}" | xargs -0 -n 1 -P "$NUGET_PUSH_PARALLELISM" sh -c '
+            dotnet nuget push "$1" \
               --source "$NUGET_SOURCE_URL" \
               --api-key "$NUGET_API_KEY" \
               --skip-duplicate
-          done
+          ' sh
