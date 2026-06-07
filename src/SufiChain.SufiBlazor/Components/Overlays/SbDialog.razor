@@ -8,6 +8,8 @@
         style="@EffectiveStyle"
         @onkeydown="HandleKeyDown"
         @oncancel="HandleCancel"
+        @oncancel:preventDefault="true"
+        @onclose="HandleNativeClose"
         aria-labelledby="@(Title != null ? _titleId : null)"
         aria-modal="true"
         @attributes="FilteredAttributes">
@@ -50,6 +52,9 @@
     private ElementReference _dialogRef;
     private readonly string _titleId = $"sb-dialog-title-{Guid.NewGuid():N}";
     private bool _isOpen;
+    private bool _hasRendered;
+    private bool _pendingOpenSync;
+    private bool _suppressNextNativeClose;
 
     /// <summary>
     /// Whether the dialog is open.
@@ -137,7 +142,7 @@
 
     /// <summary>
     /// Optional callback when the header close (X) button is clicked.
-    /// If set, this runs instead of the default close behavior, so the parent can e.g. call its own Hide() to keep @bind-Open in sync.
+    /// Runs before the standard close flow; the dialog still invokes OpenChanged(false).
     /// </summary>
     [Parameter]
     public EventCallback OnCloseButtonClick { get; set; }
@@ -262,14 +267,17 @@
         if (Open != _isOpen)
         {
             _isOpen = Open;
-            if (Open)
-            {
-                await ShowAsync();
-            }
-            else
-            {
-                await HideAsync();
-            }
+            await SyncNativeOpenStateAsync();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _hasRendered = true;
+
+        if (_pendingOpenSync)
+        {
+            await SyncNativeOpenStateAsync();
         }
     }
 
@@ -283,22 +291,41 @@
         await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.close", _dialogRef);
     }
 
+    private async Task SyncNativeOpenStateAsync()
+    {
+        if (!_hasRendered)
+        {
+            _pendingOpenSync = true;
+            return;
+        }
+
+        _pendingOpenSync = false;
+
+        if (_isOpen)
+        {
+            await ShowAsync();
+        }
+        else
+        {
+            await HideAsync();
+        }
+    }
+
     private async Task HandleCloseButtonClick()
     {
         if (OnCloseButtonClick.HasDelegate)
         {
             await OnCloseButtonClick.InvokeAsync();
         }
-        else
-        {
-            await CloseAsync(SbDialogCloseReason.CloseButton);
-        }
+
+        await CloseAsync(SbDialogCloseReason.CloseButton);
     }
 
     private async Task CloseAsync(SbDialogCloseReason reason)
     {
+        _suppressNextNativeClose = true;
         _isOpen = false;
-        await HideAsync();
+        await SyncNativeOpenStateAsync();
         await OnClose.InvokeAsync(reason);
         await OpenChanged.InvokeAsync(false);
     }
@@ -318,6 +345,24 @@
         {
             await CloseAsync(SbDialogCloseReason.Escape);
         }
+    }
+
+    private async Task HandleNativeClose()
+    {
+        if (_suppressNextNativeClose)
+        {
+            _suppressNextNativeClose = false;
+            return;
+        }
+
+        if (!_isOpen)
+        {
+            return;
+        }
+
+        _isOpen = false;
+        await OnClose.InvokeAsync(SbDialogCloseReason.CloseButton);
+        await OpenChanged.InvokeAsync(false);
     }
 
     public async ValueTask DisposeAsync()

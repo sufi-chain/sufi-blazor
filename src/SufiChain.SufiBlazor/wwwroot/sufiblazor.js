@@ -395,7 +395,7 @@ window.SufiBlazor = window.SufiBlazor || {};
      * @param {HTMLDialogElement} element - Dialog element
      */
     showModal: function (element) {
-      if (element && typeof element.showModal === "function") {
+      if (element && !element.open && typeof element.showModal === "function") {
         element.showModal();
       }
     },
@@ -405,7 +405,7 @@ window.SufiBlazor = window.SufiBlazor || {};
      * @param {HTMLDialogElement} element - Dialog element
      */
     close: function (element) {
-      if (element && typeof element.close === "function") {
+      if (element && element.open && typeof element.close === "function") {
         element.close();
       }
     },

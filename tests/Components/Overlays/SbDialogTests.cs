@@ -256,26 +256,48 @@ public class SbDialogTests : BunitContext
     }
 
     [Fact]
-    public async Task OnCloseButtonClickTakesPrecedenceWhenSet()
+    public async Task NativeCloseEventInvokesOpenChangedToFalse()
     {
-        // Arrange - when OnCloseButtonClick is set, it runs instead of default close
+        // Arrange
+        var openChangedValue = true;
+        SbDialogCloseReason? closeReason = null;
+        var cut = RenderDialog(p => p
+            .Add(x => x.Open, true)
+            .Add(x => x.Title, "Dialog")
+            .Add(x => x.OpenChanged, EventCallback.Factory.Create<bool>(this, v => openChangedValue = v))
+            .Add(x => x.OnClose, EventCallback.Factory.Create<SbDialogCloseReason>(this, r => closeReason = r)));
+
+        // Act
+        var dialog = cut.Find("dialog.sb-dialog");
+        await cut.InvokeAsync(() => dialog.TriggerEventAsync("onclose", EventArgs.Empty));
+
+        // Assert
+        Assert.False(openChangedValue);
+        Assert.Equal(SbDialogCloseReason.CloseButton, closeReason);
+    }
+
+    [Fact]
+    public async Task OnCloseButtonClickRunsBeforeStandardCloseWhenSet()
+    {
+        // Arrange - custom close hooks should not bypass OpenChanged synchronization
         var closeBtnClicked = false;
+        var openChangedValue = true;
         SbDialogCloseReason? closeReason = null;
         var cut = RenderDialog(p => p
             .Add(x => x.Open, true)
             .Add(x => x.Title, "Dialog")
             .Add(x => x.OnCloseButtonClick, EventCallback.Factory.Create(this, () => closeBtnClicked = true))
+            .Add(x => x.OpenChanged, EventCallback.Factory.Create<bool>(this, v => openChangedValue = v))
             .Add(x => x.OnClose, EventCallback.Factory.Create<SbDialogCloseReason>(this, r => closeReason = r)));
 
         // Act
         var closeBtn = cut.Find(".sb-dialog__close-btn");
         await cut.InvokeAsync(() => closeBtn.Click());
 
-        // Assert - OnCloseButtonClick was invoked; parent typically handles close, so OnClose may not fire
+        // Assert
         Assert.True(closeBtnClicked);
-        // With OnCloseButtonClick delegate, CloseAsync is NOT called (see HandleCloseButtonClick logic)
-        // so OnClose and OpenChanged are NOT invoked by default
-        Assert.Null(closeReason);
+        Assert.Equal(SbDialogCloseReason.CloseButton, closeReason);
+        Assert.False(openChangedValue);
     }
 
     [Fact]
