@@ -1,7 +1,9 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path="common.props" />
+    <File Path="Directory.Build.props" />
     <File Path="NuGet.Config" />
-    <File Path="versions.props" />
+    <File Path="README.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/SufiChain.SufiBlazor.Demo.Localization/SufiChain.SufiBlazor.Demo.Localization.csproj" />

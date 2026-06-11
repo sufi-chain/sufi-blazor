@@ -20,11 +20,12 @@
   <ItemGroup>
     <ProjectReference Include="..\SufiChain.SufiBlazor.Demo.Localization\SufiChain.SufiBlazor.Demo.Localization.csproj" />
     <ProjectReference Include="..\SufiChain.SufiBlazor\SufiChain.SufiBlazor.csproj" />
+      <PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="1.0.0-alpha.5.2" />
+
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="1.1.3" />
-    <PackageReference Include="SufiChain.SufiAbp.UI.Blazor" Version="$(SufiAbpVersion)"  />
   </ItemGroup>
 
 

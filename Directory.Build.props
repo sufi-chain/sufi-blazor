@@ -1,10 +1,9 @@
 <Project>
-    <Import Project="versions.props" />
-    <Import Project="common.props" Condition="Exists('$(MSBuildThisFileDirectory)common.props')" />
+    <Import Project="common.props" />
 
   <PropertyGroup>
     <Company>Sufi Chain Intelligent Solutions</Company>
-    <Authors>SufiChain Team</Authors>
+    <Authors>Sufi Chain Team</Authors>
     <Product>SufiBlazor</Product>
     <Copyright>Copyright © Sufi Chain Intelligent Solutions $([System.DateTime]::Now.Year)</Copyright>
     <PackageProjectUrl>https://git.sabp.ir/sufi-chain/sufi-blazor</PackageProjectUrl>
