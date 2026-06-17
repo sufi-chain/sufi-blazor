@@ -1013,10 +1013,10 @@
     "Demo:ErrorHandlingNetworkErrorDesc": "HttpRequestException → UserExceptionInformer. Shows localized \"Network error\".",
     "Demo:ErrorHandlingSimulateNetwork": "Simulate network error",
     "Demo:ErrorHandlingShow404": "Show 404 page",
-    "Demo:ErrorHandlingShow404Desc": "Navigate to non-existent route → SpErrorPage (404). Formal error page with Back to home, Go back.",
+    "Demo:ErrorHandlingShow404Desc": "Navigate to non-existent route → SufiAbpErrorPage (404). Formal error page with Back to home, Go back.",
     "Demo:ErrorHandlingShow404Button": "Show 404 page",
     "Demo:ErrorHandlingShow403": "Show 403 page",
-    "Demo:ErrorHandlingShow403Desc": "Navigate to forbidden route → SpErrorPage (403). Requires a role nobody has.",
+    "Demo:ErrorHandlingShow403Desc": "Navigate to forbidden route → SufiAbpErrorPage (403). Requires a role nobody has.",
     "Demo:ErrorHandlingShow403Button": "Show 403 page",
     "Demo:ForbiddenDemoMessage": "If you see this, you have the ForbiddenDemoRole (unexpected)."
   }

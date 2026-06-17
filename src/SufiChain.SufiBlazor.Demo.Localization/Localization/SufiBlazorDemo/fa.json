@@ -1013,10 +1013,10 @@
     "Demo:ErrorHandlingNetworkErrorDesc": "HttpRequestException → UserExceptionInformer. «خطای شبکه» localized را نشان می‌دهد.",
     "Demo:ErrorHandlingSimulateNetwork": "شبیه‌سازی خطای شبکه",
     "Demo:ErrorHandlingShow404": "نمایش صفحه 404",
-    "Demo:ErrorHandlingShow404Desc": "مسیریابی به مسیر ناموجود → SpErrorPage (404). صفحه خطای رسمی با بازگشت به خانه، بازگشت.",
+    "Demo:ErrorHandlingShow404Desc": "مسیریابی به مسیر ناموجود → SufiAbpErrorPage (404). صفحه خطای رسمی با بازگشت به خانه، بازگشت.",
     "Demo:ErrorHandlingShow404Button": "نمایش صفحه 404",
     "Demo:ErrorHandlingShow403": "نمایش صفحه 403",
-    "Demo:ErrorHandlingShow403Desc": "مسیریابی به مسیر ممنوع → SpErrorPage (403). نیاز به نقشی دارد که هیچ‌کس ندارد.",
+    "Demo:ErrorHandlingShow403Desc": "مسیریابی به مسیر ممنوع → SufiAbpErrorPage (403). نیاز به نقشی دارد که هیچ‌کس ندارد.",
     "Demo:ErrorHandlingShow403Button": "نمایش صفحه 403",
     "Demo:ForbiddenDemoMessage": "اگر این را می‌بینید، نقش ForbiddenDemoRole را دارید (غیرمنتظره)."
   }

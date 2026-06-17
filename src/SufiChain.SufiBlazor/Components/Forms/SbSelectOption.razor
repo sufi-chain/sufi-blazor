@@ -36,8 +36,16 @@
 
     protected override void OnInitialized()
     {
-        // Register once when the option is first created
-        // The parent SbSimpleSelect maintains options without clearing them
+        RegisterWithContext();
+    }
+
+    protected override void OnParametersSet()
+    {
+        RegisterWithContext();
+    }
+
+    private void RegisterWithContext()
+    {
         Context?.RegisterOption(new SbSelectOptionInfo<TValue>
         {
             Value = Value,

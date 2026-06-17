@@ -1014,10 +1014,10 @@
     "Demo:ErrorHandlingNetworkErrorDesc": "HttpRequestException → UserExceptionInformer. يعرض \"خطأ الشبكة\" المترجم.",
     "Demo:ErrorHandlingSimulateNetwork": "محاكاة خطأ الشبكة",
     "Demo:ErrorHandlingShow404": "عرض الصفحة 404",
-    "Demo:ErrorHandlingShow404Desc": "التوجيه إلى مسار غير موجود → SpErrorPage (404). صفحة خطأ رسمية مع العودة للصفحة الرئيسية.",
+    "Demo:ErrorHandlingShow404Desc": "التوجيه إلى مسار غير موجود → SufiAbpErrorPage (404). صفحة خطأ رسمية مع العودة للصفحة الرئيسية.",
     "Demo:ErrorHandlingShow404Button": "عرض الصفحة 404",
     "Demo:ErrorHandlingShow403": "عرض الصفحة 403",
-    "Demo:ErrorHandlingShow403Desc": "التوجيه إلى مسار ممنوع → SpErrorPage (403). يتطلب دورًا لا يملكه أحد.",
+    "Demo:ErrorHandlingShow403Desc": "التوجيه إلى مسار ممنوع → SufiAbpErrorPage (403). يتطلب دورًا لا يملكه أحد.",
     "Demo:ErrorHandlingShow403Button": "عرض الصفحة 403",
     "Demo:ForbiddenDemoMessage": "إذا رأيت هذا، فلديك دور ForbiddenDemoRole (غير متوقع)."
   }

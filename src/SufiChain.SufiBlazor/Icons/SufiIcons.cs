@@ -467,6 +467,8 @@ public static class SufiIcons
                 $"<svg {SvgOutlineAttrs}><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M16 2v4M8 2v4M3 10h18\"/><path d=\"M9 16l2 2 4-4\"/></svg>"),
             ["calendar-x"] = new("calendar-x", SiIconCategory.Time, "Calendar with cancel",
                 $"<svg {SvgOutlineAttrs}><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M16 2v4M8 2v4M3 10h18\"/><path d=\"M10 14l4 4M14 14l-4 4\"/></svg>"),
+            ["calendar-days"] = new("calendar-days", SiIconCategory.Time, "Calendar with day grid",
+                $"<svg {SvgOutlineAttrs}><path d=\"M8 2v4M16 2v4\"/><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M3 10h18\"/><path d=\"M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01\"/></svg>"),
             ["repeat"] = new("repeat", SiIconCategory.Time, "Repeat or loop",
                 $"<svg {SvgOutlineAttrs}><polyline points=\"17 1 21 5 17 9\"/><path d=\"M3 11V9a4 4 0 014-4h14\"/><polyline points=\"7 23 3 19 7 15\"/><path d=\"M21 13v2a4 4 0 01-4 4H3\"/></svg>"),
 

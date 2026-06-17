@@ -196,7 +196,23 @@
     [Parameter]
     public string? Style { get; set; }
 
-    private bool HasValue => Value != null && !EqualityComparer<TValue>.Default.Equals(Value, default);
+    private bool HasValue
+    {
+        get
+        {
+            if (Value is null)
+            {
+                return false;
+            }
+
+            if (typeof(TValue).IsEnum)
+            {
+                return true;
+            }
+
+            return !EqualityComparer<TValue>.Default.Equals(Value, default);
+        }
+    }
 
     private string IconClass => $"sb-select-trigger__icon{(_isOpen ? " sb-select-trigger__icon--open" : "")}";
 
@@ -204,11 +220,15 @@
 
     void ISbSelectOptionContext<TValue>.RegisterOption(SbSelectOptionInfo<TValue> option)
     {
-        // Avoid duplicate registrations - options register once and stay registered
         if (!_options.Any(o => EqualityComparer<TValue>.Default.Equals(o.Value, option.Value)))
         {
             _options.Add(option);
         }
+    }
+
+    protected override void OnParametersSet()
+    {
+        _options.Clear();
     }
 
     private IEnumerable<SbSelectOptionInfo<TValue>> FilteredOptions
