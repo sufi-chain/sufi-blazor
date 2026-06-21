@@ -7321,10 +7321,13 @@ body.sb-resizing {
 .sb-confirm-dialog {
     width: 100%;
     max-width: 400px;
+    max-height: calc(100vh - (var(--sb-space-4) * 2));
     padding: var(--sb-space-6);
     background-color: var(--sb-color-surface);
     border-radius: var(--sb-radius-lg);
     box-shadow: var(--sb-shadow-lg);
+    box-sizing: border-box;
+    overflow: auto;
 }
 
 .sb-confirm-dialog__icon {
@@ -7358,17 +7361,39 @@ body.sb-resizing {
     color: var(--sb-color-info);
 }
 
+.sb-confirm-dialog--success .sb-confirm-dialog__icon {
+    background-color: var(--sb-color-success-light, #dcfce7);
+    color: var(--sb-color-success);
+}
+
 .sb-confirm-dialog__title {
     font-size: var(--sb-font-size-lg);
     font-weight: var(--sb-font-weight-semibold);
     text-align: center;
     margin-bottom: var(--sb-space-2);
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
 }
 
 .sb-confirm-dialog__message {
     text-align: center;
     color: var(--sb-color-text-secondary);
     margin-bottom: var(--sb-space-4);
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: pre-wrap;
+    max-width: 100%;
+}
+
+.sb-confirm-dialog__content,
+.sb-confirm-dialog__body {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .sb-confirm-dialog__actions {

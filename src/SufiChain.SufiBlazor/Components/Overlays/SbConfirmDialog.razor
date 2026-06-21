@@ -2,7 +2,6 @@
 @using SufiChain.SufiBlazor.Components.Common
 @using SufiChain.SufiBlazor.Components.Actions
 @inject IStringLocalizer<SufiBlazorResource> L
-@inject IStringLocalizer<SufiBlazorResource> L
 
 @if (_isOpen)
 {
@@ -17,7 +16,7 @@
             else
             {
                 <div class="sb-confirm-dialog__icon sb-confirm-dialog__icon--@Variant.ToString().ToLower()">
-                    <SbIcon Name="@GetDefaultIconName()" Size="SbSize.Lg" />
+                    <SbIcon Name="@GetDefaultIconName()" Size="SbSize.Lg" Color="@GetConfirmButtonColor()" />
                 </div>
             }
             
@@ -128,7 +127,7 @@
     
     private string GetDefaultIconName() => Variant switch
     {
-        SbConfirmDialogVariant.Danger => "warning",
+        SbConfirmDialogVariant.Danger => "error",
         SbConfirmDialogVariant.Warning => "warning",
         SbConfirmDialogVariant.Info => "info",
         _ => "help-circle"
