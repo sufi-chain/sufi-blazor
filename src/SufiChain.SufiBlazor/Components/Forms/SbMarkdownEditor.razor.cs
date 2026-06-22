@@ -25,7 +25,9 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
     [Parameter] public bool EnableHighlight { get; set; } = true;
     [Parameter] public string HighlightTheme { get; set; } = "github";
     [Parameter] public SbMarkdownEditorMode EditorMode { get; set; } = SbMarkdownEditorMode.Markdown;
+    [Parameter] public string? SourceLanguage { get; set; }
     [Parameter] public bool UseToolbarContributors { get; set; }
+    [Parameter] public bool IncludeDefaultToolbarItems { get; set; } = true;
     [Parameter] public bool HideToolbar { get; set; }
     [Parameter] public IReadOnlyList<SbMarkdownToolbarItem>? ToolbarItems { get; set; }
     [Parameter] public EventCallback<string> OnShortcut { get; set; }
@@ -52,6 +54,8 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
     private string? _lastRenderedSuggested;
     private bool _lastRenderedDiffMode;
     private SbMarkdownEditorMode _lastEditorMode;
+    private string? _lastSourceLanguage;
+    private bool _lastIncludeDefaultToolbarItems;
     private List<SbMarkdownToolbarItem> _toolbarItems = new();
     private bool _useFallback;
 
@@ -64,18 +68,7 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
             _interop = new SbMarkdownEditorInterop(JSRuntime);
             _dotNetRef = DotNetObjectReference.Create(this);
 
-            if (!IsDiffReview && UseToolbarContributors)
-            {
-                _toolbarItems = await ToolbarService.GetToolbarItemsAsync(_editorId, includeContributors: true);
-            }
-            else if (!IsDiffReview && ToolbarItems != null)
-            {
-                _toolbarItems = ToolbarItems.ToList();
-            }
-            else if (!IsDiffReview)
-            {
-                _toolbarItems = await ToolbarService.GetToolbarItemsAsync(_editorId, includeDefaults: true, includeContributors: false);
-            }
+            await LoadToolbarItemsAsync();
 
             await InitializeEditorAsync();
             _lastRenderedValue = Value;
@@ -83,6 +76,8 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
             _lastRenderedSuggested = SuggestedValue;
             _lastRenderedDiffMode = IsDiffReview;
             _lastEditorMode = EditorMode;
+            _lastSourceLanguage = SourceLanguage;
+            _lastIncludeDefaultToolbarItems = IncludeDefaultToolbarItems;
             await InvokeAsync(StateHasChanged);
             return;
         }
@@ -107,11 +102,48 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
                 _lastRenderedSuggested = SuggestedValue;
             }
         }
-        else if (Value != _lastRenderedValue || EditorMode != _lastEditorMode)
+        else if (Value != _lastRenderedValue ||
+                 EditorMode != _lastEditorMode ||
+                 SourceLanguage != _lastSourceLanguage ||
+                 IncludeDefaultToolbarItems != _lastIncludeDefaultToolbarItems)
         {
-            await _interop.SetValueAsync(_editorId, Value);
-            _lastRenderedValue = Value;
-            _lastEditorMode = EditorMode;
+            if (EditorMode != _lastEditorMode ||
+                SourceLanguage != _lastSourceLanguage ||
+                IncludeDefaultToolbarItems != _lastIncludeDefaultToolbarItems)
+            {
+                await ReinitializeEditorAsync();
+            }
+            else
+            {
+                await _interop.SetValueAsync(_editorId, Value);
+                _lastRenderedValue = Value;
+            }
+        }
+    }
+
+    private async Task LoadToolbarItemsAsync()
+    {
+        if (IsDiffReview)
+        {
+            return;
+        }
+
+        var editorId = GetEditorId();
+
+        if (UseToolbarContributors)
+        {
+            _toolbarItems = await ToolbarService.GetToolbarItemsAsync(
+                editorId,
+                includeDefaults: IncludeDefaultToolbarItems,
+                includeContributors: true);
+        }
+        else if (ToolbarItems != null)
+        {
+            _toolbarItems = ToolbarItems.ToList();
+        }
+        else
+        {
+            _toolbarItems = await ToolbarService.GetToolbarItemsAsync(editorId, includeDefaults: true, includeContributors: false);
         }
     }
 
@@ -141,12 +173,13 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
 
                 _editorId = await _interop.InitEditorAsync(_textarea, _dotNetRef!, new SbMarkdownEditorInitOptions
                 {
-                    EditorId = _elementId,
+                    EditorId = GetEditorId(),
                     Value = Value,
                     Placeholder = Placeholder,
                     ReadOnly = ReadOnly,
                     Direction = RightToLeft ? "rtl" : "ltr",
                     EditorMode = EditorMode == SbMarkdownEditorMode.Source ? "source" : "markdown",
+                    SourceLanguage = SourceLanguage,
                     EnablePreview = EnablePreview && EditorMode != SbMarkdownEditorMode.Source,
                     EnableMermaid = EnableMermaid,
                     EnableHighlight = EnableHighlight,
@@ -177,13 +210,22 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
         IsReady = false;
         _useFallback = false;
         await InvokeAsync(StateHasChanged);
+        await LoadToolbarItemsAsync();
         await InitializeEditorAsync();
         _lastRenderedDiffMode = IsDiffReview;
         _lastRenderedValue = Value;
         _lastRenderedOriginal = OriginalValue;
         _lastRenderedSuggested = SuggestedValue;
+        _lastEditorMode = EditorMode;
+        _lastSourceLanguage = SourceLanguage;
+        _lastIncludeDefaultToolbarItems = IncludeDefaultToolbarItems;
         await InvokeAsync(StateHasChanged);
     }
+
+    private string GetEditorId() =>
+        string.Equals(SourceLanguage, "html", StringComparison.OrdinalIgnoreCase)
+            ? $"{_elementId}-html"
+            : _elementId;
 
     [JSInvokable]
     public async Task OnEditorChangeAsync(string value, string html)

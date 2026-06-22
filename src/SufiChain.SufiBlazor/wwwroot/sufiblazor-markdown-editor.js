@@ -11,6 +11,7 @@ let easyMdeLoadPromise = null;
 let markedLoadPromise = null;
 let assetsLoadPromise = null;
 let diffAssetsLoadPromise = null;
+let codeAssetsLoadPromise = null;
 
 function getContentBasePath() {
     const scripts = document.querySelectorAll('script[src*="sufiblazor-markdown-editor.js"]');
@@ -129,6 +130,27 @@ async function ensureDiffAssets() {
         return typeof CodeMirror !== 'undefined' && !!CodeMirror.MergeView;
     })();
     return diffAssetsLoadPromise;
+}
+
+async function ensureCodeAssets() {
+    if (typeof CodeMirror !== 'undefined' && CodeMirror.modes?.htmlmixed) {
+        return true;
+    }
+    if (codeAssetsLoadPromise) {
+        return codeAssetsLoadPromise;
+    }
+    codeAssetsLoadPromise = (async () => {
+        const base = getContentBasePath();
+        loadCss(`${base}/vendor/codemirror/codemirror.css`);
+        await loadScript(`${base}/vendor/codemirror/codemirror.js`);
+        await loadScript(`${base}/vendor/codemirror/xml.js`);
+        await loadScript(`${base}/vendor/codemirror/javascript.js`);
+        await loadScript(`${base}/vendor/codemirror/css.js`);
+        await loadScript(`${base}/vendor/codemirror/htmlmixed.js`);
+        await loadScript(`${base}/vendor/codemirror/markdown.js`);
+        return typeof CodeMirror !== 'undefined';
+    })();
+    return codeAssetsLoadPromise;
 }
 
 function configureMarked() {
@@ -268,7 +290,9 @@ export async function initEditor(textarea, dotNetRef, options) {
         return null;
     }
 
-    if (!sourceMode) {
+    if (sourceMode) {
+        await ensureCodeAssets();
+    } else {
         await ensureAssets({
             enableMermaid: options.enableMermaid,
             enableHighlight: options.enableHighlight,
@@ -306,6 +330,12 @@ export async function initEditor(textarea, dotNetRef, options) {
     }
 
     const easyMDE = new EasyMDE(easyOptions);
+
+    if (sourceMode) {
+        const language = (options.sourceLanguage || '').toLowerCase();
+        easyMDE.codemirror.setOption('mode', language === 'html' ? 'htmlmixed' : 'markdown');
+        easyMDE.codemirror.setOption('htmlMode', language === 'html');
+    }
 
     easyMDE.codemirror.on('change', () => {
         const value = easyMDE.value();
@@ -461,14 +491,17 @@ export function setPreview(editorId, show) {
 export function destroyEditor(editorId) {
     const diff = diffEditors.get(editorId);
     if (diff) {
-        diff.mergeView.wrapper.parentNode?.removeChild(diff.mergeView.wrapper);
+        const wrapper = diff.mergeView?.wrapper;
+        if (wrapper?.parentNode) {
+            wrapper.parentNode.removeChild(wrapper);
+        }
         diffEditors.delete(editorId);
         return;
     }
     const stored = editors.get(editorId);
     if (stored) {
-        stored.easyMDE.toTextArea();
-        stored.easyMDE.clearAutosavedValue?.();
+        stored.easyMDE?.toTextArea?.();
+        stored.easyMDE?.clearAutosavedValue?.();
         editors.delete(editorId);
     }
 }

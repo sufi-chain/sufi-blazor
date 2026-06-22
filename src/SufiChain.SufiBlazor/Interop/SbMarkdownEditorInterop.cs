@@ -88,7 +88,19 @@ public class SbMarkdownEditorInterop : IAsyncDisposable
     {
         if (_module != null)
         {
-            await _module.InvokeVoidAsync("destroyEditor", editorId);
+            try
+            {
+                await _module.InvokeVoidAsync("destroyEditor", editorId);
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+            catch (JSException)
+            {
+            }
+            catch (ObjectDisposedException)
+            {
+            }
         }
     }
 
@@ -135,6 +147,7 @@ public class SbMarkdownEditorInitOptions
     public bool ReadOnly { get; set; }
     public string? Direction { get; set; }
     public string EditorMode { get; set; } = "markdown";
+    public string? SourceLanguage { get; set; }
     public bool EnablePreview { get; set; } = true;
     public bool EnableMermaid { get; set; } = true;
     public bool EnableHighlight { get; set; } = true;
