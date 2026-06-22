@@ -1,0 +1,11 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <AspNetCoreVersion>10.0.7</AspNetCoreVersion>
+    <MicrosoftAspNetCoreComponentsWebVersion>10.0.7</MicrosoftAspNetCoreComponentsWebVersion>
+    <MicrosoftExtensionsLocalizationVersion>10.0.7</MicrosoftExtensionsLocalizationVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedVersion>10.0.7</MicrosoftExtensionsFileProvidersEmbeddedVersion>
+  </PropertyGroup>
+
+</Project>

@@ -1,5 +1,6 @@
 <Project>
-    <Import Project="common.props" />
+  <Import Project="versions.props" />
+  <Import Project="common.props" />
 
   <PropertyGroup>
     <Company>Sufi Chain Intelligent Solutions</Company>
