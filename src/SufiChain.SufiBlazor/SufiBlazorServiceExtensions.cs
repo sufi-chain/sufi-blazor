@@ -22,8 +22,9 @@ public static class SufiBlazorServiceExtensions
         // Microsoft localization (no ABP dependency). Host apps can override via their own resources.
         services.AddLocalization();
 
-        // Register toolbar service
+        // Register toolbar services
         services.AddScoped<IRteToolbarService, RteToolbarService>();
+        services.AddScoped<IMdToolbarService, MdToolbarService>();
 
         // Configure toolbar options
         if (configureToolbar != null)
@@ -35,6 +36,8 @@ public static class SufiBlazorServiceExtensions
             // Register empty options if no configuration provided
             services.Configure<RteToolbarOptions>(_ => { });
         }
+
+        services.Configure<MdToolbarOptions>(_ => { });
 
         return services;
     }
@@ -92,6 +95,48 @@ public static class SufiBlazorServiceExtensions
             }
         });
 
+        return services;
+    }
+
+    /// <summary>
+    /// Adds a markdown toolbar contributor to the service collection.
+    /// </summary>
+    public static IServiceCollection AddMdToolbarContributor<T>(this IServiceCollection services)
+        where T : class, IMdToolbarContributor
+    {
+        services.AddScoped<T>();
+        services.Configure<MdToolbarOptions>(options =>
+        {
+            if (!options.Contributors.Contains(typeof(T)))
+            {
+                options.Contributors.Add(typeof(T));
+            }
+        });
+        return services;
+    }
+
+    /// <summary>
+    /// Adds a markdown toolbar contributor to the service collection.
+    /// </summary>
+    public static IServiceCollection AddMdToolbarContributor(
+        this IServiceCollection services,
+        Type contributorType)
+    {
+        if (!typeof(IMdToolbarContributor).IsAssignableFrom(contributorType))
+        {
+            throw new ArgumentException(
+                $"Type {contributorType.Name} does not implement IMdToolbarContributor",
+                nameof(contributorType));
+        }
+
+        services.AddScoped(contributorType);
+        services.Configure<MdToolbarOptions>(options =>
+        {
+            if (!options.Contributors.Contains(contributorType))
+            {
+                options.Contributors.Add(contributorType);
+            }
+        });
         return services;
     }
 }

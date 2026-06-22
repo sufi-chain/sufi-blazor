@@ -69,6 +69,7 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
         formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.TagInput, l["Menu:Demo:TagInput"], "/demo/sufi-blazor/tag-input", order: 14));
         formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.FileUpload, l["Menu:Demo:FileUpload"], "/demo/sufi-blazor/file-upload", order: 15));
         formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.RichTextEditor, l["Menu:Demo:RichTextEditor"], "/demo/sufi-blazor/rich-text-editor", order: 16));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.MarkdownEditor, l["Menu:Demo:MarkdownEditor"], "/demo/sufi-blazor/markdown-editor", order: 17));
         sufiBlazorDemo.AddItem(formsGroup);
 
         // Data - 3 levels: Data → Data Grid (with children) + Table, Pagination, Stat Card

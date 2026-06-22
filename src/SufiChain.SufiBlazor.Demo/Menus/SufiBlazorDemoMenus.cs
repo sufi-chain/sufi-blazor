@@ -49,6 +49,7 @@ public static class SufiBlazorDemoMenus
     public const string TagInput = Forms + ".TagInput";
     public const string FileUpload = Forms + ".FileUpload";
     public const string RichTextEditor = Forms + ".RichTextEditor";
+    public const string MarkdownEditor = Forms + ".MarkdownEditor";
 
     // Data
     public const string DataGrid = Data + ".DataGrid";

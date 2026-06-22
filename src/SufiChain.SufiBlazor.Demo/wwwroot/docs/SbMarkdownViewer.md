@@ -1,6 +1,6 @@
 # SbMarkdownViewer
 
-Renders markdown content as HTML using the Markdig library. Supports advanced markdown extensions including tables, task lists, and code blocks.
+Renders markdown content as HTML using client-side marked.js (offline). Supports mermaid diagrams, syntax highlighting, and alert callouts.
 
 ## Parameters
 
@@ -17,7 +17,7 @@ Renders markdown content as HTML using the Markdig library. Supports advanced ma
 
 ## Markdown Features
 
-The component uses Markdig with advanced extensions enabled, supporting:
+The component uses marked.js with GFM support, loaded offline from SufiBlazor vendor assets:
 
 - **Standard Markdown**: Headings, paragraphs, lists, links, images, emphasis
 - **Extended Syntax**: Tables, task lists, strikethrough

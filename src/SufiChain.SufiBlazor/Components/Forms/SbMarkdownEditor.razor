@@ -1,0 +1,65 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Contracts.Editors
+@using SufiChain.SufiBlazor.Interop
+@using Microsoft.Extensions.DependencyInjection
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject IServiceProvider ServiceProvider
+@inject IMdToolbarService ToolbarService
+
+<div class="@GetContainerClass()" dir="@(RightToLeft ? "rtl" : "ltr")" style="@Style">
+    @if (!HideToolbar && !IsDiffReview && IsReady && !ReadOnly)
+    {
+        <div class="sb-markdown-editor__toolbar" role="toolbar">
+            @foreach (var item in _toolbarItems)
+            {
+                @if (item.IsSeparator)
+                {
+                    <span class="sb-markdown-editor__toolbar-separator" role="separator"></span>
+                }
+                else
+                {
+                    <button type="button"
+                            class="sb-markdown-editor__toolbar-btn"
+                            title="@item.Tooltip"
+                            disabled="@(Disabled || ReadOnly || IsToolbarItemDisabled(item))"
+                            @onclick="@(() => OnToolbarClickAsync(item))">
+                        @if (!string.IsNullOrEmpty(item.IconName))
+                        {
+                            <SbIcon Name="@item.IconName" Size="SbSize.Sm" />
+                        }
+                        else if (!string.IsNullOrEmpty(item.Icon))
+                        {
+                            <span class="sb-markdown-editor__toolbar-icon">@item.Icon</span>
+                        }
+                    </button>
+                }
+            }
+        </div>
+    }
+
+    @if (IsDiffReview)
+    {
+        <div @ref="_diffContainer" class="sb-markdown-editor__diff-host"></div>
+    }
+    else if (_useFallback)
+    {
+        <SbTextArea Value="@GetBoundValue()"
+                    ValueChanged="@OnFallbackValueChangedAsync"
+                    Rows="@FallbackRows"
+                    Placeholder="@Placeholder"
+                    Disabled="@Disabled"
+                    ReadOnly="@ReadOnly"
+                    Class="sb-markdown-editor__fallback" />
+    }
+    else
+    {
+        <textarea @ref="_textarea"
+                  id="@_elementId"
+                  class="sb-markdown-editor__textarea"
+                  placeholder="@Placeholder"
+                  disabled="@Disabled"
+                  readonly="@ReadOnly"></textarea>
+    }
+</div>

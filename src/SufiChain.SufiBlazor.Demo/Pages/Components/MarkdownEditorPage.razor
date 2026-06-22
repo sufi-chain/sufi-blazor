@@ -1,0 +1,173 @@
+@page "/demo/sufi-blazor/markdown-editor"
+
+<PageTitle>@(L["Menu:Demo:MarkdownEditor"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:MarkdownEditor"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:MarkdownEditorPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:MarkdownEditorToolbar"]" SourceCode="@toolbarCode" RelatedCode="@toolbarCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbText Color="SbColor.Muted">@L["Demo:MarkdownEditorToolbarHint"]</SbText>
+                <SbMarkdownEditor @bind-Value="_toolbarContent"
+                                  MinHeight="360px"
+                                  UseToolbarContributors="true"
+                                  EnableMermaid="true"
+                                  EnableHighlight="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MarkdownEditorMermaidHighlight"]" SourceCode="@previewCode" RelatedCode="@previewCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbText Color="SbColor.Muted">@L["Demo:MarkdownEditorMermaidHighlightHint"]</SbText>
+                <SbMarkdownEditor @bind-Value="_previewContent"
+                                  MinHeight="420px"
+                                  UseToolbarContributors="true"
+                                  EnableMermaid="true"
+                                  EnableHighlight="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MarkdownEditorSourceMode"]" SourceCode="@sourceCode" RelatedCode="@sourceCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbText Color="SbColor.Muted">@L["Demo:MarkdownEditorSourceModeHint"]</SbText>
+                <SbMarkdownEditor @bind-Value="_sourceContent"
+                                  EditorMode="SbMarkdownEditorMode.Source"
+                                  EnablePreview="false"
+                                  MinHeight="240px"
+                                  UseToolbarContributors="true" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MarkdownEditorDiffReview"]" SourceCode="@diffCode" RelatedCode="@diffCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbText Color="SbColor.Muted">@L["Demo:MarkdownEditorDiffReviewHint"]</SbText>
+                <SbMarkdownEditor IsDiffReview="true"
+                                  OriginalValue="@_originalContent"
+                                  SuggestedValue="@_suggestedContent"
+                                  SuggestedValueChanged="@((string v) => _suggestedContent = v)"
+                                  MinHeight="280px" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MarkdownEditorNoToolbar"]" SourceCode="@noToolbarCode" RelatedCode="@noToolbarCodeBehind">
+        <ExampleContent>
+            <SbMarkdownEditor @bind-Value="_plainContent"
+                              HideToolbar="true"
+                              MinHeight="180px"
+                              EnablePreview="false" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbMarkdownEditor" />
+</DemoLayout>
+
+@code {
+    private string _toolbarContent = """
+        # Toolbar demo
+
+        Use the toolbar for **bold**, _italic_, lists, links, and preview modes.
+        """;
+
+    private string _previewContent = """
+        # Mermaid & highlight.js
+
+        Toggle **Preview** or **Side by Side** in the toolbar to render diagrams and code blocks.
+
+        ## Syntax highlighting
+
+        ```csharp
+        public sealed class OrderService
+        {
+            public async Task ConfirmAsync(Guid orderId, CancellationToken ct = default)
+            {
+                await _repository.UpdateStatusAsync(orderId, OrderStatus.Confirmed, ct);
+            }
+        }
+        ```
+
+        ```javascript
+        export function renderDiagram(source) {
+            return mermaid.render('diagram', source);
+        }
+        ```
+
+        ## Mermaid flowchart
+
+        ```mermaid
+        flowchart LR
+            Draft --> Review
+            Review -->|Approve| Publish
+            Review -->|Reject| Draft
+        ```
+
+        ## Alert callouts
+
+        ```note
+        Notes render as styled callouts in preview.
+        ```
+
+        ```tip
+        Use side-by-side mode while editing long documents.
+        ```
+        """;
+
+    private string _sourceContent =
+        "<div class=\"email-template\">\n" +
+        "  <h1>{{ subject }}</h1>\n" +
+        "  <p>Hello {{ user.name }},</p>\n" +
+        "</div>";
+
+    private string _originalContent = "Hello {{ user.name }},\nYour order is confirmed.";
+    private string _suggestedContent = "Hello {{ user.name }},\nYour order **#{{ order.id }}** is confirmed.";
+
+    private string _plainContent = "Plain markdown textarea fallback with toolbar hidden.";
+
+    private const string toolbarCodeBehind = @"private string _toolbarContent = ""# Toolbar demo"";";
+
+    private const string toolbarCode = @"<SbMarkdownEditor @bind-Value=""_toolbarContent""
+                  MinHeight=""360px""
+                  UseToolbarContributors=""true""
+                  EnableMermaid=""true""
+                  EnableHighlight=""true"" />";
+
+    private const string previewCodeBehind = @"private string _previewContent = ""# Mermaid & highlight.js..."";";
+
+    private const string previewCode = @"<SbMarkdownEditor @bind-Value=""_previewContent""
+                  MinHeight=""420px""
+                  UseToolbarContributors=""true""
+                  EnableMermaid=""true""
+                  EnableHighlight=""true"" />";
+
+    private const string sourceCodeBehind = @"private string _sourceContent = ""<div>...</div>"";";
+
+    private const string sourceCode = @"<SbMarkdownEditor @bind-Value=""_sourceContent""
+                  EditorMode=""SbMarkdownEditorMode.Source""
+                  EnablePreview=""false""
+                  UseToolbarContributors=""true"" />";
+
+    private const string diffCodeBehind = @"private string _originalContent = ""..."";\nprivate string _suggestedContent = ""..."";";
+
+    private const string diffCode = @"<SbMarkdownEditor IsDiffReview=""true""
+                  OriginalValue=""@_originalContent""
+                  SuggestedValue=""@_suggestedContent""
+                  SuggestedValueChanged=""@((string v) => _suggestedContent = v)"" />";
+
+    private const string noToolbarCodeBehind = @"private string _plainContent = ""Plain markdown"";";
+
+    private const string noToolbarCode = @"<SbMarkdownEditor @bind-Value=""_plainContent""
+                  HideToolbar=""true""
+                  EnablePreview=""false"" />";
+}

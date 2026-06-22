@@ -1,4 +1,5 @@
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using SufiChain.SufiBlazor.Components.Forms;
 using Xunit;
 

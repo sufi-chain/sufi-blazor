@@ -533,4 +533,12 @@ window.SufiBlazor = window.SufiBlazor || {};
       };
     },
   };
+
+  sb.markdown = {
+    setInnerHtml: function (element, html) {
+      if (element) {
+        element.innerHTML = html || "";
+      }
+    },
+  };
 })(window.SufiBlazor);
