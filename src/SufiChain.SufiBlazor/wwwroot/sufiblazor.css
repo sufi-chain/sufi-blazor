@@ -8445,6 +8445,55 @@ body.sb-resizing {
     color: var(--sb-color-text);
 }
 
+.sb-markdown-editor .EasyMDEContainer.sided--no-fullscreen {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.sb-markdown-editor .EasyMDEContainer.sided--no-fullscreen .CodeMirror-sided,
+.sb-markdown-editor .EasyMDEContainer.sided--no-fullscreen .editor-preview-side {
+    flex: 1 1 50%;
+    width: 50% !important;
+    min-width: 20rem;
+    position: static !important;
+    inset: auto !important;
+    height: auto;
+    max-height: none;
+}
+
+.sb-markdown-editor .EasyMDEContainer.sided--no-fullscreen .editor-preview-active-side {
+    display: block;
+}
+
+.sb-markdown-editor-fullscreen-active,
+.sb-markdown-editor-fullscreen-active body {
+    overflow: hidden;
+}
+
+.sb-markdown-editor.sb-markdown-editor--fullscreen {
+    position: fixed;
+    inset: var(--sb-space-4);
+    z-index: 2000;
+    min-height: auto;
+    background: var(--sb-color-surface);
+    box-shadow: var(--sb-shadow-xl, 0 24px 64px rgba(15, 23, 42, 0.22));
+}
+
+.sb-markdown-editor.sb-markdown-editor--fullscreen .EasyMDEContainer {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.sb-markdown-editor.sb-markdown-editor--fullscreen .EasyMDEContainer .CodeMirror {
+    height: calc(100vh - 9rem) !important;
+}
+
+.sb-markdown-editor.sb-markdown-editor--fullscreen .EasyMDEContainer.sided--no-fullscreen .CodeMirror-sided,
+.sb-markdown-editor.sb-markdown-editor--fullscreen .EasyMDEContainer.sided--no-fullscreen .editor-preview-side {
+    height: calc(100vh - 9rem) !important;
+}
+
 .sb-markdown-viewer pre,
 .sb-markdown-viewer code {
     font-family: var(--sb-font-family-mono, monospace);

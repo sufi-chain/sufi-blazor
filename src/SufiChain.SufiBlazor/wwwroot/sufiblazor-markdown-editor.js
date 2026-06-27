@@ -323,6 +323,7 @@ export async function initEditor(textarea, dotNetRef, options) {
         easyOptions.preview = false;
         easyOptions.sideBySideFullscreen = false;
     } else {
+        easyOptions.sideBySideFullscreen = false;
         easyOptions.previewRender = buildPreviewRender(options);
         easyOptions.renderingConfig.markedOptions = {
             highlight: buildHighlightFn(options.enableHighlight, options.enableMermaid)
@@ -435,6 +436,20 @@ export function insertTextAtCursor(editorId, text) {
     cm.focus();
 }
 
+function toggleContainerFullscreen(stored) {
+    const wrapper = stored.easyMDE.codemirror.getWrapperElement();
+    const container = wrapper?.closest('.sb-markdown-editor');
+    if (!container) {
+        return;
+    }
+
+    container.classList.toggle('sb-markdown-editor--fullscreen');
+    document.documentElement.classList.toggle(
+        'sb-markdown-editor-fullscreen-active',
+        container.classList.contains('sb-markdown-editor--fullscreen'));
+    stored.easyMDE.codemirror.refresh();
+}
+
 export function execAction(editorId, action, value) {
     const stored = editors.get(editorId);
     if (!stored) {
@@ -457,7 +472,7 @@ export function execAction(editorId, action, value) {
         case 'image': easyMDE.drawImage(); break;
         case 'preview': easyMDE.togglePreview(); break;
         case 'side-by-side': easyMDE.toggleSideBySide(); break;
-        case 'fullscreen': easyMDE.toggleFullScreen(); break;
+        case 'fullscreen': toggleContainerFullscreen(stored); break;
         case 'undo': easyMDE.codemirror.undo(); break;
         case 'redo': easyMDE.codemirror.redo(); break;
         default:
