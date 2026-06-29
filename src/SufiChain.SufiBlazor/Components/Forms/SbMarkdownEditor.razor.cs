@@ -58,19 +58,29 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
     private bool _lastIncludeDefaultToolbarItems;
     private List<SbMarkdownToolbarItem> _toolbarItems = new();
     private bool _useFallback;
+    private bool _disposed;
 
     protected bool IsReady { get; private set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         if (firstRender)
         {
             _interop = new SbMarkdownEditorInterop(JSRuntime);
-            _dotNetRef = DotNetObjectReference.Create(this);
 
             await LoadToolbarItemsAsync();
 
             await InitializeEditorAsync();
+            if (_disposed)
+            {
+                return;
+            }
+
             _lastRenderedValue = Value;
             _lastRenderedOriginal = OriginalValue;
             _lastRenderedSuggested = SuggestedValue;
@@ -149,11 +159,18 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
 
     private async Task InitializeEditorAsync()
     {
+        if (_disposed || _interop == null)
+        {
+            return;
+        }
+
         try
         {
+            _dotNetRef ??= DotNetObjectReference.Create(this);
+
             if (IsDiffReview)
             {
-                _editorId = await _interop!.InitDiffReviewAsync(_diffContainer, _dotNetRef!, new SbMarkdownDiffInitOptions
+                _editorId = await _interop.InitDiffReviewAsync(_diffContainer, _dotNetRef, new SbMarkdownDiffInitOptions
                 {
                     EditorId = _elementId,
                     Original = OriginalValue,
@@ -164,14 +181,19 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
             }
             else
             {
-                await _interop!.EnsureAssetsAsync(new SbMarkdownAssetOptions
+                await _interop.EnsureAssetsAsync(new SbMarkdownAssetOptions
                 {
                     EnableMermaid = EnableMermaid,
                     EnableHighlight = EnableHighlight,
                     HighlightTheme = HighlightTheme
                 });
 
-                _editorId = await _interop.InitEditorAsync(_textarea, _dotNetRef!, new SbMarkdownEditorInitOptions
+                if (_disposed)
+                {
+                    return;
+                }
+
+                _editorId = await _interop.InitEditorAsync(_textarea, _dotNetRef, new SbMarkdownEditorInitOptions
                 {
                     EditorId = GetEditorId(),
                     Value = Value,
@@ -189,6 +211,11 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
                 });
             }
 
+            if (_disposed)
+            {
+                return;
+            }
+
             IsReady = !string.IsNullOrEmpty(_editorId);
             _useFallback = !IsReady;
         }
@@ -201,6 +228,11 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
 
     private async Task ReinitializeEditorAsync()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         if (_editorId != null && _interop != null)
         {
             await _interop.DestroyEditorAsync(_editorId);
@@ -210,8 +242,18 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
         IsReady = false;
         _useFallback = false;
         await InvokeAsync(StateHasChanged);
+        if (_disposed)
+        {
+            return;
+        }
+
         await LoadToolbarItemsAsync();
         await InitializeEditorAsync();
+        if (_disposed)
+        {
+            return;
+        }
+
         _lastRenderedDiffMode = IsDiffReview;
         _lastRenderedValue = Value;
         _lastRenderedOriginal = OriginalValue;
@@ -388,14 +430,46 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
+
         if (_editorId != null && _interop != null)
         {
-            await _interop.DestroyEditorAsync(_editorId);
+            try
+            {
+                await _interop.DestroyEditorAsync(_editorId);
+            }
+            catch (JSDisconnectedException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SbMarkdownEditor] DestroyEditorAsync JSDisconnected: {ex.Message}");
+            }
+            catch (ObjectDisposedException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SbMarkdownEditor] DestroyEditorAsync ObjectDisposed: {ex.Message}");
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SbMarkdownEditor] DestroyEditorAsync error: {ex}");
+            }
         }
 
         if (_interop != null)
         {
-            await _interop.DisposeAsync();
+            try
+            {
+                await _interop.DisposeAsync();
+            }
+            catch (JSDisconnectedException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SbMarkdownEditor] Interop DisposeAsync JSDisconnected: {ex.Message}");
+            }
+            catch (ObjectDisposedException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SbMarkdownEditor] Interop DisposeAsync ObjectDisposed: {ex.Message}");
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SbMarkdownEditor] Interop DisposeAsync error: {ex}");
+            }
         }
 
         _dotNetRef?.Dispose();
