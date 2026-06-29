@@ -24,7 +24,8 @@ public class MdToolbarService : IMdToolbarService
     public async Task<List<SbMarkdownToolbarItem>> GetToolbarItemsAsync(
         string? editorId = null,
         bool? includeDefaults = null,
-        bool includeContributors = true)
+        bool includeContributors = true,
+        string? scope = null)
     {
         var shouldIncludeDefaults = includeDefaults ?? _options.IncludeDefaultItems;
         var allItems = new List<MdToolbarContributedItem>();
@@ -36,8 +37,12 @@ public class MdToolbarService : IMdToolbarService
 
         if (includeContributors)
         {
-            var context = new MdToolbarContext(_serviceProvider) { EditorId = editorId };
-            foreach (var contributor in GetContributors().OrderBy(c => c.Order))
+            var context = new MdToolbarContext(_serviceProvider)
+            {
+                EditorId = editorId,
+                Scope = scope
+            };
+            foreach (var contributor in GetContributors(scope).OrderBy(c => c.Order))
             {
                 await contributor.ConfigureToolbarAsync(context);
             }
@@ -80,11 +85,12 @@ public class MdToolbarService : IMdToolbarService
         }
     }
 
-    private IEnumerable<IMdToolbarContributor> GetContributors()
+    private IEnumerable<IMdToolbarContributor> GetContributors(string? scope)
     {
         foreach (var contributorType in _options.Contributors)
         {
-            if (_serviceProvider.GetService(contributorType) is IMdToolbarContributor contributor)
+            if (_serviceProvider.GetService(contributorType) is IMdToolbarContributor contributor
+                && (contributor.Scope == null || string.Equals(contributor.Scope, scope, StringComparison.Ordinal)))
             {
                 yield return contributor;
             }
@@ -122,6 +128,7 @@ public interface IMdToolbarService
     Task<List<SbMarkdownToolbarItem>> GetToolbarItemsAsync(
         string? editorId = null,
         bool? includeDefaults = null,
-        bool includeContributors = true);
+        bool includeContributors = true,
+        string? scope = null);
     Task ExecuteItemActionAsync(MdToolbarContributedItem item, MdToolbarActionContext actionContext);
 }

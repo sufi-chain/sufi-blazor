@@ -17,6 +17,15 @@ public interface IRteToolbarContributor
     int Order => 100;
 
     /// <summary>
+    /// The toolbar scope this contributor belongs to. When non-null, the
+    /// contributor only runs on editors whose <c>ToolbarScope</c> parameter
+    /// matches this value. When null (default), the contributor runs on every
+    /// editor instance — use this for self-filtering contributors or for
+    /// globally-applicable items (e.g. culture-aware font selectors).
+    /// </summary>
+    string? Scope => null;
+
+    /// <summary>
     /// Configure the toolbar by adding custom items to the context.
     /// </summary>
     /// <param name="context">The toolbar context containing items and services.</param>
@@ -42,6 +51,13 @@ public class RteToolbarContext
     /// The editor instance ID. Can be used for editor-specific operations.
     /// </summary>
     public string? EditorId { get; set; }
+
+    /// <summary>
+    /// The scope declared by the editor instance via its <c>ToolbarScope</c>
+    /// parameter. Contributors whose <see cref="IRteToolbarContributor.Scope"/>
+    /// is non-null only run when this value matches.
+    /// </summary>
+    public string? Scope { get; set; }
 
     public RteToolbarContext(IServiceProvider serviceProvider)
     {

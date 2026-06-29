@@ -220,15 +220,36 @@
 
     void ISbSelectOptionContext<TValue>.RegisterOption(SbSelectOptionInfo<TValue> option)
     {
-        if (!_options.Any(o => EqualityComparer<TValue>.Default.Equals(o.Value, option.Value)))
+        // Update existing entry in place so Text/ChildContent changes propagate;
+        // otherwise add. We must NOT clear _options here or in OnParametersSet,
+        // because Blazor skips calling OnParametersSet on SbSelectOption children
+        // whose parameters haven't changed, which would leave _options empty and
+        // cause GetDisplayText to fall back to Value.ToString() (e.g. a Guid).
+        var existingIndex = _options.FindIndex(o =>
+            EqualityComparer<TValue>.Default.Equals(o.Value, option.Value));
+        if (existingIndex >= 0)
+        {
+            _options[existingIndex] = option;
+        }
+        else
         {
             _options.Add(option);
         }
     }
 
+    void ISbSelectOptionContext<TValue>.UnregisterOption(TValue? value)
+    {
+        var index = _options.FindIndex(o =>
+            EqualityComparer<TValue>.Default.Equals(o.Value, value));
+        if (index >= 0)
+        {
+            _options.RemoveAt(index);
+        }
+    }
+
     protected override void OnParametersSet()
     {
-        _options.Clear();
+        // Intentionally do NOT clear _options here. See RegisterOption note above.
     }
 
     private IEnumerable<SbSelectOptionInfo<TValue>> FilteredOptions

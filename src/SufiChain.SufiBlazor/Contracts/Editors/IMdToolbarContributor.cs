@@ -16,6 +16,15 @@ public interface IMdToolbarContributor
     int Order => 100;
 
     /// <summary>
+    /// The toolbar scope this contributor belongs to. When non-null, the
+    /// contributor only runs on editors whose <c>ToolbarScope</c> parameter
+    /// matches this value. When null (default), the contributor runs on every
+    /// editor instance — use this for self-filtering contributors (e.g. ones
+    /// that check a host registration) or for globally-applicable items.
+    /// </summary>
+    string? Scope => null;
+
+    /// <summary>
     /// Configure the toolbar by adding custom items to the context.
     /// </summary>
     Task ConfigureToolbarAsync(MdToolbarContext context);
@@ -29,6 +38,13 @@ public class MdToolbarContext
     public List<MdToolbarContributedItem> Items { get; } = new();
     public IServiceProvider ServiceProvider { get; }
     public string? EditorId { get; set; }
+
+    /// <summary>
+    /// The scope declared by the editor instance via its <c>ToolbarScope</c>
+    /// parameter. Contributors whose <see cref="IMdToolbarContributor.Scope"/>
+    /// is non-null only run when this value matches.
+    /// </summary>
+    public string? Scope { get; set; }
 
     public MdToolbarContext(IServiceProvider serviceProvider)
     {

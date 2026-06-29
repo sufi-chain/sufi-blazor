@@ -8528,3 +8528,1091 @@ body.sb-resizing {
     border-left: none;
     border-right: 4px solid var(--sb-color-primary);
 }
+
+/* ============================================
+   CSS Coverage Gap Fixes
+   Classes emitted by components that had no matching rule.
+   Organized by component. Uses --sb-* design tokens and matches
+   neighboring component conventions.
+   ============================================ */
+
+/* ---- Shared required-asterisk pattern (form fields) ---- */
+.sb-autocomplete__required,
+.sb-colorpicker__required,
+.sb-daterangepicker__required,
+.sb-multi-select__required,
+.sb-property-grid__required,
+.sb-select__required,
+.sb-textarea__required,
+.sb-timepicker__required {
+    color: var(--sb-color-danger);
+    margin-inline-start: var(--sb-space-1);
+}
+
+/* ---- Shared field-label pattern ---- */
+.sb-select__label,
+.sb-textarea__label {
+    display: block;
+    font-size: var(--sb-font-size-sm);
+    font-weight: var(--sb-font-weight-medium);
+    color: var(--sb-color-text);
+    margin-bottom: var(--sb-space-1);
+}
+
+/* ============================================
+   SbAccordionItem
+   ============================================ */
+.sb-accordion-item__title {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: inherit;
+    font-weight: var(--sb-font-weight-medium);
+}
+
+.sb-accordion-item__body {
+    min-width: 0;
+}
+
+/* ============================================
+   SbAddButton
+   ============================================ */
+.sb-add-button-container {
+    position: relative;
+    display: inline-block;
+}
+
+.sb-add-button__label {
+    font-size: var(--sb-font-size-sm);
+    font-weight: var(--sb-font-weight-medium);
+}
+
+.sb-add-button__menu {
+    position: absolute;
+    z-index: var(--sb-z-dropdown);
+    inset-inline-start: 0;
+    margin-top: var(--sb-space-1);
+    min-width: 220px;
+    padding: var(--sb-space-1);
+    background-color: var(--sb-color-surface);
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+    box-shadow: var(--sb-shadow-lg);
+}
+
+.sb-add-button__option {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sb-space-2);
+    width: 100%;
+    padding: var(--sb-space-2) var(--sb-space-3);
+    border: none;
+    background: transparent;
+    color: var(--sb-color-text);
+    font-family: inherit;
+    font-size: var(--sb-font-size-sm);
+    text-align: start;
+    cursor: pointer;
+    border-radius: var(--sb-radius-sm);
+    transition: background-color var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-add-button__option:hover:not(:disabled) {
+    background-color: var(--sb-color-surface-variant);
+}
+
+.sb-add-button__option:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sb-add-button__option-icon {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: var(--sb-color-text-muted);
+}
+
+.sb-add-button__option-label {
+    font-weight: var(--sb-font-weight-medium);
+    color: var(--sb-color-text);
+}
+
+.sb-add-button__option-description {
+    display: block;
+    font-size: var(--sb-font-size-xs);
+    color: var(--sb-color-text-muted);
+}
+
+/* ============================================
+   SbBreadcrumb
+   ============================================ */
+.sb-breadcrumb__icon {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: var(--sb-color-text-muted);
+}
+
+/* ============================================
+   SbContextMenu
+   ============================================ */
+.sb-context-menu-trigger {
+    display: inline-flex;
+    cursor: context-menu;
+}
+
+/* ============================================
+   SbDataGrid
+   ============================================ */
+.sb-datagrid__action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: var(--sb-radius-sm);
+    background: transparent;
+    color: var(--sb-color-text-secondary);
+    cursor: pointer;
+    transition: background-color var(--sb-duration-fast) var(--sb-easing-default),
+        color var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-datagrid__action-btn:hover {
+    background-color: var(--sb-color-surface-variant);
+    color: var(--sb-color-text);
+}
+
+.sb-datagrid__cell--actions {
+    width: 1%;
+    min-width: 80px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.sb-datagrid__editor--text {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: var(--sb-space-1) var(--sb-space-2);
+    border: 1px solid var(--sb-color-primary);
+    border-radius: var(--sb-radius-sm);
+    background-color: var(--sb-color-surface);
+    color: var(--sb-color-text);
+    font-family: inherit;
+    font-size: var(--sb-font-size-sm);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--sb-color-primary-light);
+}
+
+.sb-datagrid__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ============================================
+   SbDropZone
+   ============================================ */
+.sb-dropzone__indicator {
+    font-size: var(--sb-font-size-sm);
+    color: var(--sb-color-primary);
+    margin-top: var(--sb-space-1);
+}
+
+.sb-dropzone__placeholder {
+    color: var(--sb-color-text-muted);
+    font-size: var(--sb-font-size-sm);
+}
+
+/* ============================================
+   SbEmptyState
+   ============================================ */
+.sb-empty-state__icon-text {
+    font-size: var(--sb-font-size-sm);
+    color: var(--sb-color-text-secondary);
+    margin-top: var(--sb-space-2);
+}
+
+/* ============================================
+   SbFilterBar (component emits sb-filter-bar; legacy CSS used sb-filterbar)
+   ============================================ */
+.sb-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sb-space-2);
+    padding: var(--sb-space-3);
+    background-color: var(--sb-color-surface-variant);
+    border-radius: var(--sb-radius-md);
+}
+
+.sb-filter-bar__search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 200px;
+}
+
+.sb-filter-bar__search-input {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    padding: var(--sb-space-2) var(--sb-space-3);
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+    background-color: var(--sb-color-surface);
+    color: var(--sb-color-text);
+    font-family: inherit;
+    font-size: var(--sb-font-size-sm);
+    transition: border-color var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-filter-bar__search-input:focus {
+    outline: none;
+    border-color: var(--sb-color-primary);
+    box-shadow: 0 0 0 3px var(--sb-color-primary-light);
+}
+
+.sb-filter-bar__search-clear {
+    position: absolute;
+    inset-inline-end: var(--sb-space-1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: var(--sb-radius-full);
+    background: transparent;
+    color: var(--sb-color-text-muted);
+    font-size: var(--sb-font-size-md);
+    line-height: 1;
+    cursor: pointer;
+}
+
+.sb-filter-bar__search-clear:hover {
+    background-color: var(--sb-color-surface-variant);
+    color: var(--sb-color-text);
+}
+
+.sb-filter-bar__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sb-space-2);
+}
+
+.sb-filter-bar__active {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sb-space-1);
+    width: 100%;
+}
+
+.sb-filter-bar__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sb-space-1);
+    padding: var(--sb-space-1) var(--sb-space-2);
+    background-color: var(--sb-color-primary-light);
+    color: var(--sb-color-primary);
+    border-radius: var(--sb-radius-full);
+    font-size: var(--sb-font-size-xs);
+}
+
+.sb-filter-bar__tag-label {
+    font-weight: var(--sb-font-weight-medium);
+}
+
+.sb-filter-bar__tag-value {
+    color: var(--sb-color-text);
+}
+
+.sb-filter-bar__tag-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: none;
+    border-radius: var(--sb-radius-full);
+    background: transparent;
+    color: var(--sb-color-primary);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.sb-filter-bar__tag-remove:hover {
+    background-color: var(--sb-color-primary);
+    color: var(--sb-color-on-primary);
+}
+
+.sb-filter-bar__clear-all {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--sb-color-text-secondary);
+    font-family: inherit;
+    font-size: var(--sb-font-size-xs);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.sb-filter-bar__clear-all:hover {
+    color: var(--sb-color-text);
+}
+
+.sb-filter-bar__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sb-space-2);
+    margin-inline-start: auto;
+}
+
+/* ============================================
+   SbForm
+   ============================================ */
+.sb-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-4);
+}
+
+.sb-form__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-4);
+}
+
+.sb-form__footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--sb-space-2);
+    margin-top: var(--sb-space-2);
+    padding-top: var(--sb-space-4);
+    border-top: 1px solid var(--sb-color-border);
+}
+
+/* ============================================
+   SbFormField
+   ============================================ */
+.sb-form-field__input {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-1);
+    min-width: 0;
+}
+
+/* ============================================
+   SbInlineToolbar (component emits __btn/__separator; legacy CSS used __button/__divider)
+   ============================================ */
+.sb-inline-toolbar__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: var(--sb-radius-sm);
+    background: transparent;
+    color: var(--sb-color-text);
+    cursor: pointer;
+    transition: background-color var(--sb-duration-fast) var(--sb-easing-default),
+        color var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-inline-toolbar__btn:hover:not(:disabled) {
+    background-color: var(--sb-color-surface-variant);
+}
+
+.sb-inline-toolbar__btn--active {
+    background-color: var(--sb-color-primary-light);
+    color: var(--sb-color-primary);
+}
+
+.sb-inline-toolbar__btn--danger {
+    color: var(--sb-color-danger);
+}
+
+.sb-inline-toolbar__btn--danger:hover:not(:disabled) {
+    background-color: var(--sb-color-danger-light, #fee2e2);
+    color: var(--sb-color-danger);
+}
+
+.sb-inline-toolbar__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sb-inline-toolbar__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--sb-font-size-md);
+}
+
+.sb-inline-toolbar__label {
+    font-size: var(--sb-font-size-sm);
+    margin-inline-start: var(--sb-space-1);
+}
+
+.sb-inline-toolbar__separator {
+    width: 1px;
+    height: 20px;
+    background-color: var(--sb-color-border);
+    flex-shrink: 0;
+}
+
+/* ============================================
+   SbInspectorPanel
+   ============================================ */
+.sb-inspector-panel__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: var(--sb-space-3);
+}
+
+.sb-inspector-panel__header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sb-space-1);
+}
+
+.sb-inspector-panel__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: var(--sb-radius-sm);
+    background: transparent;
+    color: var(--sb-color-text-muted);
+    cursor: pointer;
+    transition: background-color var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-inspector-panel__toggle:hover {
+    background-color: var(--sb-color-surface-variant);
+    color: var(--sb-color-text);
+}
+
+/* ============================================
+   SbInspectorSection
+   ============================================ */
+.sb-inspector-section__title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--sb-color-text);
+}
+
+.sb-inspector-section__badge {
+    font-size: var(--sb-font-size-xs);
+    color: var(--sb-color-text-muted);
+}
+
+.sb-inspector-section__chevron {
+    flex-shrink: 0;
+    color: var(--sb-color-text-muted);
+    transition: transform var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-inspector-section--expanded .sb-inspector-section__chevron {
+    transform: rotate(90deg);
+}
+
+[dir="rtl"] .sb-inspector-section--expanded .sb-inspector-section__chevron {
+    transform: rotate(-90deg);
+}
+
+/* ============================================
+   SbMarkdownEditor
+   ============================================ */
+.sb-markdown-editor__fallback {
+    white-space: pre-wrap;
+    margin: 0;
+    padding: var(--sb-space-3);
+    background-color: var(--sb-color-surface-variant);
+    border-radius: var(--sb-radius-md);
+    font-family: var(--sb-font-family-mono);
+    font-size: var(--sb-font-size-sm);
+    color: var(--sb-color-text);
+}
+
+.sb-markdown-editor__toolbar-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--sb-font-size-md);
+}
+
+/* ============================================
+   SbMetric
+   ============================================ */
+.sb-metric__number {
+    display: inline-block;
+}
+
+.sb-metric__prefix,
+.sb-metric__suffix {
+    font-size: 0.6em;
+    font-weight: var(--sb-font-weight-medium);
+    color: var(--sb-color-text-muted);
+    margin-inline: var(--sb-space-1);
+}
+
+.sb-metric__content {
+    margin-top: var(--sb-space-2);
+    font-size: var(--sb-font-size-sm);
+    color: var(--sb-color-text-secondary);
+}
+
+.sb-metric__progress {
+    height: 4px;
+    margin-top: var(--sb-space-2);
+    background-color: var(--sb-color-surface-variant);
+    border-radius: var(--sb-radius-full);
+    overflow: hidden;
+}
+
+.sb-metric__progress-bar {
+    height: 100%;
+    background-color: var(--sb-color-primary);
+    border-radius: var(--sb-radius-full);
+    transition: width var(--sb-duration-slow) var(--sb-easing-default);
+}
+
+.sb-metric--small .sb-metric__value {
+    font-size: var(--sb-font-size-lg);
+}
+
+.sb-metric--medium .sb-metric__value {
+    font-size: var(--sb-font-size-xl);
+}
+
+.sb-metric--large .sb-metric__value {
+    font-size: var(--sb-font-size-3xl);
+}
+
+/* ============================================
+   SbPropertyGrid
+   ============================================ */
+.sb-property-grid__value {
+    min-width: 0;
+}
+
+/* ============================================
+   SbResizable (component emits full direction names; legacy CSS used compass abbreviations)
+   ============================================ */
+.sb-resizable__handle--top {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 4px;
+    cursor: ns-resize;
+}
+
+.sb-resizable__handle--bottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 4px;
+    cursor: ns-resize;
+}
+
+.sb-resizable__handle--left {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    cursor: ew-resize;
+}
+
+.sb-resizable__handle--right {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 4px;
+    height: 100%;
+    cursor: ew-resize;
+}
+
+.sb-resizable__handle--top-left {
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nwse-resize;
+}
+
+.sb-resizable__handle--top-right {
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nesw-resize;
+}
+
+.sb-resizable__handle--bottom-left {
+    bottom: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nesw-resize;
+}
+
+.sb-resizable__handle--bottom-right {
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nwse-resize;
+}
+
+/* ============================================
+   SbSlugEditor
+   ============================================ */
+.sb-slug-editor {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-2);
+    width: 100%;
+}
+
+.sb-slug-editor--error .sb-slug-editor__input-row {
+    border-color: var(--sb-color-danger);
+}
+
+.sb-slug-editor--error .sb-slug-editor__input-row:focus-within {
+    border-color: var(--sb-color-danger);
+    box-shadow: 0 0 0 3px var(--sb-color-danger-light);
+}
+
+.sb-slug-editor__input-row {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+    background-color: var(--sb-color-surface);
+    overflow: hidden;
+    transition: border-color var(--sb-duration-fast) var(--sb-easing-default),
+        box-shadow var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-slug-editor__input-row:focus-within {
+    border-color: var(--sb-color-primary);
+    box-shadow: 0 0 0 3px var(--sb-color-primary-light);
+}
+
+.sb-slug-editor__base-url {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--sb-space-2) var(--sb-space-3);
+    background-color: var(--sb-color-surface-variant);
+    color: var(--sb-color-text-muted);
+    font-size: var(--sb-font-size-sm);
+    white-space: nowrap;
+    border-inline-end: 1px solid var(--sb-color-border);
+}
+
+.sb-slug-editor__input-wrapper {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+}
+
+.sb-slug-editor__input {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    padding: var(--sb-space-2) var(--sb-space-3);
+    border: none;
+    background: transparent;
+    color: var(--sb-color-text);
+    font-family: inherit;
+    font-size: var(--sb-font-size-md);
+    outline: none;
+}
+
+.sb-slug-editor__input::placeholder {
+    color: var(--sb-color-text-muted);
+}
+
+.sb-slug-editor__input:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.sb-slug-editor__preview {
+    display: flex;
+    align-items: center;
+    gap: var(--sb-space-1);
+    padding: var(--sb-space-1) var(--sb-space-2);
+    background-color: var(--sb-color-surface-variant);
+    border-radius: var(--sb-radius-sm);
+    font-size: var(--sb-font-size-xs);
+    color: var(--sb-color-text-secondary);
+}
+
+.sb-slug-editor__preview-label {
+    font-weight: var(--sb-font-weight-medium);
+    color: var(--sb-color-text-muted);
+    flex-shrink: 0;
+}
+
+.sb-slug-editor__preview-url {
+    color: var(--sb-color-primary);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sb-slug-editor__error {
+    font-size: var(--sb-font-size-xs);
+    color: var(--sb-color-danger);
+}
+
+.sb-slug-editor__generate {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sb-space-1);
+    padding: var(--sb-space-1) var(--sb-space-3);
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+    background-color: var(--sb-color-surface);
+    color: var(--sb-color-text);
+    font-family: inherit;
+    font-size: var(--sb-font-size-sm);
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background-color var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-slug-editor__generate:hover:not(:disabled) {
+    background-color: var(--sb-color-surface-variant);
+}
+
+.sb-slug-editor__generate:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   SbSortableList
+   ============================================ */
+.sb-sortable-list--horizontal {
+    flex-direction: row;
+    align-items: center;
+}
+
+.sb-sortable-list__item {
+    display: flex;
+    align-items: center;
+    gap: var(--sb-space-2);
+    padding: var(--sb-space-2) var(--sb-space-3);
+    background-color: var(--sb-color-surface);
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+    transition: box-shadow var(--sb-duration-fast) var(--sb-easing-default),
+        border-color var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-sortable-list__item--dragging {
+    box-shadow: var(--sb-shadow-lg);
+    opacity: 0.8;
+}
+
+.sb-sortable-list__item--drop-target {
+    border-color: var(--sb-color-primary);
+    background-color: var(--sb-color-primary-light);
+}
+
+.sb-sortable-list__handle {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    color: var(--sb-color-text-muted);
+    cursor: grab;
+}
+
+.sb-sortable-list__handle:active {
+    cursor: grabbing;
+}
+
+.sb-sortable-list__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.sb-sortable-list__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: var(--sb-radius-sm);
+    background: transparent;
+    color: var(--sb-color-text-muted);
+    font-size: var(--sb-font-size-md);
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color var(--sb-duration-fast) var(--sb-easing-default),
+        color var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-sortable-list__remove:hover {
+    background-color: var(--sb-color-danger-light, #fee2e2);
+    color: var(--sb-color-danger);
+}
+
+.sb-sortable-list__empty {
+    padding: var(--sb-space-4);
+    text-align: center;
+    color: var(--sb-color-text-muted);
+    font-size: var(--sb-font-size-sm);
+}
+
+/* ============================================
+   SbSplitPane
+   ============================================ */
+.sb-split-pane__panel--first,
+.sb-split-pane__panel--second {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+}
+
+.sb-split-pane__divider-handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--sb-color-border-strong);
+    border-radius: var(--sb-radius-sm);
+    pointer-events: none;
+}
+
+.sb-split-pane--horizontal > .sb-split-pane__divider .sb-split-pane__divider-handle {
+    width: 2px;
+    height: 24px;
+}
+
+.sb-split-pane--vertical > .sb-split-pane__divider .sb-split-pane__divider-handle {
+    width: 24px;
+    height: 2px;
+}
+
+/* ============================================
+   SbStatusPill
+   ============================================ */
+.sb-status-pill__label {
+    min-width: 0;
+    white-space: nowrap;
+}
+
+/* ============================================
+   SbStep
+   ============================================ */
+.sb-step-content {
+    margin-top: var(--sb-space-4);
+    padding-top: var(--sb-space-4);
+    border-top: 1px solid var(--sb-color-border);
+}
+
+/* ============================================
+   SbTable
+   ============================================ */
+.sb-table__head th {
+    background-color: var(--sb-color-surface-variant);
+    font-weight: var(--sb-font-weight-semibold);
+    color: var(--sb-color-text);
+    text-align: start;
+}
+
+.sb-table__foot td {
+    font-weight: var(--sb-font-weight-medium);
+    border-top: 2px solid var(--sb-color-border);
+}
+
+.sb-table__row {
+    transition: background-color var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-table__row:hover {
+    background-color: var(--sb-color-surface-variant);
+}
+
+/* ============================================
+   SbTab / SbTabs
+   ============================================ */
+.sb-tab-panel {
+    display: block;
+    min-width: 0;
+}
+
+.sb-tab-panel[hidden] {
+    display: none;
+}
+
+.sb-tabs__content {
+    flex: 1;
+    min-width: 0;
+}
+
+.sb-tabs__tab-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ============================================
+   SbTagInput
+   ============================================ */
+.sb-tag-input__tag-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ============================================
+   SbTextArea
+   ============================================ */
+.sb-textarea__resize-handle {
+    position: absolute;
+    bottom: var(--sb-space-1);
+    inset-inline-end: var(--sb-space-1);
+    width: 12px;
+    height: 12px;
+    cursor: nwse-resize;
+    color: var(--sb-color-border-strong);
+    pointer-events: none;
+}
+
+/* ============================================
+   SbTextField
+   ============================================ */
+.sb-text-field__adornment--start,
+.sb-text-field__adornment--end {
+    flex-shrink: 0;
+}
+
+/* ============================================
+   SbTimePicker
+   ============================================ */
+.sb-timepicker__column--period {
+    min-width: 80px;
+}
+
+/* ============================================
+   SbToastHost
+   ============================================ */
+.sb-toast-host__item {
+    pointer-events: auto;
+    animation: sb-toast-in 0.3s var(--sb-easing-default);
+}
+
+/* ============================================
+   SbTreeViewNode
+   ============================================ */
+.sb-treeview-node__chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform var(--sb-duration-fast) var(--sb-easing-default);
+}
+
+.sb-treeview-node__checkbox {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--sb-color-primary);
+}
+
+/* ============================================
+   SbConfirmDialog (explicit icon-variant modifiers; legacy CSS used descendant form)
+   ============================================ */
+.sb-confirm-dialog__icon--default {
+    background-color: var(--sb-color-primary-light);
+    color: var(--sb-color-primary);
+}
+
+.sb-confirm-dialog__icon--danger {
+    background-color: var(--sb-color-danger-light, #fee2e2);
+    color: var(--sb-color-danger);
+}
+
+.sb-confirm-dialog__icon--warning {
+    background-color: var(--sb-color-warning-light, #fef3c7);
+    color: var(--sb-color-warning);
+}
+
+.sb-confirm-dialog__icon--info {
+    background-color: var(--sb-color-info-light, #e0f2fe);
+    color: var(--sb-color-info);
+}
+
+.sb-confirm-dialog__icon--success {
+    background-color: var(--sb-color-success-light, #dcfce7);
+    color: var(--sb-color-success);
+}
+
+/* ============================================
+   SbColorPicker (remaining sub-elements)
+   ============================================ */
+.sb-colorpicker__preview {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-sm);
+    background-color: var(--sb-color-surface);
+}
+
+.sb-colorpicker__opacity-slider {
+    width: 100%;
+    margin: var(--sb-space-1) 0 0;
+    cursor: pointer;
+    accent-color: var(--sb-color-primary);
+}
+
+/* ============================================
+   SbTable (tbody structural rule)
+   ============================================ */
+.sb-table__body {
+    vertical-align: top;
+}

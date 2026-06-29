@@ -23,6 +23,11 @@ public partial class SbMarkEditor
     [Parameter] public string? SourceLanguage { get; set; }
     [Parameter] public bool UseToolbarContributors { get; set; }
     [Parameter] public bool IncludeDefaultToolbarItems { get; set; } = true;
+    /// <summary>
+    /// Optional toolbar scope forwarded to <see cref="SbMarkdownEditor"/> to
+    /// filter which registered <see cref="IMdToolbarContributor"/> instances run.
+    /// </summary>
+    [Parameter] public string? ToolbarScope { get; set; }
     [Parameter] public bool HideToolbar { get; set; }
     [Parameter] public IReadOnlyList<SbMarkdownToolbarItem>? ToolbarItems { get; set; }
     [Parameter] public EventCallback<string> OnShortcut { get; set; }

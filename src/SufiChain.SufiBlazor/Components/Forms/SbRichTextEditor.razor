@@ -382,6 +382,16 @@
     [Parameter]
     public bool IncludeDefaultToolbarItems { get; set; } = true;
     
+    /// <summary>
+    /// Optional toolbar scope that filters which <see cref="IRteToolbarContributor"/>
+    /// instances run for this editor. Contributors whose <c>Scope</c> is non-null
+    /// only execute when it matches this value. Contributors with a null scope
+    /// always run. This prevents page-specific toolbar items from leaking across
+    /// navigations within the same Blazor circuit.
+    /// </summary>
+    [Parameter]
+    public string? ToolbarScope { get; set; }
+    
     #region Localization Parameters
     
     /// <summary>
@@ -568,10 +578,11 @@
             // Get contributed items
             _contributedToolbarItems = await _toolbarService.GetToolbarItemsAsync(
                 _editorId,
-                IncludeDefaultToolbarItems);
+                IncludeDefaultToolbarItems,
+                ToolbarScope);
             
             // Build a map of contributed items for click handling
-            var contributedItems = await _toolbarService.GetContributedItemsAsync(_editorId);
+            var contributedItems = await _toolbarService.GetContributedItemsAsync(_editorId, ToolbarScope);
             _contributedItemsMap = contributedItems
                 .Where(item => item.OnClickAsync != null)
                 .ToDictionary(item => item.Id, item => item);

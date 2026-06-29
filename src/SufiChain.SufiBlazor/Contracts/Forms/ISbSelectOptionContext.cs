@@ -13,6 +13,12 @@ internal interface ISbSelectOptionContext<TValue>
     /// </summary>
     /// <param name="option">The option information to register.</param>
     void RegisterOption(SbSelectOptionInfo<TValue> option);
+
+    /// <summary>
+    /// Removes a previously registered option (e.g. when its SbSelectOption is disposed).
+    /// </summary>
+    /// <param name="value">The value of the option to unregister.</param>
+    void UnregisterOption(TValue? value);
 }
 
 /// <summary>

@@ -1,5 +1,6 @@
 @namespace SufiChain.SufiBlazor.Components.Forms
 @typeparam TValue
+@implements IDisposable
 
 @* This component is used as a child of SbSelect to define options declaratively. *@
 @* It registers itself with the parent SbSelect via cascading parameter. *@
@@ -53,5 +54,10 @@
             ChildContent = ChildContent,
             Disabled = Disabled
         });
+    }
+
+    public void Dispose()
+    {
+        Context?.UnregisterOption(Value);
     }
 }

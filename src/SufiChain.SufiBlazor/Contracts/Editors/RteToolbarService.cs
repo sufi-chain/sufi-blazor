@@ -28,9 +28,11 @@ public class RteToolbarService : IRteToolbarService
     /// </summary>
     /// <param name="editorId">The editor instance ID.</param>
     /// <param name="includeDefaults">Whether to include default toolbar items.</param>
+    /// <param name="scope">Optional toolbar scope that filters which contributors run.</param>
     public async Task<List<SbEditorToolbarItem>> GetToolbarItemsAsync(
         string? editorId = null,
-        bool? includeDefaults = null)
+        bool? includeDefaults = null,
+        string? scope = null)
     {
         var shouldIncludeDefaults = includeDefaults ?? _options.IncludeDefaultItems;
         var allItems = new List<RteToolbarContributedItem>();
@@ -42,9 +44,13 @@ public class RteToolbarService : IRteToolbarService
         }
 
         // Get contributed items from all registered contributors
-        var context = new RteToolbarContext(_serviceProvider) { EditorId = editorId };
+        var context = new RteToolbarContext(_serviceProvider)
+        {
+            EditorId = editorId,
+            Scope = scope
+        };
 
-        var contributors = GetContributors();
+        var contributors = GetContributors(scope);
         foreach (var contributor in contributors.OrderBy(c => c.Order))
         {
             await contributor.ConfigureToolbarAsync(context);
@@ -84,11 +90,17 @@ public class RteToolbarService : IRteToolbarService
     /// <summary>
     /// Get the contributed items only (without defaults).
     /// </summary>
-    public async Task<List<RteToolbarContributedItem>> GetContributedItemsAsync(string? editorId = null)
+    public async Task<List<RteToolbarContributedItem>> GetContributedItemsAsync(
+        string? editorId = null,
+        string? scope = null)
     {
-        var context = new RteToolbarContext(_serviceProvider) { EditorId = editorId };
+        var context = new RteToolbarContext(_serviceProvider)
+        {
+            EditorId = editorId,
+            Scope = scope
+        };
 
-        var contributors = GetContributors();
+        var contributors = GetContributors(scope);
         foreach (var contributor in contributors.OrderBy(c => c.Order))
         {
             await contributor.ConfigureToolbarAsync(context);
@@ -110,12 +122,13 @@ public class RteToolbarService : IRteToolbarService
         }
     }
 
-    private IEnumerable<IRteToolbarContributor> GetContributors()
+    private IEnumerable<IRteToolbarContributor> GetContributors(string? scope)
     {
         foreach (var contributorType in _options.Contributors)
         {
             var contributor = _serviceProvider.GetService(contributorType) as IRteToolbarContributor;
-            if (contributor != null)
+            if (contributor != null
+                && (contributor.Scope == null || string.Equals(contributor.Scope, scope, StringComparison.Ordinal)))
             {
                 yield return contributor;
             }
@@ -201,12 +214,17 @@ public interface IRteToolbarService
     /// <summary>
     /// Get all toolbar items including default and contributed items.
     /// </summary>
-    Task<List<SbEditorToolbarItem>> GetToolbarItemsAsync(string? editorId = null, bool? includeDefaults = null);
+    Task<List<SbEditorToolbarItem>> GetToolbarItemsAsync(
+        string? editorId = null,
+        bool? includeDefaults = null,
+        string? scope = null);
 
     /// <summary>
     /// Get the contributed items only (without defaults).
     /// </summary>
-    Task<List<RteToolbarContributedItem>> GetContributedItemsAsync(string? editorId = null);
+    Task<List<RteToolbarContributedItem>> GetContributedItemsAsync(
+        string? editorId = null,
+        string? scope = null);
 
     /// <summary>
     /// Execute a contributed toolbar item's click handler.

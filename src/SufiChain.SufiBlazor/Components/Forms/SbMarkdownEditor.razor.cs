@@ -28,6 +28,14 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
     [Parameter] public string? SourceLanguage { get; set; }
     [Parameter] public bool UseToolbarContributors { get; set; }
     [Parameter] public bool IncludeDefaultToolbarItems { get; set; } = true;
+    /// <summary>
+    /// Optional toolbar scope that filters which <see cref="IMdToolbarContributor"/>
+    /// instances run for this editor. Contributors whose <c>Scope</c> is non-null
+    /// only execute when it matches this value. Contributors with a null scope
+    /// always run. This prevents page-specific toolbar items from leaking across
+    /// navigations within the same Blazor circuit.
+    /// </summary>
+    [Parameter] public string? ToolbarScope { get; set; }
     [Parameter] public bool HideToolbar { get; set; }
     [Parameter] public IReadOnlyList<SbMarkdownToolbarItem>? ToolbarItems { get; set; }
     [Parameter] public EventCallback<string> OnShortcut { get; set; }
@@ -56,6 +64,7 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
     private SbMarkdownEditorMode _lastEditorMode;
     private string? _lastSourceLanguage;
     private bool _lastIncludeDefaultToolbarItems;
+    private string? _lastToolbarScope;
     private List<SbMarkdownToolbarItem> _toolbarItems = new();
     private bool _useFallback;
     private bool _disposed;
@@ -88,6 +97,7 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
             _lastEditorMode = EditorMode;
             _lastSourceLanguage = SourceLanguage;
             _lastIncludeDefaultToolbarItems = IncludeDefaultToolbarItems;
+            _lastToolbarScope = ToolbarScope;
             await InvokeAsync(StateHasChanged);
             return;
         }
@@ -115,11 +125,13 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
         else if (Value != _lastRenderedValue ||
                  EditorMode != _lastEditorMode ||
                  SourceLanguage != _lastSourceLanguage ||
-                 IncludeDefaultToolbarItems != _lastIncludeDefaultToolbarItems)
+                 IncludeDefaultToolbarItems != _lastIncludeDefaultToolbarItems ||
+                 ToolbarScope != _lastToolbarScope)
         {
             if (EditorMode != _lastEditorMode ||
                 SourceLanguage != _lastSourceLanguage ||
-                IncludeDefaultToolbarItems != _lastIncludeDefaultToolbarItems)
+                IncludeDefaultToolbarItems != _lastIncludeDefaultToolbarItems ||
+                ToolbarScope != _lastToolbarScope)
             {
                 await ReinitializeEditorAsync();
             }
@@ -145,7 +157,8 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
             _toolbarItems = await ToolbarService.GetToolbarItemsAsync(
                 editorId,
                 includeDefaults: IncludeDefaultToolbarItems,
-                includeContributors: true);
+                includeContributors: true,
+                scope: ToolbarScope);
         }
         else if (ToolbarItems != null)
         {
@@ -261,6 +274,7 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
         _lastEditorMode = EditorMode;
         _lastSourceLanguage = SourceLanguage;
         _lastIncludeDefaultToolbarItems = IncludeDefaultToolbarItems;
+        _lastToolbarScope = ToolbarScope;
         await InvokeAsync(StateHasChanged);
     }
 
