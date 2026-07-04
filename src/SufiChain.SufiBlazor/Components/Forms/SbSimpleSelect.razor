@@ -7,17 +7,17 @@
 
 <CascadingValue Value="(ISbSelectOptionContext<TValue>)this">
     @* Render ChildContent to collect options - hidden from display *@
-    <div style="display: none;">
+    <div style="display: none;" @key="_optionCollectionKey">
         @ChildContent
     </div>
 </CascadingValue>
 
-<div class="sb-select-anchor @Class" style="@Style" @ref="_anchorRef">
+<div class="sb-select-anchor @Class" @ref="_anchorRef">
     @if (!string.IsNullOrEmpty(Label))
     {
         <label class="sb-select-label">@Label</label>
     }
-    <div class="sb-select-trigger">
+    <div class="sb-select-trigger" style="@Style">
         <button type="button"
                 class="sb-select-trigger__main"
                 @onclick="Toggle"
@@ -110,6 +110,8 @@
     private bool _isOpen;
     private string _searchText = "";
     private bool _shouldFlip;
+    private int _optionCollectionKey;
+    private TValue? _lastRecoveredValue;
     private List<SbSelectOptionInfo<TValue>> _options = new();
 
     /// <summary>
@@ -235,6 +237,11 @@
         {
             _options.Add(option);
         }
+
+        if (HasValue && EqualityComparer<TValue>.Default.Equals(option.Value, Value))
+        {
+            _lastRecoveredValue = default;
+        }
     }
 
     void ISbSelectOptionContext<TValue>.UnregisterOption(TValue? value)
@@ -250,6 +257,32 @@
     protected override void OnParametersSet()
     {
         // Intentionally do NOT clear _options here. See RegisterOption note above.
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!HasValue)
+        {
+            return;
+        }
+
+        var hasMatchingOption = _options.Any(o =>
+            EqualityComparer<TValue>.Default.Equals(o.Value, Value));
+
+        if (hasMatchingOption)
+        {
+            _lastRecoveredValue = default;
+            return;
+        }
+
+        if (EqualityComparer<TValue>.Default.Equals(Value, _lastRecoveredValue))
+        {
+            return;
+        }
+
+        _lastRecoveredValue = Value;
+        _optionCollectionKey++;
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private IEnumerable<SbSelectOptionInfo<TValue>> FilteredOptions

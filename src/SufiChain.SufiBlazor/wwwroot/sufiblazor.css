@@ -11,21 +11,21 @@
      Colors - Light Theme (Default)
      ---------------------------------------- */
   /* Primary */
-  --sb-color-primary: #2563eb;
-  --sb-color-primary-hover: #1d4ed8;
-  --sb-color-primary-active: #1e40af;
-  --sb-color-primary-50: #eff6ff;
-  --sb-color-primary-100: #dbeafe;
-  --sb-color-primary-light: #dbeafe;
-  --sb-color-on-primary: #ffffff;
+  --sb-color-primary: #7356C3;
+  --sb-color-primary-hover: #8166D3;
+  --sb-color-primary-active: #6555AB;
+  --sb-color-primary-50: rgba(115, 86, 195, 0.08);
+  --sb-color-primary-100: #EDE8F9;
+  --sb-color-primary-light: #EDE8F9;
+  --sb-color-on-primary: #FCFCFC;
   /* Secondary */
-  --sb-color-secondary: #64748b;
-  --sb-color-secondary-hover: #475569;
-  --sb-color-secondary-active: #334155;
-  --sb-color-secondary-50: #f8fafc;
-  --sb-color-secondary-100: #f1f5f9;
-  --sb-color-secondary-light: #f1f5f9;
-  --sb-color-on-secondary: #ffffff;
+  --sb-color-secondary: #5A546A;
+  --sb-color-secondary-hover: #4C455C;
+  --sb-color-secondary-active: #3E364B;
+  --sb-color-secondary-50: rgba(90, 84, 106, 0.08);
+  --sb-color-secondary-100: #F0EFF2;
+  --sb-color-secondary-light: #F0EFF2;
+  --sb-color-on-secondary: #FCFCFC;
   /* Success */
   --sb-color-success: #16a34a;
   --sb-color-success-hover: #15803d;
@@ -61,7 +61,7 @@
   --sb-color-background: #f4f4f5;
   --sb-color-border: #e2e8f0;
   --sb-color-border-strong: #cbd5e1;
-  --sb-color-sidebar-dark: #18181B;
+  --sb-color-sidebar-dark: #1F172B;
   --sb-color-surface-hover: rgba(0, 0, 0, 0.04);
   --sb-color-gray-700: #475569;
   --sb-color-gray-900: #1e293b;
@@ -199,7 +199,7 @@
   /* ----------------------------------------
      Focus Ring
      ---------------------------------------- */
-  --sb-focus-ring-color: var(--sb-color-primary);
+  --sb-focus-ring-color: #8E73D8;
   --sb-focus-ring-width: 2px;
   --sb-focus-ring-offset: 2px;
   /* ----------------------------------------
@@ -218,21 +218,21 @@
 
 .sb-theme-dark {
     /* Colors - Dark Theme */
-    --sb-color-primary: #3b82f6;
-    --sb-color-primary-hover: #60a5fa;
-    --sb-color-primary-active: #2563eb;
-    --sb-color-primary-50: rgba(59, 130, 246, 0.08);
-    --sb-color-primary-100: #1e3a5f;
-    --sb-color-primary-light: #1e3a5f;
-    --sb-color-on-primary: #ffffff;
+    --sb-color-primary: #7356C3;
+    --sb-color-primary-hover: #8166D3;
+    --sb-color-primary-active: #6555AB;
+    --sb-color-primary-50: rgba(115, 86, 195, 0.08);
+    --sb-color-primary-100: #2C2638;
+    --sb-color-primary-light: #2C2638;
+    --sb-color-on-primary: #FCFCFC;
 
-    --sb-color-secondary: #94a3b8;
-    --sb-color-secondary-hover: #cbd5e1;
-    --sb-color-secondary-active: #64748b;
-    --sb-color-secondary-50: rgba(148, 163, 184, 0.08);
-    --sb-color-secondary-100: #1e293b;
-    --sb-color-secondary-light: #1e293b;
-    --sb-color-on-secondary: #0f172a;
+    --sb-color-secondary: #5A546A;
+    --sb-color-secondary-hover: #4C455C;
+    --sb-color-secondary-active: #3E364B;
+    --sb-color-secondary-50: rgba(90, 84, 106, 0.08);
+    --sb-color-secondary-100: #2C2638;
+    --sb-color-secondary-light: #2C2638;
+    --sb-color-on-secondary: #FCFCFC;
 
     --sb-color-success: #22c55e;
     --sb-color-success-hover: #4ade80;
@@ -262,19 +262,20 @@
     --sb-color-info-light: #083344;
     --sb-color-on-info: #0f172a;
 
-    /* Neutral / Surface */
-    --sb-color-surface: #0b0809;
-    --sb-color-surface-variant: #334155;
-    --sb-color-background: #18181B;
-    --sb-color-border: #334155;
-    --sb-color-border-strong: #475569;
+    /* Neutral / Surface — restrained dark monochromatic palette with violet tint */
+    --sb-color-surface: #1F172B;            /* Main Surface */
+    --sb-color-surface-variant: #2C2638;    /* Card Surface */
+    --sb-color-background: #160E23;         /* Background (Dark) */
+    --sb-color-border: #4A4555;             /* Divider */
+    --sb-color-border-strong: #4C455C;      /* Muted Surface */
+    --sb-color-sidebar-dark: #160E23;       /* Background (Dark) */
     --sb-color-surface-hover: rgba(255, 255, 255, 0.06);
 
     /* Text */
-    --sb-color-text: #f1f5f9;
-    --sb-color-text-secondary: #cbd5e1;
-    --sb-color-text-muted: #64748b;
-    --sb-color-text-disabled: #475569;
+    --sb-color-text: #FCFCFC;               /* White Text */
+    --sb-color-text-secondary: #B4B1BD;     /* Secondary Text */
+    --sb-color-text-muted: #8B8797;         /* Placeholder */
+    --sb-color-text-disabled: #706B79;      /* Disabled */
 
     /* Shadows (darker for dark mode) */
     --sb-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
@@ -287,7 +288,7 @@
     --sb-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
 
     /* Focus Ring */
-    --sb-focus-ring-color: var(--sb-color-primary);
+    --sb-focus-ring-color: #8E73D8;         /* Focus Border */
 }
 
 /* ============================================
@@ -340,6 +341,14 @@ samp,
     line-height: var(--sb-line-height-normal);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+}
+
+/* Border-box sizing so width: 100% form controls respect grid gaps and do not overflow. */
+.sb-theme-root,
+.sb-theme-root *,
+.sb-theme-root *::before,
+.sb-theme-root *::after {
+    box-sizing: border-box;
 }
 
 /* Reset user-agent input border (2px inset from UA stylesheet).
@@ -708,49 +717,58 @@ samp,
 
 /* SbGrid */
 .sb-grid {
+    --sb-grid-track: minmax(0, 1fr);
     display: grid;
-    grid-template-columns: repeat(var(--sb-grid-columns, 12), 1fr);
+    width: 100%;
+    box-sizing: border-box;
+    grid-template-columns: repeat(var(--sb-grid-columns, 12), var(--sb-grid-track));
+}
+
+/* Direct children (e.g. SbTextField, SbSelect) must shrink with their column track */
+.sb-grid > * {
+    min-width: 0;
+    max-width: 100%;
 }
 
 /* Responsive grid columns */
 @media (min-width: 640px) {
-    .sb-grid--sm-1 { grid-template-columns: repeat(1, 1fr); }
-    .sb-grid--sm-2 { grid-template-columns: repeat(2, 1fr); }
-    .sb-grid--sm-3 { grid-template-columns: repeat(3, 1fr); }
-    .sb-grid--sm-4 { grid-template-columns: repeat(4, 1fr); }
-    .sb-grid--sm-5 { grid-template-columns: repeat(5, 1fr); }
-    .sb-grid--sm-6 { grid-template-columns: repeat(6, 1fr); }
-    .sb-grid--sm-12 { grid-template-columns: repeat(12, 1fr); }
+    .sb-grid--sm-1 { grid-template-columns: repeat(1, var(--sb-grid-track)); }
+    .sb-grid--sm-2 { grid-template-columns: repeat(2, var(--sb-grid-track)); }
+    .sb-grid--sm-3 { grid-template-columns: repeat(3, var(--sb-grid-track)); }
+    .sb-grid--sm-4 { grid-template-columns: repeat(4, var(--sb-grid-track)); }
+    .sb-grid--sm-5 { grid-template-columns: repeat(5, var(--sb-grid-track)); }
+    .sb-grid--sm-6 { grid-template-columns: repeat(6, var(--sb-grid-track)); }
+    .sb-grid--sm-12 { grid-template-columns: repeat(12, var(--sb-grid-track)); }
 }
 
 @media (min-width: 768px) {
-    .sb-grid--md-1 { grid-template-columns: repeat(1, 1fr); }
-    .sb-grid--md-2 { grid-template-columns: repeat(2, 1fr); }
-    .sb-grid--md-3 { grid-template-columns: repeat(3, 1fr); }
-    .sb-grid--md-4 { grid-template-columns: repeat(4, 1fr); }
-    .sb-grid--md-5 { grid-template-columns: repeat(5, 1fr); }
-    .sb-grid--md-6 { grid-template-columns: repeat(6, 1fr); }
-    .sb-grid--md-12 { grid-template-columns: repeat(12, 1fr); }
+    .sb-grid--md-1 { grid-template-columns: repeat(1, var(--sb-grid-track)); }
+    .sb-grid--md-2 { grid-template-columns: repeat(2, var(--sb-grid-track)); }
+    .sb-grid--md-3 { grid-template-columns: repeat(3, var(--sb-grid-track)); }
+    .sb-grid--md-4 { grid-template-columns: repeat(4, var(--sb-grid-track)); }
+    .sb-grid--md-5 { grid-template-columns: repeat(5, var(--sb-grid-track)); }
+    .sb-grid--md-6 { grid-template-columns: repeat(6, var(--sb-grid-track)); }
+    .sb-grid--md-12 { grid-template-columns: repeat(12, var(--sb-grid-track)); }
 }
 
 @media (min-width: 1024px) {
-    .sb-grid--lg-1 { grid-template-columns: repeat(1, 1fr); }
-    .sb-grid--lg-2 { grid-template-columns: repeat(2, 1fr); }
-    .sb-grid--lg-3 { grid-template-columns: repeat(3, 1fr); }
-    .sb-grid--lg-4 { grid-template-columns: repeat(4, 1fr); }
-    .sb-grid--lg-5 { grid-template-columns: repeat(5, 1fr); }
-    .sb-grid--lg-6 { grid-template-columns: repeat(6, 1fr); }
-    .sb-grid--lg-12 { grid-template-columns: repeat(12, 1fr); }
+    .sb-grid--lg-1 { grid-template-columns: repeat(1, var(--sb-grid-track)); }
+    .sb-grid--lg-2 { grid-template-columns: repeat(2, var(--sb-grid-track)); }
+    .sb-grid--lg-3 { grid-template-columns: repeat(3, var(--sb-grid-track)); }
+    .sb-grid--lg-4 { grid-template-columns: repeat(4, var(--sb-grid-track)); }
+    .sb-grid--lg-5 { grid-template-columns: repeat(5, var(--sb-grid-track)); }
+    .sb-grid--lg-6 { grid-template-columns: repeat(6, var(--sb-grid-track)); }
+    .sb-grid--lg-12 { grid-template-columns: repeat(12, var(--sb-grid-track)); }
 }
 
 @media (min-width: 1280px) {
-    .sb-grid--xl-1 { grid-template-columns: repeat(1, 1fr); }
-    .sb-grid--xl-2 { grid-template-columns: repeat(2, 1fr); }
-    .sb-grid--xl-3 { grid-template-columns: repeat(3, 1fr); }
-    .sb-grid--xl-4 { grid-template-columns: repeat(4, 1fr); }
-    .sb-grid--xl-5 { grid-template-columns: repeat(5, 1fr); }
-    .sb-grid--xl-6 { grid-template-columns: repeat(6, 1fr); }
-    .sb-grid--xl-12 { grid-template-columns: repeat(12, 1fr); }
+    .sb-grid--xl-1 { grid-template-columns: repeat(1, var(--sb-grid-track)); }
+    .sb-grid--xl-2 { grid-template-columns: repeat(2, var(--sb-grid-track)); }
+    .sb-grid--xl-3 { grid-template-columns: repeat(3, var(--sb-grid-track)); }
+    .sb-grid--xl-4 { grid-template-columns: repeat(4, var(--sb-grid-track)); }
+    .sb-grid--xl-5 { grid-template-columns: repeat(5, var(--sb-grid-track)); }
+    .sb-grid--xl-6 { grid-template-columns: repeat(6, var(--sb-grid-track)); }
+    .sb-grid--xl-12 { grid-template-columns: repeat(12, var(--sb-grid-track)); }
 }
 
 /* SbGridItem */
@@ -4541,10 +4559,12 @@ samp,
 
 .sb-datepicker {
     position: relative;
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
     gap: var(--sb-space-1);
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .sb-datepicker__label {

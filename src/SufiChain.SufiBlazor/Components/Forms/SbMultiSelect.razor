@@ -6,7 +6,7 @@
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<SufiBlazorResource> L
 
-<div class="sb-select-anchor sb-multi-select-anchor @Class" style="@Style" @ref="_anchorRef">
+<div class="sb-select-anchor sb-multi-select-anchor @Class" @ref="_anchorRef">
     @if (!string.IsNullOrEmpty(Label))
     {
         <label class="sb-multi-select__label" for="@Id">
@@ -17,7 +17,7 @@
             }
         </label>
     }
-    <div class="@TriggerCssClass" @onclick="Toggle" tabindex="0" @onkeydown="HandleKeyDown">
+    <div class="@TriggerCssClass" style="@Style" @onclick="Toggle" tabindex="0" @onkeydown="HandleKeyDown">
         @if (Values?.Any() == true)
         {
             @foreach (var value in Values)

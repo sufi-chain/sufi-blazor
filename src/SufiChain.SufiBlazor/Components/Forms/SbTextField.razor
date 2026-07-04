@@ -3,7 +3,7 @@
 @inherits Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
 @inject IStringLocalizer<SufiBlazorResource> L
 
-<div class="@($"sb-text-field-wrapper {Class}".Trim())" style="@Style">
+<div class="@($"sb-text-field-wrapper {Class}".Trim())">
     @if (!string.IsNullOrEmpty(Label))
     {
         <label class="sb-text-field__label" for="@EffectiveId">
@@ -15,7 +15,7 @@
         </label>
     }
 
-    <div class="@WrapperCssClass">
+    <div class="@WrapperCssClass" style="@Style">
         @if (StartAdornment != null)
         {
             <span class="sb-text-field__adornment sb-text-field__adornment--start">
