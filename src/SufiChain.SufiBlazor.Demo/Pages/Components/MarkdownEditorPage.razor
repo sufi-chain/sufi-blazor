@@ -1,4 +1,6 @@
 @page "/demo/sufi-blazor/markdown-editor"
+@using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Contracts.Editors
 
 <PageTitle>@(L["Menu:Demo:MarkdownEditor"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
 
@@ -69,6 +71,22 @@
         </ExampleContent>
     </DemoSection>
 
+    <DemoSection Title="JSON editor" SourceCode="@jsonCode" RelatedCode="@jsonCodeBehind">
+        <ExampleContent>
+            <SbStack Gap="3">
+                <SbText Color="SbColor.Muted">Syntax-highlighted JSON source editor with validation and format action.</SbText>
+                @if (!_jsonValid)
+                {
+                    <SbAlert Color="SbColor.Danger">Invalid JSON syntax.</SbAlert>
+                }
+                <SbMarkEditor @bind-Value="_jsonContent"
+                              Mode="SbMarkEditorMode.Json"
+                              JsonValidChanged="@((valid) => _jsonValid = valid)"
+                              MinHeight="240px" />
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
     <SbDivider />
 
     <DocViewer DocName="SbMarkdownEditor" />
@@ -134,6 +152,15 @@
     private string _suggestedContent = "Hello {{ user.name }},\nYour order **#{{ order.id }}** is confirmed.";
 
     private string _plainContent = "Plain markdown textarea fallback with toolbar hidden.";
+    private bool _jsonValid = true;
+    private string _jsonContent = """
+        {
+          "temperature": 0.7,
+          "maxTokens": 2000,
+          "useRag": true,
+          "ragTopK": 5
+        }
+        """;
 
     private const string toolbarCodeBehind = @"private string _toolbarContent = ""# Toolbar demo"";";
 
@@ -170,4 +197,11 @@
     private const string noToolbarCode = @"<SbMarkdownEditor @bind-Value=""_plainContent""
                   HideToolbar=""true""
                   EnablePreview=""false"" />";
+
+    private const string jsonCodeBehind = @"private string _jsonContent = ""{ \""temperature\"": 0.7 }"";";
+
+    private const string jsonCode = @"<SbMarkEditor @bind-Value=""_jsonContent""
+                  Mode=""SbMarkEditorMode.Json""
+                  JsonValidChanged=""@((valid) => _jsonValid = valid)""
+                  MinHeight=""240px"" />";
 }

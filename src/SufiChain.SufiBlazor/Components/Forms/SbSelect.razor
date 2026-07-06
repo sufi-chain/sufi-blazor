@@ -25,7 +25,18 @@
             aria-expanded="@_isOpen"
             aria-labelledby="@Id">
         <span class="@(HasValue ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
-            @(HasValue ? GetDisplayText() : (Placeholder ?? L["Select_Placeholder"]))
+            @if (!HasValue)
+            {
+                @(Placeholder ?? L["Select_Placeholder"])
+            }
+            else if (ItemTemplate != null && TryFindSelectedItem(out var selectedItem))
+            {
+                @ItemTemplate(selectedItem)
+            }
+            else
+            {
+                @GetDisplayText()
+            }
         </span>
         <span class="@IconClass"><SbIcon Name="chevron-down" Size="SbSize.Sm" /></span>
     </button>
@@ -33,19 +44,25 @@
     @if (_isOpen)
     {
         <div class="@DropdownClass" role="listbox">
-            @if (Searchable)
+            @if (Searchable || SearchFunc != null)
             {
                 <div class="sb-select-search">
                     <input type="text"
                            class="sb-select-search__input"
-                           placeholder="@L["Search_Placeholder"]"
-                           @bind="_searchText"
-                           @bind:event="oninput"
+                           placeholder="@(SearchPlaceholder ?? L["Search_Placeholder"])"
+                           value="@_searchText"
+                           @oninput="OnSearchInput"
                            @ref="_searchRef" />
                 </div>
             }
             <div class="sb-select-options">
-                @if (FilteredItems.Any())
+                @if (_isLoading)
+                {
+                    <div class="sb-select-empty">
+                        <span>@L["Loading"]</span>
+                    </div>
+                }
+                else if (FilteredItems.Any())
                 {
                     @foreach (var item in FilteredItems)
                     {
@@ -93,6 +110,11 @@
     private bool _isOpen;
     private string _searchText = "";
     private bool _shouldFlip;
+    private bool _isLoading;
+    private List<TItem> _remoteItems = new();
+    private TItem _selectedItem = default!;
+    private bool _hasSelectedItem;
+    private System.Timers.Timer? _debounceTimer;
 
     /// <summary>
     /// Selected value.
@@ -135,6 +157,36 @@
     /// </summary>
     [Parameter]
     public bool Searchable { get; set; }
+
+    /// <summary>
+    /// Async function to fetch items based on search text. When set, search queries the backend instead of filtering local items only.
+    /// </summary>
+    [Parameter]
+    public Func<string, Task<IEnumerable<TItem>>>? SearchFunc { get; set; }
+
+    /// <summary>
+    /// Minimum characters before remote search executes.
+    /// </summary>
+    [Parameter]
+    public int MinLength { get; set; }
+
+    /// <summary>
+    /// Debounce delay in milliseconds for remote search.
+    /// </summary>
+    [Parameter]
+    public int DebounceMs { get; set; } = 300;
+
+    /// <summary>
+    /// Maximum number of remote search results to show.
+    /// </summary>
+    [Parameter]
+    public int MaxResults { get; set; } = 50;
+
+    /// <summary>
+    /// Placeholder text for the search input. When null, uses localized default.
+    /// </summary>
+    [Parameter]
+    public string? SearchPlaceholder { get; set; }
 
     /// <summary>
     /// Whether the select allows clearing.
@@ -199,10 +251,20 @@
     {
         get
         {
-            if (Items == null) return Enumerable.Empty<TItem>();
+            if (SearchFunc != null)
+            {
+                return _remoteItems;
+            }
+
+            if (Items == null)
+            {
+                return Enumerable.Empty<TItem>();
+            }
             
             if (string.IsNullOrWhiteSpace(_searchText))
+            {
                 return Items;
+            }
 
             return Items.Where(item => 
                 TextField(item).Contains(_searchText, StringComparison.OrdinalIgnoreCase));
@@ -211,12 +273,136 @@
 
     private string GetDisplayText()
     {
-        if (Items == null || Value == null) return "";
-        
-        var selectedItem = Items.FirstOrDefault(item => 
-            EqualityComparer<TValue>.Default.Equals(ValueField(item), Value));
-        
-        return selectedItem != null ? TextField(selectedItem) : "";
+        if (Value == null)
+        {
+            return "";
+        }
+
+        if (TryFindSelectedItem(out var selectedItem))
+        {
+            return TextField(selectedItem);
+        }
+
+        return "";
+    }
+
+    private bool TryFindSelectedItem(out TItem item)
+    {
+        if (_hasSelectedItem &&
+            EqualityComparer<TValue>.Default.Equals(ValueField(_selectedItem), Value))
+        {
+            item = _selectedItem;
+            return true;
+        }
+
+        if (Items != null)
+        {
+            foreach (var candidate in Items)
+            {
+                if (EqualityComparer<TValue>.Default.Equals(ValueField(candidate), Value))
+                {
+                    item = candidate;
+                    return true;
+                }
+            }
+        }
+
+        foreach (var candidate in _remoteItems)
+        {
+            if (EqualityComparer<TValue>.Default.Equals(ValueField(candidate), Value))
+            {
+                item = candidate;
+                return true;
+            }
+        }
+
+        item = default!;
+        return false;
+    }
+
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        _searchText = e.Value?.ToString() ?? "";
+
+        if (SearchFunc == null)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        _debounceTimer?.Stop();
+        _debounceTimer?.Dispose();
+
+        if (DebounceMs <= 0)
+        {
+            await PerformRemoteSearchAsync();
+            return;
+        }
+
+        _debounceTimer = new System.Timers.Timer(DebounceMs);
+        _debounceTimer.Elapsed += async (_, _) =>
+        {
+            _debounceTimer?.Stop();
+            await InvokeAsync(async () =>
+            {
+                await PerformRemoteSearchAsync();
+                StateHasChanged();
+            });
+        };
+        _debounceTimer.Start();
+    }
+
+    private async Task PerformRemoteSearchAsync()
+    {
+        if (SearchFunc == null)
+        {
+            return;
+        }
+
+        if (_searchText.Length < MinLength)
+        {
+            _remoteItems.Clear();
+            StateHasChanged();
+            return;
+        }
+
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var results = await SearchFunc(_searchText);
+            _remoteItems = results.Take(MaxResults).ToList();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Value == null)
+        {
+            _hasSelectedItem = false;
+            return;
+        }
+
+        if (_hasSelectedItem &&
+            EqualityComparer<TValue>.Default.Equals(ValueField(_selectedItem), Value))
+        {
+            return;
+        }
+
+        if (TryFindSelectedItem(out var item))
+        {
+            _selectedItem = item;
+            _hasSelectedItem = true;
+        }
+        else
+        {
+            _hasSelectedItem = false;
+        }
     }
 
     private string GetOptionClass(bool isSelected)
@@ -243,6 +429,12 @@
             
             // Check if dropdown should flip up
             _shouldFlip = await JSRuntime.InvokeAsync<bool>("SufiBlazor.select.shouldFlipUp", _anchorRef, 300);
+
+            if (SearchFunc != null)
+            {
+                await PerformRemoteSearchAsync();
+            }
+
             StateHasChanged();
         }
         else
@@ -255,6 +447,8 @@
 
     private async Task SelectItem(TItem item)
     {
+        _selectedItem = item;
+        _hasSelectedItem = true;
         var value = ValueField(item);
         await ValueChanged.InvokeAsync(value);
         _isOpen = false;
@@ -289,5 +483,6 @@
     public void Dispose()
     {
         _dotNetRef?.Dispose();
+        _debounceTimer?.Dispose();
     }
 }

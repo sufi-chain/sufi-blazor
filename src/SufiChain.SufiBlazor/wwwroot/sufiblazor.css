@@ -8397,6 +8397,17 @@ body.sb-resizing {
     overflow: hidden;
 }
 
+.sb-markdown-editor--json .EasyMDEContainer .CodeMirror {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.sb-markdown-editor--json-invalid {
+    border-color: var(--sb-color-danger, #ef4444);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--sb-color-danger, #ef4444) 35%, transparent);
+}
+
 .sb-markdown-editor__toolbar {
     display: flex;
     flex-wrap: wrap;

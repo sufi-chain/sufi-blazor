@@ -1,6 +1,6 @@
 @namespace SufiChain.SufiBlazor.Components.Feedback
 
-<span class="sb-status-pill sb-status-pill--@Status.ToString().ToLower() @(Pulsing ? "sb-status-pill--pulsing" : "") @Class">
+<span class="sb-status-pill sb-status-pill--@GetStatusCssModifier() @(Pulsing ? "sb-status-pill--pulsing" : "") @Class">
     @if (ShowDot)
     {
         <span class="sb-status-pill__dot"></span>
@@ -56,13 +56,10 @@
         SbStatusType.Info => "Info",
         _ => "Unknown"
     };
-}
 
-public enum SbStatusType
-{
-    Default,
-    Success,
-    Warning,
-    Error,
-    Info
+    private string GetStatusCssModifier() => Status switch
+    {
+        SbStatusType.Default or SbStatusType.Neutral => "neutral",
+        _ => Status.ToString().ToLowerInvariant()
+    };
 }

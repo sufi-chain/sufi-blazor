@@ -71,4 +71,5 @@ That relationship matters for platform developers, but the library remains usabl
 - [Localization](localization.md)
 - [Components](components.md)
 - [DataGrid](data-grid.md)
+- [Builder Components](builder.md)
 - [Adding Icons](adding-icons.md)

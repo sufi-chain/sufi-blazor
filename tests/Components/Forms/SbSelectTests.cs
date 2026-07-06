@@ -265,6 +265,27 @@ public class SbSelectTests : BunitContext
     }
 
     [Fact]
+    public void DisplaysItemTemplateInTriggerWhenSet()
+    {
+        // Arrange
+        var items = CreateItems(3);
+
+        // Act
+        var cut = Render<SbSelect<SelectTestItem, int>>(p => p
+            .Add(x => x.Items, items)
+            .Add(x => x.Value, 2)
+            .Add(x => x.TextField, (Func<SelectTestItem, string>)(item => item.Name))
+            .Add(x => x.ValueField, (Func<SelectTestItem, int>)(item => item.Id))
+            .Add(x => x.ItemTemplate, (RenderFragment<SelectTestItem>)(item => builder =>
+                builder.AddContent(0, $"Localized {item.Name}"))));
+
+        // Assert
+        var valueSpan = cut.Find(".sb-select-trigger__value");
+        Assert.NotNull(valueSpan);
+        Assert.Contains("Localized Item 2", valueSpan.TextContent);
+    }
+
+    [Fact]
     public void TriggerHasAriaAttributes()
     {
         // Arrange & Act

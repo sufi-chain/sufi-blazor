@@ -48,6 +48,7 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback<string> SuggestedValueChanged { get; set; }
     [Parameter] public EventCallback OnApplyChanges { get; set; }
     [Parameter] public EventCallback OnDiscardChanges { get; set; }
+    [Parameter] public EventCallback<string> OnToolbarCustomAction { get; set; }
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -189,7 +190,8 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
                     Original = OriginalValue,
                     Modified = SuggestedValue,
                     ReadOnly = ReadOnly,
-                    EditorMode = EditorMode == SbMarkdownEditorMode.Source ? "source" : "markdown"
+                    EditorMode = EditorMode == SbMarkdownEditorMode.Source ? "source" : "markdown",
+                    SourceLanguage = SourceLanguage
                 });
             }
             else
@@ -278,10 +280,20 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
         await InvokeAsync(StateHasChanged);
     }
 
-    private string GetEditorId() =>
-        string.Equals(SourceLanguage, "html", StringComparison.OrdinalIgnoreCase)
-            ? $"{_elementId}-html"
-            : _elementId;
+    private string GetEditorId()
+    {
+        if (string.Equals(SourceLanguage, "html", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"{_elementId}-html";
+        }
+
+        if (string.Equals(SourceLanguage, "json", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"{_elementId}-json";
+        }
+
+        return _elementId;
+    }
 
     [JSInvokable]
     public async Task OnEditorChangeAsync(string value, string html)
@@ -378,6 +390,11 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
             classes.Add("sb-markdown-editor--source");
         }
 
+        if (string.Equals(SourceLanguage, "json", StringComparison.OrdinalIgnoreCase))
+        {
+            classes.Add("sb-markdown-editor--json");
+        }
+
         if (!string.IsNullOrWhiteSpace(Class))
         {
             classes.Add(Class);
@@ -385,6 +402,9 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
 
         return string.Join(' ', classes);
     }
+
+    private static bool IsCustomToolbarAction(string action) =>
+        action is "format-json" or "minify-json";
 
     private static bool IsToolbarItemDisabled(SbMarkdownToolbarItem item)
     {
@@ -401,6 +421,14 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
         if (item is MdToolbarContributedItem contributedItem && contributedItem.OnClickAsync != null)
         {
             await ToolbarService.ExecuteItemActionAsync(contributedItem, CreateActionContext());
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(item.Action) &&
+            IsCustomToolbarAction(item.Action) &&
+            OnToolbarCustomAction.HasDelegate)
+        {
+            await OnToolbarCustomAction.InvokeAsync(item.Action);
             return;
         }
 

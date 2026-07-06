@@ -27,7 +27,21 @@ Feature-oriented catalog. See **SufiChain.SufiBlazorDemo** and component XML doc
 
 - **SbStack** — Flex row/column, gap, justify, align.  
 - **SbGrid** — CSS grid; column counts, gap.  
-- **SbAppShell**, **SbSidebar** — App chrome; KomTheme uses these.
+- **SbContainer**, **SbSpacer** — Max-width container and flex spacer.
+
+> App shell chrome (`SbAppShell`, `SbSidebar`, etc.) was removed from SufiBlazor. Use **KomTheme** for layout shells.
+
+## Builder
+
+Visual editor and page-builder primitives. See [Builder Components](builder.md).
+
+- **SbDraggableItem** / **SbDropZone** / **SbDragHandle** — HTML5 drag-and-drop palette and canvas.  
+- **SbSortableList\<T\>** — Drag-to-reorder lists (layers, tabs, tasks).  
+- **SbInspectorPanel** / **SbInspectorSection** — Collapsible property sidebar.  
+- **SbPropertyGrid** — Auto-generated property editors (Text, Number, Checkbox, Select, Color).  
+- **SbSplitPane** / **SbResizable** — Resizable canvas + inspector layout.  
+- **SbInlineToolbar** — Floating context actions on selection.  
+- **SbAddButton** — Add-block affordance with optional dropdown.
 
 ## Navigation
 

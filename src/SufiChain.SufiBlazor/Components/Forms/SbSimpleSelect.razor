@@ -27,7 +27,18 @@
                 aria-expanded="@_isOpen"
                 aria-labelledby="@Id">
             <span class="@(HasValue ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
-                @(HasValue ? GetDisplayText() : (Placeholder ?? L["Select_Placeholder"]))
+                @if (!HasValue)
+                {
+                    @(Placeholder ?? L["Select_Placeholder"])
+                }
+                else if (GetSelectedOption() is { ChildContent: not null } selectedWithContent)
+                {
+                    @selectedWithContent.ChildContent
+                }
+                else
+                {
+                    @GetDisplayText()
+                }
             </span>
             @if (!(Clearable && HasValue && !Disabled))
             {
@@ -300,12 +311,22 @@
         }
     }
 
+    private SbSelectOptionInfo<TValue>? GetSelectedOption()
+    {
+        if (Value == null)
+        {
+            return null;
+        }
+
+        return _options.FirstOrDefault(o =>
+            EqualityComparer<TValue>.Default.Equals(o.Value, Value));
+    }
+
     private string GetDisplayText()
     {
         if (Value == null) return "";
 
-        var selectedOption = _options.FirstOrDefault(o =>
-            EqualityComparer<TValue>.Default.Equals(o.Value, Value));
+        var selectedOption = GetSelectedOption();
 
         if (selectedOption != null)
         {

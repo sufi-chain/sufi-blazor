@@ -51,8 +51,10 @@ It does not try to become the complete internal engineering manual for the indep
 ## Documentation structure
 
 ```
-docs/sufi-blazor/
+docs/
 ├── components/         # Component reference by category
+├── builder.md          # Visual editor / page builder primitives
+├── data-grid.md        # SbDataGrid reference
 ├── installation.md     # How to consume the library in a host app
 ├── localization.md     # Localization and RTL guidance
 ├── theming.md          # Theme usage and customization
@@ -62,6 +64,7 @@ docs/sufi-blazor/
 
 ## When to read next
 
-- Open `docs/sufi-blazor/installation.md` when you want to add SufiBlazor to a host application.
-- Open `docs/sufi-blazor/overview.md` when you want guidance on how the platform uses the library.
-- Open `docs/sufi-blazor/theming.md` and `docs/sufi-blazor/localization.md` when the product needs custom branding, RTL, or Persian-oriented behavior.
+- Open `docs/installation.md` when you want to add SufiBlazor to a host application.
+- Open `docs/overview.md` when you want guidance on how the platform uses the library.
+- Open `docs/theming.md` and `docs/localization.md` when the product needs custom branding, RTL, or Persian-oriented behavior.
+- Open `docs/builder.md` when building visual editors, page builders, or property inspectors.

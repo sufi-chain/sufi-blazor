@@ -281,6 +281,25 @@ function buildPreviewRender(options) {
     };
 }
 
+function resolveCodeMirrorMode(language) {
+    switch ((language || '').toLowerCase()) {
+        case 'html':
+            return 'htmlmixed';
+        case 'json':
+            return { name: 'javascript', json: true };
+        default:
+            return 'markdown';
+    }
+}
+
+function resolveDiffCodeMirrorMode(options) {
+    if (options.editorMode === 'source') {
+        return resolveCodeMirrorMode(options.sourceLanguage);
+    }
+
+    return 'markdown';
+}
+
 export async function initEditor(textarea, dotNetRef, options) {
     const editorId = options.editorId || `sb-md-editor-${++editorIdCounter}`;
     const sourceMode = options.editorMode === 'source';
@@ -334,7 +353,8 @@ export async function initEditor(textarea, dotNetRef, options) {
 
     if (sourceMode) {
         const language = (options.sourceLanguage || '').toLowerCase();
-        easyMDE.codemirror.setOption('mode', language === 'html' ? 'htmlmixed' : 'markdown');
+        const mode = resolveCodeMirrorMode(language);
+        easyMDE.codemirror.setOption('mode', mode);
         easyMDE.codemirror.setOption('htmlMode', language === 'html');
     }
 
@@ -378,7 +398,7 @@ export async function initDiffReview(container, dotNetRef, options) {
         value: options.modified || '',
         orig: options.original || '',
         lineNumbers: true,
-        mode: options.editorMode === 'source' ? 'htmlmixed' : 'markdown',
+        mode: resolveDiffCodeMirrorMode(options),
         highlightChanges: true,
         connect: 'align',
         collapseIdentical: false,

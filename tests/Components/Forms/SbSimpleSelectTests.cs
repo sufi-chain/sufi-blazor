@@ -329,6 +329,28 @@ public class SbSimpleSelectTests : BunitContext
     }
 
     [Fact]
+    public void DisplaysChildContentInTriggerWhenTextNotSet()
+    {
+        // Arrange
+        var options = (RenderFragment)(b =>
+        {
+            b.OpenComponent<SbSelectOption<string>>(0);
+            b.AddAttribute(1, "Value", "info");
+            b.AddAttribute(2, "ChildContent", (RenderFragment)(c => c.AddContent(0, "Localized Info")));
+            b.CloseComponent();
+        });
+        var cut = Render<SbSimpleSelect<string>>(p => p
+            .AddChildContent(options)
+            .Add(x => x.Value, "info"));
+
+        // Assert
+        var valueSpan = cut.Find(".sb-select-trigger__value");
+        Assert.NotNull(valueSpan);
+        Assert.Contains("Localized Info", valueSpan.TextContent);
+        Assert.DoesNotContain("info", valueSpan.TextContent);
+    }
+
+    [Fact]
     public void AppliesStyleParameter()
     {
         // Arrange & Act

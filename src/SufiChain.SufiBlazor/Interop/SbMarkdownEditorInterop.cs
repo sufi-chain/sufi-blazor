@@ -168,6 +168,7 @@ public class SbMarkdownDiffInitOptions
     public string? Modified { get; set; }
     public bool ReadOnly { get; set; }
     public string EditorMode { get; set; } = "markdown";
+    public string? SourceLanguage { get; set; }
 }
 
 /// <summary>

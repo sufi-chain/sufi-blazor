@@ -4,5 +4,6 @@ public enum SbMarkEditorMode
 {
     Markdown,
     Markup,
-    Source
+    Source,
+    Json
 }

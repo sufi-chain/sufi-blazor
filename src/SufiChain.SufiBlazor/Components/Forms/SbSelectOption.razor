@@ -24,7 +24,8 @@
 
     /// <summary>
     /// The display content for this option (custom markup).
-    /// When Text is null, ChildContent is used for dropdown; trigger falls back to Value.
+    /// When Text is null, ChildContent is used for both the dropdown and trigger.
+    /// Set Text when Searchable is true so filtering can match display text.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }

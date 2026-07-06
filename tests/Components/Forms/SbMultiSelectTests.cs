@@ -141,6 +141,28 @@ public class SbMultiSelectTests : BunitContext
     }
 
     [Fact]
+    public void RendersItemTemplateInChipsWhenSet()
+    {
+        // Arrange
+        var items = CreateItems(3);
+
+        // Act
+        var cut = Render<SbMultiSelect<MultiSelectTestItem, int>>(p => p
+            .Add(x => x.Items, items)
+            .Add(x => x.Values, new List<int> { 1, 2 })
+            .Add(x => x.TextField, (Func<MultiSelectTestItem, string>)(item => item.Name))
+            .Add(x => x.ValueField, (Func<MultiSelectTestItem, int>)(item => item.Id))
+            .Add(x => x.ItemTemplate, (RenderFragment<MultiSelectTestItem>)(item => builder =>
+                builder.AddContent(0, $"Localized {item.Name}"))));
+
+        // Assert
+        var chips = cut.FindAll(".sb-multi-select__chip");
+        Assert.Equal(2, chips.Count);
+        Assert.Contains("Localized Item 1", cut.Markup);
+        Assert.Contains("Localized Item 2", cut.Markup);
+    }
+
+    [Fact]
     public void AppliesDisabledClassWhenDisabled()
     {
         // Arrange & Act
