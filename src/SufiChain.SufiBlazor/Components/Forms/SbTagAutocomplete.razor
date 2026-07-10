@@ -1,0 +1,472 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Common
+@typeparam TItem
+@implements IDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="sb-tag-autocomplete @(Disabled ? "sb-tag-autocomplete--disabled" : "") @Class" style="@Style" @ref="_anchorRef">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="sb-tag-autocomplete__label" for="@Id">
+            @Label
+            @if (Required)
+            {
+                <span class="sb-tag-autocomplete__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+
+    <div class="sb-tag-autocomplete__container" @onclick="FocusInputAsync">
+        @foreach (var item in SelectedItems)
+        {
+            <span class="sb-tag-autocomplete__chip">
+                @if (ChipTemplate != null)
+                {
+                    @ChipTemplate(item)
+                }
+                else
+                {
+                    <span class="sb-tag-autocomplete__chip-text">@TextField(item)</span>
+                }
+                @if (!Disabled && !ReadOnly)
+                {
+                    <button type="button"
+                            class="sb-tag-autocomplete__chip-remove"
+                            @onclick="() => RemoveItem(item)"
+                            @onclick:stopPropagation="true"
+                            aria-label="@($"{L["Remove"]} {TextField(item)}")">
+                        <SbIcon Name="x" Size="SbSize.Sm" />
+                    </button>
+                }
+            </span>
+        }
+
+        @if (!Disabled && !ReadOnly && (!MaxTags.HasValue || SelectedItems.Count < MaxTags.Value))
+        {
+            <input type="text"
+                   class="sb-tag-autocomplete__input"
+                   id="@Id"
+                   @ref="_inputRef"
+                   value="@_searchText"
+                   @oninput="OnSearchInput"
+                   @onfocus="OnFocusAsync"
+                   @onkeydown="OnKeyDownAsync"
+                   placeholder="@GetInputPlaceholder()"
+                   disabled="@Disabled"
+                   readonly="@ReadOnly"
+                   autocomplete="off" />
+        }
+
+        @if (_isLoading)
+        {
+            <span class="sb-tag-autocomplete__spinner"></span>
+        }
+    </div>
+
+    @if (_isOpen)
+    {
+        <div class="@DropdownClass">
+            @if (_filteredItems.Any())
+            {
+                @foreach (var (item, index) in _filteredItems.Select((item, i) => (item, i)))
+                {
+                    var isHighlighted = index == _highlightedIndex;
+                    <button type="button"
+                            class="sb-tag-autocomplete__option @(isHighlighted ? "sb-tag-autocomplete__option--highlighted" : "")"
+                            @onclick="() => SelectItemAsync(item)">
+                        @if (ItemTemplate != null)
+                        {
+                            @ItemTemplate(item)
+                        }
+                        else
+                        {
+                            @TextField(item)
+                        }
+                    </button>
+                }
+            }
+
+            @if (ShowCreateOption)
+            {
+                <button type="button"
+                        class="sb-tag-autocomplete__option sb-tag-autocomplete__option--create @(_highlightedIndex == _filteredItems.Count ? "sb-tag-autocomplete__option--highlighted" : "")"
+                        @onclick="CreateFromSearchAsync">
+                    @string.Format(L["CreateOption"], _searchText.Trim())
+                </button>
+            }
+
+            @if (!_filteredItems.Any() && !ShowCreateOption)
+            {
+                <div class="sb-tag-autocomplete__no-results">
+                    @if (NoResultsTemplate != null)
+                    {
+                        @NoResultsTemplate
+                    }
+                    else
+                    {
+                        <span>@L["NoResultsFound"]</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    @if (MaxTags.HasValue)
+    {
+        <div class="sb-tag-autocomplete__counter">
+            @SelectedItems.Count / @MaxTags
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference _anchorRef;
+    private ElementReference _inputRef;
+    private DotNetObjectReference<SbTagAutocomplete<TItem>>? _dotNetRef;
+    private bool _isOpen;
+    private bool _isLoading;
+    private string _searchText = string.Empty;
+    private List<TItem> _filteredItems = new();
+    private int _highlightedIndex = -1;
+    private System.Timers.Timer? _debounceTimer;
+
+    [Parameter]
+    public IReadOnlyList<TItem> SelectedItems { get; set; } = Array.Empty<TItem>();
+
+    [Parameter]
+    public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
+
+    [Parameter]
+    public Func<TItem, string> TextField { get; set; } = item => item?.ToString() ?? string.Empty;
+
+    [Parameter]
+    public Func<TItem, object> ValueField { get; set; } = item => item!;
+
+    [Parameter]
+    public Func<string, Task<IEnumerable<TItem>>>? SearchFunc { get; set; }
+
+    [Parameter]
+    public Func<string, Task<TItem?>>? OnCreateAsync { get; set; }
+
+    [Parameter]
+    public bool AllowCreate { get; set; }
+
+    [Parameter]
+    public int MinLength { get; set; }
+
+    [Parameter]
+    public int DebounceMs { get; set; } = 300;
+
+    [Parameter]
+    public int MaxResults { get; set; } = 20;
+
+    [Parameter]
+    public int? MaxTags { get; set; }
+
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    [Parameter]
+    public bool ReadOnly { get; set; }
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment<TItem>? ChipTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment? NoResultsTemplate { get; set; }
+
+    private bool ShowCreateOption =>
+        AllowCreate &&
+        OnCreateAsync != null &&
+        !string.IsNullOrWhiteSpace(_searchText) &&
+        !SelectedItems.Any(x => string.Equals(TextField(x), _searchText.Trim(), StringComparison.OrdinalIgnoreCase)) &&
+        !_filteredItems.Any(x => string.Equals(TextField(x), _searchText.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private string DropdownClass => _shouldFlip
+        ? "sb-tag-autocomplete__dropdown sb-tag-autocomplete__dropdown--flip-up"
+        : "sb-tag-autocomplete__dropdown";
+
+    private bool _shouldFlip;
+
+    private string GetInputPlaceholder()
+    {
+        return SelectedItems.Any()
+            ? string.Empty
+            : Placeholder ?? L["AddTag_Placeholder"];
+    }
+
+    private async Task OnSearchInput(ChangeEventArgs e)
+    {
+        _searchText = e.Value?.ToString() ?? string.Empty;
+        _highlightedIndex = -1;
+
+        if (_searchText.Length < MinLength)
+        {
+            if (MinLength == 0)
+            {
+                await QueueSearchAsync();
+            }
+            else
+            {
+                _filteredItems.Clear();
+                _isOpen = false;
+            }
+
+            return;
+        }
+
+        await QueueSearchAsync();
+    }
+
+    private Task QueueSearchAsync()
+    {
+        _debounceTimer?.Stop();
+        _debounceTimer?.Dispose();
+
+        if (DebounceMs <= 0)
+        {
+            return PerformSearchAsync();
+        }
+
+        _debounceTimer = new System.Timers.Timer(DebounceMs);
+        _debounceTimer.Elapsed += async (_, _) =>
+        {
+            _debounceTimer?.Stop();
+            await InvokeAsync(async () =>
+            {
+                await PerformSearchAsync();
+                StateHasChanged();
+            });
+        };
+        _debounceTimer.Start();
+        return Task.CompletedTask;
+    }
+
+    private async Task PerformSearchAsync()
+    {
+        if (SearchFunc == null)
+        {
+            _filteredItems.Clear();
+            _isOpen = false;
+            return;
+        }
+
+        if (_searchText.Length < MinLength && MinLength > 0)
+        {
+            _filteredItems.Clear();
+            _isOpen = false;
+            return;
+        }
+
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var results = await SearchFunc(_searchText);
+            var selectedValues = SelectedItems.Select(ValueField).ToHashSet();
+            _filteredItems = results
+                .Where(item => !selectedValues.Contains(ValueField(item)))
+                .Take(MaxResults)
+                .ToList();
+
+            if (!_isOpen)
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
+            }
+
+            _isOpen = true;
+            _shouldFlip = await JSRuntime.InvokeAsync<bool>("SufiBlazor.select.shouldFlipUp", _anchorRef, 300);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OnFocusAsync()
+    {
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
+        if (_searchText.Length >= MinLength || MinLength == 0)
+        {
+            await PerformSearchAsync();
+        }
+    }
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        var optionCount = _filteredItems.Count + (ShowCreateOption ? 1 : 0);
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (optionCount > 0)
+                {
+                    _highlightedIndex = Math.Min(_highlightedIndex + 1, optionCount - 1);
+                    _isOpen = true;
+                }
+                break;
+            case "ArrowUp":
+                if (optionCount > 0)
+                {
+                    _highlightedIndex = Math.Max(_highlightedIndex - 1, 0);
+                    _isOpen = true;
+                }
+                break;
+            case "Enter":
+                if (_highlightedIndex >= 0 && _highlightedIndex < _filteredItems.Count)
+                {
+                    await SelectItemAsync(_filteredItems[_highlightedIndex]);
+                }
+                else if (_highlightedIndex == _filteredItems.Count && ShowCreateOption)
+                {
+                    await CreateFromSearchAsync();
+                }
+                else if (!string.IsNullOrWhiteSpace(_searchText))
+                {
+                    if (ShowCreateOption)
+                    {
+                        await CreateFromSearchAsync();
+                    }
+                    else
+                    {
+                        var exactMatch = _filteredItems.FirstOrDefault(x =>
+                            string.Equals(TextField(x), _searchText.Trim(), StringComparison.OrdinalIgnoreCase));
+                        if (exactMatch != null)
+                        {
+                            await SelectItemAsync(exactMatch);
+                        }
+                    }
+                }
+                break;
+            case "Backspace":
+                if (string.IsNullOrEmpty(_searchText) && SelectedItems.Any())
+                {
+                    await RemoveItem(SelectedItems.Last());
+                }
+                break;
+            case "Escape":
+                await CloseDropdownAsync();
+                break;
+        }
+    }
+
+    private async Task SelectItemAsync(TItem item)
+    {
+        if (MaxTags.HasValue && SelectedItems.Count >= MaxTags.Value)
+        {
+            return;
+        }
+
+        var selectedValues = SelectedItems.Select(ValueField).ToHashSet();
+        if (selectedValues.Contains(ValueField(item)))
+        {
+            return;
+        }
+
+        var updated = SelectedItems.ToList();
+        updated.Add(item);
+        await SelectedItemsChanged.InvokeAsync(updated);
+        _searchText = string.Empty;
+        _filteredItems.Clear();
+        _highlightedIndex = -1;
+        await CloseDropdownAsync();
+        await FocusInputAsync();
+    }
+
+    private async Task CreateFromSearchAsync()
+    {
+        if (OnCreateAsync == null || string.IsNullOrWhiteSpace(_searchText))
+        {
+            return;
+        }
+
+        var created = await OnCreateAsync(_searchText.Trim());
+        if (created == null)
+        {
+            return;
+        }
+
+        await SelectItemAsync(created);
+    }
+
+    private async Task RemoveItem(TItem item)
+    {
+        var updated = SelectedItems.Where(x => !EqualityComparer<object>.Default.Equals(ValueField(x), ValueField(item))).ToList();
+        await SelectedItemsChanged.InvokeAsync(updated);
+        await FocusInputAsync();
+    }
+
+    private async Task CloseDropdownAsync()
+    {
+        if (!_isOpen)
+        {
+            return;
+        }
+
+        _isOpen = false;
+        _highlightedIndex = -1;
+        await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+    }
+
+    private async Task FocusInputAsync()
+    {
+        if (Disabled || ReadOnly)
+        {
+            return;
+        }
+
+        try
+        {
+            await _inputRef.FocusAsync();
+        }
+        catch
+        {
+            // Input may not be rendered yet.
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnClickAway()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            _highlightedIndex = -1;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+        _debounceTimer?.Dispose();
+    }
+}

@@ -16,30 +16,51 @@
             }
         </label>
     }
-    <button type="button"
-            class="sb-select-trigger"
-            @onclick="Toggle"
-            @onkeydown="HandleKeyDown"
-            disabled="@Disabled"
-            aria-haspopup="listbox"
-            aria-expanded="@_isOpen"
-            aria-labelledby="@Id">
-        <span class="@(HasValue ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
-            @if (!HasValue)
+    <div class="sb-select-trigger">
+        <button type="button"
+                class="sb-select-trigger__main"
+                @onclick="Toggle"
+                @onkeydown="HandleKeyDown"
+                disabled="@Disabled"
+                aria-haspopup="listbox"
+                aria-expanded="@_isOpen"
+                aria-labelledby="@Id">
+            <span class="@(HasValue ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
+                @if (!HasValue)
+                {
+                    @(Placeholder ?? L["Select_Placeholder"])
+                }
+                else if (SelectedValueTemplate != null && TryFindSelectedItem(out var selectedForValueTemplate))
+                {
+                    @SelectedValueTemplate(selectedForValueTemplate)
+                }
+                else if (ItemTemplate != null && TryFindSelectedItem(out var selectedItem))
+                {
+                    @ItemTemplate(selectedItem)
+                }
+                else
+                {
+                    @GetDisplayText()
+                }
+            </span>
+            @if (!(Clearable && HasValue && !Disabled))
             {
-                @(Placeholder ?? L["Select_Placeholder"])
+                <span class="@IconClass"><SbIcon Name="chevron-down" Size="SbSize.Sm" /></span>
             }
-            else if (ItemTemplate != null && TryFindSelectedItem(out var selectedItem))
-            {
-                @ItemTemplate(selectedItem)
-            }
-            else
-            {
-                @GetDisplayText()
-            }
-        </span>
-        <span class="@IconClass"><SbIcon Name="chevron-down" Size="SbSize.Sm" /></span>
-    </button>
+        </button>
+        @if (Clearable && HasValue && !Disabled)
+        {
+            <button type="button"
+                    class="sb-select-trigger__clear"
+                    aria-label="@(L["Clear"])"
+                    tabindex="-1"
+                    @onclick="HandleClear"
+                    @onclick:stopPropagation="true">
+                <SbIcon Name="x" Size="SbSize.Sm" />
+            </button>
+            <span class="@IconClass"><SbIcon Name="chevron-down" Size="SbSize.Sm" /></span>
+        }
+    </div>
 
     @if (_isOpen)
     {
@@ -205,6 +226,12 @@
     /// </summary>
     [Parameter]
     public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// Optional template for the closed/selected value display. When null, falls back to ItemTemplate then TextField.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<TItem>? SelectedValueTemplate { get; set; }
 
     /// <summary>
     /// Template for no results.
@@ -454,6 +481,19 @@
         _isOpen = false;
         _searchText = "";
         await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+    }
+
+    private async Task HandleClear()
+    {
+        if (Disabled || !Clearable)
+        {
+            return;
+        }
+
+        _hasSelectedItem = false;
+        _selectedItem = default!;
+        _searchText = "";
+        await ValueChanged.InvokeAsync(default);
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs args)

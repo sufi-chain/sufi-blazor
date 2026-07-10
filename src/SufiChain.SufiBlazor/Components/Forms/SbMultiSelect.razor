@@ -82,10 +82,13 @@
                     {
                         var itemValue = ValueField(item);
                         var isSelected = Values?.Contains(itemValue) ?? false;
+                        var isDisabled = IsItemDisabled(item);
                         <button type="button"
-                                class="@GetOptionClass(isSelected)"
+                                class="@GetOptionClass(isSelected, isDisabled)"
                                 role="option"
                                 aria-selected="@isSelected"
+                                aria-disabled="@isDisabled"
+                                disabled="@isDisabled"
                                 @onclick="() => ToggleItem(item)">
                             @if (isSelected)
                             {
@@ -227,6 +230,12 @@
     /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Optional predicate that marks individual items as disabled (not selectable).
+    /// </summary>
+    [Parameter]
+    public Func<TItem, bool>? ItemDisabledField { get; set; }
 
     /// <summary>
     /// Element ID.
@@ -411,12 +420,18 @@
         return default;
     }
 
-    private string GetOptionClass(bool isSelected)
+    private bool IsItemDisabled(TItem item) => ItemDisabledField?.Invoke(item) == true;
+
+    private string GetOptionClass(bool isSelected, bool isDisabled)
     {
         var classes = new List<string> { "sb-select-option" };
         if (isSelected)
         {
             classes.Add("sb-select-option--selected");
+        }
+        if (isDisabled)
+        {
+            classes.Add("sb-select-option--disabled");
         }
         return string.Join(" ", classes);
     }
@@ -452,6 +467,11 @@
 
     private async Task ToggleItem(TItem item)
     {
+        if (IsItemDisabled(item))
+        {
+            return;
+        }
+
         var value = ValueField(item);
         var currentValues = Values?.ToList() ?? new List<TValue>();
 

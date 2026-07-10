@@ -250,6 +250,26 @@ public class SbMultiSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task DoesNotSelectDisabledItems()
+    {
+        IReadOnlyList<int>? received = null;
+        var cut = Render<SbMultiSelect<MultiSelectTestItem, int>>(p => p
+            .Add(x => x.Items, CreateItems(3))
+            .Add(x => x.TextField, (Func<MultiSelectTestItem, string>)(item => item.Name))
+            .Add(x => x.ValueField, (Func<MultiSelectTestItem, int>)(item => item.Id))
+            .Add(x => x.ItemDisabledField, (Func<MultiSelectTestItem, bool>)(item => item.Id == 2))
+            .Add(x => x.ValuesChanged, EventCallback.Factory.Create<IReadOnlyList<int>>(this, v => received = v)));
+
+        await cut.InvokeAsync(() => cut.Find(".sb-multi-select-trigger")!.Click());
+        var disabled = cut.FindAll(".sb-select-option").First(o => o.TextContent.Contains("Item 2"));
+        Assert.Contains("sb-select-option--disabled", disabled.ClassList);
+        Assert.True(disabled.HasAttribute("disabled"));
+
+        await cut.InvokeAsync(() => disabled.Click());
+        Assert.Null(received);
+    }
+
+    [Fact]
     public async Task InvokesValuesChangedWhenChipRemoveClicked()
     {
         // Arrange
