@@ -73,19 +73,3 @@
         await OnDragEnded.InvokeAsync();
     }
 }
-
-/// <summary>
-/// Drag start event arguments.
-/// </summary>
-public class SbDragStartEventArgs
-{
-    /// <summary>
-    /// Data being dragged.
-    /// </summary>
-    public object? Data { get; set; }
-    
-    /// <summary>
-    /// Item type.
-    /// </summary>
-    public string? ItemType { get; set; }
-}

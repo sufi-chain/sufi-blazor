@@ -127,6 +127,8 @@
   <data name="EnterSlug_Placeholder" xml:space="preserve"><value>أدخل-الرابط</value></data>
   <data name="GenerateSlug" xml:space="preserve"><value>إنشاء</value></data>
   <data name="NoResultsFound" xml:space="preserve"><value>لم يتم العثور على نتائج</value></data>
+  <data name="AddTag_Placeholder" xml:space="preserve"><value>ابحث أو أضف وسومًا...</value></data>
+  <data name="CreateOption" xml:space="preserve"><value>إنشاء "{0}"</value></data>
   <data name="SaveChanges" xml:space="preserve"><value>حفظ التغييرات</value></data>
   <data name="CancelEditing" xml:space="preserve"><value>إلغاء التحرير</value></data>
   <data name="EditRow" xml:space="preserve"><value>تحرير الصف</value></data>

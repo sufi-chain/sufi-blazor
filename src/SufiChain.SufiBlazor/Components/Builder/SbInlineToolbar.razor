@@ -95,34 +95,3 @@
         await OnAction.InvokeAsync(action);
     }
 }
-
-/// <summary>
-/// Toolbar action.
-/// </summary>
-public class SbToolbarAction
-{
-    public string Id { get; set; } = "";
-    public string? Label { get; set; }
-    public string? IconText { get; set; }
-    public RenderFragment? Icon { get; set; }
-    public string? Tooltip { get; set; }
-    public bool Disabled { get; set; }
-    public bool IsActive { get; set; }
-    public bool IsDanger { get; set; }
-    public bool IsSeparator { get; set; }
-    public Action? OnClick { get; set; }
-    
-    public static SbToolbarAction Separator() => new() { IsSeparator = true };
-}
-
-/// <summary>
-/// Toolbar position.
-/// </summary>
-public enum SbToolbarPosition
-{
-    Top,
-    Bottom,
-    Left,
-    Right,
-    Float
-}

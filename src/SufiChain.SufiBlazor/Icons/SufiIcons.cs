@@ -589,6 +589,10 @@ public static class SufiIcons
                 $"<svg {SvgOutlineAttrs}><rect x=\"3\" y=\"3\" width=\"10\" height=\"18\" rx=\"1\"/><rect x=\"16\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\"/></svg>"),
             ["component"] = new("component", SiIconCategory.Layout, "UI component block",
                 $"<svg {SvgOutlineAttrs}><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"/><path d=\"M10 6h4M6 10v4M18 10v4M10 18h4\"/></svg>"),
+            ["cms"] = new("cms", SiIconCategory.Layout, "Content management system",
+                $"<svg {SvgOutlineAttrs}><rect x=\"3\" y=\"3\" width=\"13\" height=\"18\" rx=\"2\"/><path d=\"M7 8h6\"/><path d=\"M7 12h6\"/><path d=\"M7 16h4\"/><path d=\"M18 13l3 3-6 6h-3v-3z\"/></svg>"),
+            ["newspaper"] = new("newspaper", SiIconCategory.Layout, "News or published content",
+                $"<svg {SvgOutlineAttrs}><path d=\"M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8a2 2 0 00-2 2v16a2 2 0 01-2 2\"/><path d=\"M10 6h8\"/><path d=\"M10 10h8\"/><path d=\"M10 14h5\"/></svg>"),
 
             // ============================================
             // Typography Icons

@@ -199,7 +199,7 @@
                             }
                             else
                             {
-                                <span>No data available</span>
+                                <span>@(EmptyText ?? "No data available")</span>
                             }
                         </td>
                     </tr>
@@ -570,6 +570,12 @@
     /// </summary>
     [Parameter]
     public RenderFragment? EmptyTemplate { get; set; }
+
+    /// <summary>
+    /// Plain-text fallback when <see cref="EmptyTemplate"/> is not set.
+    /// </summary>
+    [Parameter]
+    public string? EmptyText { get; set; }
     
     /// <summary>
     /// Callback when a row is clicked.

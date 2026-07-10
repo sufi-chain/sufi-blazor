@@ -5947,6 +5947,153 @@ body.sb-resizing {
 }
 
 /* ============================================
+   SbTagAutocomplete
+   ============================================ */
+
+.sb-tag-autocomplete {
+    position: relative;
+    width: 100%;
+}
+
+.sb-tag-autocomplete__label {
+    display: block;
+    margin-bottom: var(--sb-space-1);
+    font-size: var(--sb-font-size-sm);
+    font-weight: var(--sb-font-weight-medium);
+    color: var(--sb-color-text);
+}
+
+.sb-tag-autocomplete__required {
+    color: var(--sb-color-danger);
+    margin-inline-start: var(--sb-space-1);
+}
+
+.sb-tag-autocomplete__container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sb-space-1);
+    min-height: 40px;
+    padding: var(--sb-space-2);
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+    background-color: var(--sb-color-surface);
+    cursor: text;
+}
+
+.sb-tag-autocomplete__container:focus-within {
+    border-color: var(--sb-color-primary);
+    box-shadow: 0 0 0 3px var(--sb-color-primary-light);
+}
+
+.sb-tag-autocomplete--disabled .sb-tag-autocomplete__container {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sb-tag-autocomplete__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sb-space-1);
+    padding: var(--sb-space-1) var(--sb-space-2);
+    background-color: var(--sb-color-primary-light);
+    border-radius: var(--sb-radius-sm);
+    font-size: var(--sb-font-size-sm);
+    color: var(--sb-color-primary);
+}
+
+.sb-tag-autocomplete__chip-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: none;
+    border-radius: var(--sb-radius-full);
+    background: transparent;
+    color: var(--sb-color-primary);
+    cursor: pointer;
+}
+
+.sb-tag-autocomplete__chip-remove:hover {
+    background-color: var(--sb-color-primary);
+    color: var(--sb-color-on-primary);
+}
+
+.sb-tag-autocomplete__input {
+    flex: 1;
+    min-width: 120px;
+    border: none;
+    background: transparent;
+    color: var(--sb-color-text);
+    font-family: inherit;
+    font-size: var(--sb-font-size-md);
+    outline: none;
+}
+
+.sb-tag-autocomplete__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--sb-color-border);
+    border-top-color: var(--sb-color-primary);
+    border-radius: 50%;
+    animation: sb-spin 0.8s linear infinite;
+}
+
+.sb-tag-autocomplete__dropdown {
+    position: absolute;
+    z-index: var(--sb-z-index-dropdown, 1000);
+    top: calc(100% + var(--sb-space-1));
+    left: 0;
+    right: 0;
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+    background-color: var(--sb-color-surface);
+    box-shadow: var(--sb-shadow-md);
+}
+
+.sb-tag-autocomplete__dropdown--flip-up {
+    top: auto;
+    bottom: calc(100% + var(--sb-space-1));
+}
+
+.sb-tag-autocomplete__option {
+    display: block;
+    width: 100%;
+    padding: var(--sb-space-2) var(--sb-space-3);
+    border: none;
+    background: transparent;
+    color: var(--sb-color-text);
+    text-align: start;
+    cursor: pointer;
+}
+
+.sb-tag-autocomplete__option:hover,
+.sb-tag-autocomplete__option--highlighted {
+    background-color: var(--sb-color-surface-hover);
+}
+
+.sb-tag-autocomplete__option--create {
+    color: var(--sb-color-primary);
+    font-weight: var(--sb-font-weight-medium);
+}
+
+.sb-tag-autocomplete__no-results {
+    padding: var(--sb-space-3);
+    color: var(--sb-color-text-muted);
+    font-size: var(--sb-font-size-sm);
+}
+
+.sb-tag-autocomplete__counter {
+    margin-top: var(--sb-space-1);
+    font-size: var(--sb-font-size-xs);
+    color: var(--sb-color-text-muted);
+}
+
+/* ============================================
    SbTimePicker
    ============================================ */
 

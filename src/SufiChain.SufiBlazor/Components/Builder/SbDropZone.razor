@@ -116,24 +116,3 @@
         await OnItemDropped.InvokeAsync(args);
     }
 }
-
-/// <summary>
-/// Drop event arguments.
-/// </summary>
-public class SbDropEventArgs
-{
-    /// <summary>
-    /// X coordinate.
-    /// </summary>
-    public double ClientX { get; set; }
-    
-    /// <summary>
-    /// Y coordinate.
-    /// </summary>
-    public double ClientY { get; set; }
-    
-    /// <summary>
-    /// Dropped data.
-    /// </summary>
-    public object? Data { get; set; }
-}

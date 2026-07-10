@@ -163,32 +163,3 @@
         _dotNetRef?.Dispose();
     }
 }
-
-/// <summary>
-/// Add option.
-/// </summary>
-public class SbAddOption
-{
-    public string Id { get; set; } = "";
-    public string Label { get; set; } = "";
-    public string? Description { get; set; }
-    public string? IconText { get; set; }
-    public RenderFragment? Icon { get; set; }
-    public bool Disabled { get; set; }
-    public object? Data { get; set; }
-}
-
-public enum SbAddButtonVariant
-{
-    Default,
-    Primary,
-    Outline,
-    Ghost
-}
-
-public enum SbAddButtonSize
-{
-    Small,
-    Medium,
-    Large
-}

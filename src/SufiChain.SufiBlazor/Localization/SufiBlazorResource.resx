@@ -127,6 +127,8 @@
   <data name="EnterSlug_Placeholder" xml:space="preserve"><value>enter-slug-here</value></data>
   <data name="GenerateSlug" xml:space="preserve"><value>Generate</value></data>
   <data name="NoResultsFound" xml:space="preserve"><value>No results found</value></data>
+  <data name="AddTag_Placeholder" xml:space="preserve"><value>Search or add tags...</value></data>
+  <data name="CreateOption" xml:space="preserve"><value>Create "{0}"</value></data>
   <data name="SaveChanges" xml:space="preserve"><value>Save changes</value></data>
   <data name="CancelEditing" xml:space="preserve"><value>Cancel editing</value></data>
   <data name="EditRow" xml:space="preserve"><value>Edit row</value></data>
