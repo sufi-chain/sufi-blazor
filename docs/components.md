@@ -29,7 +29,7 @@ Feature-oriented catalog. See **SufiChain.SufiBlazorDemo** and component XML doc
 - **SbGrid** — CSS grid; column counts, gap.  
 - **SbContainer**, **SbSpacer** — Max-width container and flex spacer.
 
-> App shell chrome (`SbAppShell`, `SbSidebar`, etc.) was removed from SufiBlazor. Use **KomTheme** for layout shells.
+> App shell chrome (`SbAppShell`, `SbSidebar`, etc.) was removed from SufiBlazor. Use **KomTheme** for layout shells. Details: [LAYOUT_REVIEW](components/layout/LAYOUT_REVIEW.md).
 
 ## Builder
 

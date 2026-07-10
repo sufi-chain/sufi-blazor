@@ -18,6 +18,7 @@ A dropdown component for selecting multiple values from a list. Selected items a
 | Searchable | bool | false | Whether the select is searchable |
 | MaxSelected | int? | null | Maximum number of selections (optional cap) |
 | Disabled | bool | false | Whether the select is disabled |
+| ItemDisabledField | Func\<TItem, bool\>? | null | Marks individual items as disabled (not selectable) |
 | Id | string? | null | Element ID for form association |
 | Label | string? | null | Label text displayed above the select |
 | Required | bool | false | Whether the field is required |
@@ -155,4 +156,16 @@ A dropdown component for selecting multiple values from a list. Selected items a
                Values="@lockedValues"
                Disabled="true"
                Label="Locked Selection" />
+```
+
+### Per-item Disabled Options
+
+```razor
+<SbMultiSelect TItem="ChannelOption" TValue="string"
+               Items="@channels"
+               @bind-Values="selectedChannels"
+               TextField="c => c.Name"
+               ValueField="c => c.Name"
+               ItemDisabledField="c => !c.IsAvailable"
+               Label="Channels" />
 ```

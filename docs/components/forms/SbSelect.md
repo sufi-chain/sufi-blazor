@@ -15,7 +15,7 @@ A dropdown select component for choosing a single value from a list of items. Su
 | ValueField | Func\<TItem, TValue\> | item => (TValue)item | Function to get value from item |
 | Placeholder | string? | null | Placeholder when no selection (when null, uses localized default) |
 | Searchable | bool | false | Whether the select is searchable |
-| Clearable | bool | false | Reserved; for clearable UI use SbSimpleSelect with Clearable="true" |
+| Clearable | bool | false | Shows a clear button when a value is selected |
 | Disabled | bool | false | Whether the select is disabled |
 | Id | string? | null | Element ID for form association |
 | Label | string? | null | Label text displayed above the select |
@@ -33,6 +33,7 @@ A dropdown select component for choosing a single value from a list of items. Su
 | Slot | Type | Description |
 |------|------|-------------|
 | ItemTemplate | RenderFragment\<TItem\> | Custom template for rendering each item in the dropdown |
+| SelectedValueTemplate | RenderFragment\<TItem\> | Optional template for the closed/selected value (falls back to ItemTemplate, then TextField) |
 | NoResultsTemplate | RenderFragment | Template shown when search returns no results |
 
 ### Template Usage Examples

@@ -24,6 +24,18 @@ Add the script before the closing `</body>` if your project uses the JavaScript-
 <script src="_content/SufiChain.SufiBlazor/sufiblazor.js"></script>
 ```
 
+## Register services
+
+In `Program.cs` (or your host startup), register SufiBlazor:
+
+```csharp
+builder.Services.AddSufiBlazor();
+```
+
+This registers localization, rich-text toolbar services (`IRteToolbarService`), and markdown toolbar services (`IMdToolbarService`). Optional: pass `configureToolbar` or add contributors — see [Editors and bundling](editors-and-bundling.md).
+
+For a minimal plain-Blazor checklist without KomTheme/ABP, see [Standalone adoption](standalone-adoption.md).
+
 ## Add the namespaces
 
 In `_Imports.razor`, add the namespaces your app uses most often. A typical starting point is:

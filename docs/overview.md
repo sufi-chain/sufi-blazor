@@ -72,4 +72,7 @@ That relationship matters for platform developers, but the library remains usabl
 - [Components](components.md)
 - [DataGrid](data-grid.md)
 - [Builder Components](builder.md)
+- [Standalone adoption](standalone-adoption.md)
+- [Editors and bundling](editors-and-bundling.md)
+- [Demo host integration](demo-host-integration.md)
 - [Adding Icons](adding-icons.md)

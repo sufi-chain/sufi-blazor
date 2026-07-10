@@ -54,6 +54,9 @@ It does not try to become the complete internal engineering manual for the indep
 docs/
 ├── components/         # Component reference by category
 ├── builder.md          # Visual editor / page builder primitives
+├── standalone-adoption.md
+├── editors-and-bundling.md
+├── demo-host-integration.md
 ├── data-grid.md        # SbDataGrid reference
 ├── installation.md     # How to consume the library in a host app
 ├── localization.md     # Localization and RTL guidance
@@ -68,3 +71,5 @@ docs/
 - Open `docs/overview.md` when you want guidance on how the platform uses the library.
 - Open `docs/theming.md` and `docs/localization.md` when the product needs custom branding, RTL, or Persian-oriented behavior.
 - Open `docs/builder.md` when building visual editors, page builders, or property inspectors.
+- Open `docs/standalone-adoption.md` for plain Blazor without KomTheme/ABP.
+- Open `docs/demo-host-integration.md` to understand how the platform demo gallery is wired.
