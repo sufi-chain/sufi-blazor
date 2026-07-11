@@ -118,7 +118,7 @@ html {
 
 /* Focus styles - exclude native inputs that have their own focus ring (radio/checkbox) to avoid double outline or stray focus box.
    Exclude text/number/textarea inputs – their wrapper uses :focus-within for the focus ring.
-   Exclude headings (h1-h6) – kom-theme removes their focus ring; these would override due to higher specificity. */
+   Exclude headings (h1-h6) – sufi-theme removes their focus ring; these would override due to higher specificity. */
 .demo-layout :focus-visible:not(.sb-radio__input):not(.sb-checkbox__input):not(.sb-number-field__input):not(.sb-text-field__input):not(.sb-textarea__input):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6),
 .docs-home :focus-visible:not(.sb-radio__input):not(.sb-checkbox__input):not(.sb-number-field__input):not(.sb-text-field__input):not(.sb-textarea__input):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6),
 .demo-section :focus-visible:not(.sb-radio__input):not(.sb-checkbox__input):not(.sb-number-field__input):not(.sb-text-field__input):not(.sb-textarea__input):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) {

@@ -186,4 +186,4 @@ Use `SufiChain.SufiAbp.FileManager.MarkdownEditor` for gallery image and file at
 
 - Requires interactive render mode (Blazor Server / WebAssembly).
 - Vendor bundles are loaded on demand via `sufiblazor-markdown-editor.js`.
-- KomTheme registers `SufiBlazor.MarkdownEditor` bundle for EasyMDE CSS/JS preloading.
+- SufiTheme registers `SufiBlazor.MarkdownEditor` bundle for EasyMDE CSS/JS preloading.

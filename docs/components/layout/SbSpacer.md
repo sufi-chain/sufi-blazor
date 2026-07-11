@@ -93,7 +93,7 @@ public enum SbSpacerSize
 
 ### In Navigation Menu
 
-Use `SbSpacer Grow="true"` inside a vertical stack to push items to the bottom (e.g. in KomTheme's `KomSidebar` or `KomIconRail`):
+Use `SbSpacer Grow="true"` inside a vertical stack to push items to the bottom (e.g. in SufiTheme's `SufiSidebar` or `SufiIconRail`):
 
 ```razor
 <SbStack Direction="SbStackDirection.Column" Gap="0">

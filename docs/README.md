@@ -1,6 +1,6 @@
 # SufiBlazor
 
-SufiBlazor is an independent Blazor UI component library and design system for ASP.NET Core 10+ applications. It can be used inside Sufi Platform, but it is not tied to Sufi Platform, ABP, KomTheme, or any other third-party application framework. Any Blazor project that targets modern ASP.NET Core can use it as its primary UI layer.
+SufiBlazor is an independent Blazor UI component library and design system for ASP.NET Core 10+ applications. It can be used inside Sufi Platform, but it is not tied to Sufi Platform, ABP, SufiTheme, or any other third-party application framework. Any Blazor project that targets modern ASP.NET Core can use it as its primary UI layer.
 
 For Sufi Platform, SufiBlazor is the default component system used by generated hosts and first-party modules. Outside Sufi Platform, it can still be adopted on its own as a self-contained component library for forms, data display, overlays, navigation, theming, RTL support, and application-level UI composition.
 
@@ -30,7 +30,7 @@ In other words, SufiBlazor is a standalone product that Sufi Platform consumes, 
 Inside Sufi Platform:
 
 - `SufiBlazor` provides the base UI component system
-- `KomTheme` provides the host shell, layout, and branded navigation frame
+- `SufiTheme` provides the host shell, layout, and branded navigation frame
 - `SufiAbp` provides the broader platform abstractions and host integration patterns
 
 That relationship is important, but it should not hide the fact that SufiBlazor can also be used on its own in any Blazor project targeting ASP.NET Core 10+.
@@ -71,5 +71,5 @@ docs/
 - Open `docs/overview.md` when you want guidance on how the platform uses the library.
 - Open `docs/theming.md` and `docs/localization.md` when the product needs custom branding, RTL, or Persian-oriented behavior.
 - Open `docs/builder.md` when building visual editors, page builders, or property inspectors.
-- Open `docs/standalone-adoption.md` for plain Blazor without KomTheme/ABP.
+- Open `docs/standalone-adoption.md` for plain Blazor without SufiTheme/ABP.
 - Open `docs/demo-host-integration.md` to understand how the platform demo gallery is wired.

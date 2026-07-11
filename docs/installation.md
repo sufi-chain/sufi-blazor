@@ -34,7 +34,7 @@ builder.Services.AddSufiBlazor();
 
 This registers localization, rich-text toolbar services (`IRteToolbarService`), and markdown toolbar services (`IMdToolbarService`). Optional: pass `configureToolbar` or add contributors — see [Editors and bundling](editors-and-bundling.md).
 
-For a minimal plain-Blazor checklist without KomTheme/ABP, see [Standalone adoption](standalone-adoption.md).
+For a minimal plain-Blazor checklist without SufiTheme/ABP, see [Standalone adoption](standalone-adoption.md).
 
 ## Add the namespaces
 
@@ -71,10 +71,10 @@ Create a simple page with a few components such as `SbCard`, `SbButton`, and `Sb
 If the host already uses Sufi Platform conventions:
 
 - SufiBlazor is usually part of the expected UI stack already
-- KomTheme builds on top of SufiBlazor rather than replacing it
+- SufiTheme builds on top of SufiBlazor rather than replacing it
 - the same package, static asset, and theme-provider concepts still apply
 
 ## Optional notes
 
 - If your app uses dialog, toast, or similar UI services, follow the host-specific registration guidance used by your application.
-- If KomTheme is part of the host, it still depends on SufiBlazor as the base component system.
+- If SufiTheme is part of the host, it still depends on SufiBlazor as the base component system.

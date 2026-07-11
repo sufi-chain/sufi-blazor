@@ -115,7 +115,7 @@ Place `SbThemeProvider` at the root of your application:
 
 ### Full Application Setup
 
-App shell and top bar are provided by the **KomTheme** (e.g. `KomAppShell`, `KomTopBar`). For a minimal layout using only SufiBlazor primitives:
+App shell and top bar are provided by the **SufiTheme** (e.g. `SufiAppShell`, `SufiTopBar`). For a minimal layout using only SufiBlazor primitives:
 
 ```razor
 @* Minimal layout using design system only *@

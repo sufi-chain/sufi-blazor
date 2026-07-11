@@ -122,7 +122,7 @@ A lightweight tooltip component that appears on hover or focus to provide additi
 
 ### Icon rail tooltips
 
-In an icon rail (e.g. KomTheme's `KomIconRail`), wrap nav items with `SbTooltip` and `Placement="SbPlacement.End"` so the tooltip appears to the right:
+In an icon rail (e.g. SufiTheme's `SufiIconRail`), wrap nav items with `SbTooltip` and `Placement="SbPlacement.End"` so the tooltip appears to the right:
 
 ```razor
 <SbStack Direction="SbStackDirection.Column" Gap="1">

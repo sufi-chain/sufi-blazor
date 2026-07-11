@@ -55,7 +55,7 @@ A navigation menu container component for organizing navigation items.
 
 ### Inside a layout sidebar
 
-Use `SbNavMenu` inside the KomTheme's sidebar (e.g. `KomSidebar` or `KomExpandPanel`):
+Use `SbNavMenu` inside the SufiTheme's sidebar (e.g. `SufiSidebar` or `SufiExpandPanel`):
 
 ```razor
 <SbNavMenu>

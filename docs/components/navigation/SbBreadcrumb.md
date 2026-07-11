@@ -123,7 +123,7 @@ public class SbBreadcrumbItem
 
 ### In Page Layout
 
-Breadcrumbs are typically rendered in the layout's top bar (e.g. KomTheme's `KomTopBar`). Content area example:
+Breadcrumbs are typically rendered in the layout's top bar (e.g. SufiTheme's `SufiTopBar`). Content area example:
 
 ```razor
 <SbContainer>

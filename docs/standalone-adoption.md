@@ -1,6 +1,6 @@
 # Standalone SufiBlazor Adoption
 
-Use this checklist when adding SufiBlazor to a **plain ASP.NET Core Blazor app** without Sufi Platform, ABP, or KomTheme.
+Use this checklist when adding SufiBlazor to a **plain ASP.NET Core Blazor app** without Sufi Platform, ABP, or SufiTheme.
 
 The core library (`SufiChain.SufiBlazor`) has no dependency on those stacks.
 
@@ -15,23 +15,23 @@ The core library (`SufiChain.SufiBlazor`) has no dependency on those stacks.
 
 See [Installation](installation.md) for full steps.
 
-## What you get without KomTheme
+## What you get without SufiTheme
 
 | Included | Not included |
 | --- | --- |
 | All `Sb*` components | App shell (sidebar, top bar, icon rail) |
 | Design tokens + RTL | Platform menu/toolbar system |
-| `SbDataGrid`, forms, overlays | KomTheme bundling for editor vendors |
+| `SbDataGrid`, forms, overlays | SufiTheme bundling for editor vendors |
 | Localization via `SufiBlazorResource` | Account layout chrome |
 
-**App chrome** lives in **KomTheme** (`KomAppShell`, `KomSidebar`, etc.). SufiBlazor only provides layout **primitives** (`SbStack`, `SbGrid`, `SbContainer`, `SbSpacer`). See [LAYOUT_REVIEW](components/layout/LAYOUT_REVIEW.md).
+**App chrome** lives in **SufiTheme** (`SufiAppShell`, `SufiSidebar`, etc.). SufiBlazor only provides layout **primitives** (`SbStack`, `SbGrid`, `SbContainer`, `SbSpacer`). See [LAYOUT_REVIEW](components/layout/LAYOUT_REVIEW.md).
 
 ## Rich text and markdown editors
 
 `SbRichTextEditor` and `SbMarkdownEditor` need vendor JavaScript (Quill, EasyMDE, marked.js, etc.).
 
-- **Sufi Platform hosts:** KomTheme Server/WASM modules register on-demand bundles — see [Editors and bundling](editors-and-bundling.md).
-- **Standalone apps:** load vendor assets from `_content/SufiChain.SufiBlazor/vendor/` yourself or copy the bundling pattern from KomTheme.
+- **Sufi Platform hosts:** SufiTheme Server/WASM modules register on-demand bundles — see [Editors and bundling](editors-and-bundling.md).
+- **Standalone apps:** load vendor assets from `_content/SufiChain.SufiBlazor/vendor/` yourself or copy the bundling pattern from SufiTheme.
 
 ## Optional toolbar contributors
 
