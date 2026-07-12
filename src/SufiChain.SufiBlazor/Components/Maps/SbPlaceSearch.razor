@@ -1,0 +1,187 @@
+@namespace SufiChain.SufiBlazor.Components.Maps
+@using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Contracts.Maps
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">
+    <SbAutocomplete TItem="SbPlaceResult"
+                    Value="_selected"
+                    ValueChanged="HandleValueChanged"
+                    SearchFunc="SearchAsync"
+                    TextField="GetDisplayName"
+                    Placeholder="@(Placeholder ?? L["Map:SearchPlace"])"
+                    DebounceMs="DebounceMs"
+                    MinLength="MinLength"
+                    MaxResults="MaxResults"
+                    Clearable="true"
+                    Disabled="Disabled"
+                    Label="@Label"
+                    Class="sb-place-search__autocomplete" />
+</div>
+
+@code {
+    private SbMapInterop? _interop;
+    private SbPlaceResult? _selected;
+
+    /// <summary>
+    /// Selected place.
+    /// </summary>
+    [Parameter]
+    public SbPlaceResult? Value { get; set; }
+
+    /// <summary>
+    /// Fired when the selected place changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbPlaceResult?> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Fired when a place is selected from search results.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbPlaceResult> OnPlaceSelected { get; set; }
+
+    /// <summary>
+    /// Placeholder text.
+    /// </summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>
+    /// Optional field label.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Preferred language for Nominatim (e.g. "en", "fa").
+    /// </summary>
+    [Parameter]
+    public string? Language { get; set; }
+
+    /// <summary>
+    /// Comma-separated ISO country codes to limit results.
+    /// </summary>
+    [Parameter]
+    public string? CountryCodes { get; set; }
+
+    /// <summary>
+    /// Nominatim base URL. Override with a host proxy in production.
+    /// </summary>
+    [Parameter]
+    public string NominatimBaseUrl { get; set; } = "https://nominatim.openstreetmap.org";
+
+    /// <summary>
+    /// Debounce delay in milliseconds.
+    /// </summary>
+    [Parameter]
+    public int DebounceMs { get; set; } = 400;
+
+    /// <summary>
+    /// Minimum characters before searching.
+    /// </summary>
+    [Parameter]
+    public int MinLength { get; set; } = 2;
+
+    /// <summary>
+    /// Maximum number of results.
+    /// </summary>
+    [Parameter]
+    public int MaxResults { get; set; } = 8;
+
+    /// <summary>
+    /// Whether the control is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-place-search" };
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(' ', classes);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        _selected = Value;
+    }
+
+    private static string GetDisplayName(SbPlaceResult item) => item.DisplayName;
+
+    private async Task<IEnumerable<SbPlaceResult>> SearchAsync(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Array.Empty<SbPlaceResult>();
+        }
+
+        try
+        {
+            _interop ??= new SbMapInterop(JSRuntime);
+            return await _interop.SearchNominatimAsync(query, new SbNominatimSearchOptions
+            {
+                BaseUrl = NominatimBaseUrl,
+                Language = Language,
+                CountryCodes = CountryCodes,
+                Limit = MaxResults
+            });
+        }
+        catch (JSDisconnectedException)
+        {
+            return Array.Empty<SbPlaceResult>();
+        }
+        catch
+        {
+            return Array.Empty<SbPlaceResult>();
+        }
+    }
+
+    private async Task HandleValueChanged(SbPlaceResult? value)
+    {
+        _selected = value;
+        await ValueChanged.InvokeAsync(value);
+
+        if (value != null && OnPlaceSelected.HasDelegate)
+        {
+            await OnPlaceSelected.InvokeAsync(value);
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (_interop != null)
+        {
+            await _interop.DisposeAsync();
+            _interop = null;
+        }
+    }
+}

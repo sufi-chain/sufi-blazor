@@ -155,4 +155,11 @@
   <data name="Rte:AlignCenter" xml:space="preserve"><value>وسط</value></data>
   <data name="Rte:AlignRight" xml:space="preserve"><value>راست</value></data>
   <data name="Rte:AlignJustify" xml:space="preserve"><value>یکسان</value></data>
+  <data name="Map:OpenInOpenStreetMap" xml:space="preserve"><value>باز کردن در OpenStreetMap</value></data>
+  <data name="Map:PickLocation" xml:space="preserve"><value>انتخاب موقعیت</value></data>
+  <data name="Map:ShareLocation" xml:space="preserve"><value>اشتراک‌گذاری موقعیت</value></data>
+  <data name="Map:UseMyLocation" xml:space="preserve"><value>موقعیت من</value></data>
+  <data name="Map:SearchPlace" xml:space="preserve"><value>جستجوی مکان...</value></data>
+  <data name="Map:CurrentLocation" xml:space="preserve"><value>موقعیت فعلی</value></data>
+  <data name="Map:GeolocationFailed" xml:space="preserve"><value>دریافت موقعیت شما ممکن نشد.</value></data>
 </root>

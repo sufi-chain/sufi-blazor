@@ -9794,3 +9794,116 @@ body.sb-resizing {
 .sb-table__body {
     vertical-align: top;
 }
+
+/* ============================================
+   Maps (OpenStreetMap / Leaflet)
+   ============================================ */
+.sb-map {
+    position: relative;
+    width: 100%;
+    min-height: 120px;
+    border-radius: var(--sb-radius-md, 8px);
+    overflow: hidden;
+    background: var(--sb-color-surface-muted, #f1f5f9);
+    z-index: 0;
+}
+
+.sb-map--readonly {
+    cursor: default;
+}
+
+.sb-map .leaflet-container {
+    width: 100%;
+    height: 100%;
+    font: inherit;
+    background: var(--sb-color-surface-muted, #f1f5f9);
+}
+
+.sb-map-preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-2, 0.5rem);
+    border: 1px solid var(--sb-color-border, #e2e8f0);
+    border-radius: var(--sb-radius-md, 8px);
+    overflow: hidden;
+    background: var(--sb-color-surface, #fff);
+}
+
+.sb-map-preview__map {
+    position: relative;
+}
+
+.sb-map-preview__leaflet {
+    border-radius: 0;
+}
+
+.sb-map-preview__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 500;
+    cursor: pointer;
+}
+
+.sb-map-preview__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sb-space-2, 0.5rem);
+    padding: 0 var(--sb-space-3, 0.75rem) var(--sb-space-3, 0.75rem);
+    flex-wrap: wrap;
+}
+
+.sb-map-preview__label {
+    font-size: var(--sb-font-size-sm, 0.875rem);
+    color: var(--sb-color-text, #0f172a);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 70%;
+}
+
+.sb-map-preview__link {
+    font-size: var(--sb-font-size-sm, 0.875rem);
+    color: var(--sb-color-primary, #2563eb);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.sb-map-preview__link:hover {
+    text-decoration: underline;
+}
+
+.sb-map-picker {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-3, 0.75rem);
+}
+
+.sb-map-picker__toolbar {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sb-space-2, 0.5rem);
+}
+
+.sb-map-picker__search {
+    flex: 1;
+    min-width: 0;
+}
+
+.sb-map-picker__map {
+    border: 1px solid var(--sb-color-border, #e2e8f0);
+}
+
+.sb-map-picker__status {
+    font-size: var(--sb-font-size-sm, 0.875rem);
+    color: var(--sb-color-danger, #dc2626);
+}
+
+.sb-place-search {
+    width: 100%;
+}
+
+.sb-geolocate-button {
+    flex-shrink: 0;
+}
+

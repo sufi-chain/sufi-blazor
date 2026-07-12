@@ -1,0 +1,421 @@
+@namespace SufiChain.SufiBlazor.Components.Maps
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+<div @ref="_mapElement"
+     class="@CssClass"
+     style="@EffectiveStyle"
+     @attributes="AdditionalAttributes">
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+</div>
+
+@code {
+    private ElementReference _mapElement;
+    private SbMapInterop? _interop;
+    private DotNetObjectReference<SbMap>? _dotNetRef;
+    private string? _mapId;
+    private bool _initialized;
+    private SbLatLng? _lastCenter;
+    private int _lastZoom;
+    private bool _lastInteractive;
+    private readonly Dictionary<string, SbMapMarker> _markers = new();
+    private readonly HashSet<string> _pendingMarkerIds = new();
+
+    /// <summary>
+    /// Map center. Two-way bindable with <see cref="CenterChanged"/>.
+    /// </summary>
+    [Parameter]
+    public SbLatLng Center { get; set; } = new(0, 0);
+
+    /// <summary>
+    /// Fired when the map center changes after pan/zoom end.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbLatLng> CenterChanged { get; set; }
+
+    /// <summary>
+    /// Zoom level.
+    /// </summary>
+    [Parameter]
+    public int Zoom { get; set; } = 2;
+
+    /// <summary>
+    /// Fired when zoom changes after pan/zoom end.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> ZoomChanged { get; set; }
+
+    /// <summary>
+    /// Minimum zoom level.
+    /// </summary>
+    [Parameter]
+    public int? MinZoom { get; set; }
+
+    /// <summary>
+    /// Maximum zoom level.
+    /// </summary>
+    [Parameter]
+    public int? MaxZoom { get; set; }
+
+    /// <summary>
+    /// Map height CSS value (e.g. "280px", "40vh").
+    /// </summary>
+    [Parameter]
+    public string Height { get; set; } = "280px";
+
+    /// <summary>
+    /// Whether the user can pan and zoom.
+    /// </summary>
+    [Parameter]
+    public bool Interactive { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show tile attribution.
+    /// </summary>
+    [Parameter]
+    public bool ShowAttribution { get; set; } = true;
+
+    /// <summary>
+    /// Tile URL template. Defaults to OpenStreetMap.
+    /// </summary>
+    [Parameter]
+    public string TileUrl { get; set; } = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+    /// <summary>
+    /// Tile attribution HTML.
+    /// </summary>
+    [Parameter]
+    public string TileAttribution { get; set; } =
+        "&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>";
+
+    /// <summary>
+    /// Fired when the user clicks the map.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbMapClickEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Nested markers and overlays.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles (merged with height).
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
+    /// Whether the Leaflet map has been initialized.
+    /// </summary>
+    internal bool IsReady => _initialized && !string.IsNullOrEmpty(_mapId);
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-map" };
+            if (!Interactive)
+            {
+                classes.Add("sb-map--readonly");
+            }
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(' ', classes);
+        }
+    }
+
+    private string EffectiveStyle
+    {
+        get
+        {
+            var parts = new List<string> { $"height:{Height}" };
+            if (!string.IsNullOrWhiteSpace(Style))
+            {
+                parts.Add(Style);
+            }
+            return string.Join(';', parts);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitializeAsync();
+            return;
+        }
+
+        if (!_initialized || _interop == null || string.IsNullOrEmpty(_mapId))
+        {
+            return;
+        }
+
+        if (_lastInteractive != Interactive)
+        {
+            _lastInteractive = Interactive;
+            await SafeInvokeAsync(() => _interop.SetInteractiveAsync(_mapId, Interactive));
+        }
+
+        var centerChanged = _lastCenter == null || !_lastCenter.Equals(Center);
+        var zoomChanged = _lastZoom != Zoom;
+        if (centerChanged || zoomChanged)
+        {
+            _lastCenter = new SbLatLng(Center.Latitude, Center.Longitude);
+            _lastZoom = Zoom;
+            await SafeInvokeAsync(() => _interop.SetViewAsync(_mapId, Center.Latitude, Center.Longitude, Zoom));
+        }
+    }
+
+    private async Task InitializeAsync()
+    {
+        _interop = new SbMapInterop(JSRuntime);
+        _dotNetRef = DotNetObjectReference.Create(this);
+
+        var options = new Contracts.Maps.SbMapInitOptions
+        {
+            Latitude = Center.Latitude,
+            Longitude = Center.Longitude,
+            Zoom = Zoom,
+            MinZoom = MinZoom,
+            MaxZoom = MaxZoom,
+            Interactive = Interactive,
+            ShowAttribution = ShowAttribution,
+            TileUrl = TileUrl,
+            TileAttribution = TileAttribution
+        };
+
+        try
+        {
+            _mapId = await _interop.InitializeMapAsync(_mapElement, _dotNetRef, options);
+            if (string.IsNullOrEmpty(_mapId))
+            {
+                return;
+            }
+
+            _initialized = true;
+            _lastCenter = new SbLatLng(Center.Latitude, Center.Longitude);
+            _lastZoom = Zoom;
+            _lastInteractive = Interactive;
+
+            foreach (var markerId in _pendingMarkerIds.ToList())
+            {
+                if (_markers.TryGetValue(markerId, out var marker))
+                {
+                    await AttachMarkerAsync(marker);
+                }
+            }
+
+            _pendingMarkerIds.Clear();
+        }
+        catch (JSDisconnectedException)
+        {
+            // circuit gone during init
+        }
+    }
+
+    /// <summary>
+    /// Invalidates Leaflet size after layout changes (e.g. dialog open).
+    /// </summary>
+    public async Task InvalidateSizeAsync()
+    {
+        if (_interop == null || string.IsNullOrEmpty(_mapId))
+        {
+            return;
+        }
+
+        await SafeInvokeAsync(() => _interop.InvalidateSizeAsync(_mapId));
+    }
+
+    /// <summary>
+    /// Programmatically sets the map view.
+    /// </summary>
+    public async Task SetViewAsync(double latitude, double longitude, int? zoom = null)
+    {
+        Center = new SbLatLng(latitude, longitude);
+        if (zoom.HasValue)
+        {
+            Zoom = zoom.Value;
+        }
+
+        if (_interop == null || string.IsNullOrEmpty(_mapId))
+        {
+            return;
+        }
+
+        _lastCenter = new SbLatLng(latitude, longitude);
+        if (zoom.HasValue)
+        {
+            _lastZoom = zoom.Value;
+        }
+
+        await SafeInvokeAsync(() => _interop.SetViewAsync(_mapId, latitude, longitude, zoom));
+    }
+
+    internal async Task RegisterMarkerAsync(SbMapMarker marker)
+    {
+        _markers[marker.MarkerId] = marker;
+
+        if (!IsReady)
+        {
+            _pendingMarkerIds.Add(marker.MarkerId);
+            return;
+        }
+
+        await AttachMarkerAsync(marker);
+    }
+
+    internal async Task UpdateMarkerAsync(SbMapMarker marker)
+    {
+        if (!IsReady || _interop == null || string.IsNullOrEmpty(_mapId))
+        {
+            return;
+        }
+
+        await SafeInvokeAsync(() => _interop.UpdateMarkerAsync(_mapId, marker.MarkerId, marker.ToOptions()));
+    }
+
+    internal async Task UnregisterMarkerAsync(SbMapMarker marker)
+    {
+        _markers.Remove(marker.MarkerId);
+        _pendingMarkerIds.Remove(marker.MarkerId);
+
+        if (!IsReady || _interop == null || string.IsNullOrEmpty(_mapId))
+        {
+            return;
+        }
+
+        await SafeInvokeAsync(() => _interop.RemoveMarkerAsync(_mapId, marker.MarkerId));
+    }
+
+    private async Task AttachMarkerAsync(SbMapMarker marker)
+    {
+        if (_interop == null || _dotNetRef == null || string.IsNullOrEmpty(_mapId))
+        {
+            return;
+        }
+
+        await SafeInvokeAsync(() => _interop.AddMarkerAsync(_mapId, marker.MarkerId, marker.ToOptions(), _dotNetRef));
+    }
+
+    /// <summary>
+    /// JS callback: map click.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnMapClick(double latitude, double longitude)
+    {
+        if (OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync(new SbMapClickEventArgs
+            {
+                Latitude = latitude,
+                Longitude = longitude
+            });
+        }
+    }
+
+    /// <summary>
+    /// JS callback: map move/zoom end.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnMapMoveEnd(double latitude, double longitude, int zoom)
+    {
+        var center = new SbLatLng(latitude, longitude);
+        _lastCenter = center;
+        _lastZoom = zoom;
+
+        if (!Center.Equals(center))
+        {
+            Center = center;
+            await CenterChanged.InvokeAsync(center);
+        }
+
+        if (Zoom != zoom)
+        {
+            Zoom = zoom;
+            await ZoomChanged.InvokeAsync(zoom);
+        }
+    }
+
+    /// <summary>
+    /// JS callback: marker click.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnMarkerClick(string markerId)
+    {
+        if (_markers.TryGetValue(markerId, out var marker))
+        {
+            await marker.NotifyClickAsync();
+        }
+    }
+
+    /// <summary>
+    /// JS callback: marker drag end.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnMarkerDragEnd(string markerId, double latitude, double longitude)
+    {
+        if (_markers.TryGetValue(markerId, out var marker))
+        {
+            await marker.NotifyDragEndAsync(latitude, longitude);
+        }
+    }
+
+    private static async Task SafeInvokeAsync(Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (JSDisconnectedException)
+        {
+            // ignore
+        }
+        catch (ObjectDisposedException)
+        {
+            // ignore
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (_interop != null && !string.IsNullOrEmpty(_mapId))
+        {
+            try
+            {
+                await _interop.DestroyMapAsync(_mapId);
+            }
+            catch (JSDisconnectedException)
+            {
+                // ignore
+            }
+        }
+
+        _dotNetRef?.Dispose();
+        _dotNetRef = null;
+
+        if (_interop != null)
+        {
+            await _interop.DisposeAsync();
+            _interop = null;
+        }
+    }
+}

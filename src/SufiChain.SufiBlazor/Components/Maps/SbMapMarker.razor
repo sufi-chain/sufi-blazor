@@ -1,0 +1,178 @@
+@namespace SufiChain.SufiBlazor.Components.Maps
+@implements IAsyncDisposable
+@using SufiChain.SufiBlazor.Contracts.Maps
+
+@* Markers render via Leaflet; no DOM output. *@
+
+@code {
+    private SbMap? _parent;
+    private bool _registered;
+    private SbLatLng? _lastPosition;
+    private bool _lastDraggable;
+    private double? _lastAccuracy;
+    private string? _lastTitle;
+    private string? _lastColor;
+
+    /// <summary>
+    /// Stable marker id used by JS interop.
+    /// </summary>
+    internal string MarkerId { get; } = $"sb-marker-{Guid.NewGuid():N}";
+
+    /// <summary>
+    /// Marker position.
+    /// </summary>
+    [Parameter]
+    public SbLatLng Position { get; set; } = new(0, 0);
+
+    /// <summary>
+    /// Fired when the marker position changes (e.g. drag end).
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbLatLng> PositionChanged { get; set; }
+
+    /// <summary>
+    /// Whether the marker can be dragged.
+    /// </summary>
+    [Parameter]
+    public bool Draggable { get; set; }
+
+    /// <summary>
+    /// Optional label / tooltip text.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Optional title (alias for Label when Label is null).
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// Optional accuracy radius in meters (draws a circle).
+    /// </summary>
+    [Parameter]
+    public double? AccuracyMeters { get; set; }
+
+    /// <summary>
+    /// Optional circle/marker accent color (CSS color).
+    /// </summary>
+    [Parameter]
+    public string? Color { get; set; }
+
+    /// <summary>
+    /// Fired when the marker is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    /// <summary>
+    /// Parent map.
+    /// </summary>
+    [CascadingParameter]
+    public SbMap? Parent
+    {
+        get => _parent;
+        set
+        {
+            if (_parent == value)
+            {
+                return;
+            }
+
+            if (_parent != null && _registered)
+            {
+                _ = _parent.UnregisterMarkerAsync(this);
+                _registered = false;
+            }
+
+            _parent = value;
+        }
+    }
+
+    /// <summary>
+    /// Effective tooltip text.
+    /// </summary>
+    internal string? EffectiveTitle => Label ?? Title;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_parent == null)
+        {
+            return;
+        }
+
+        if (!_registered)
+        {
+            await _parent.RegisterMarkerAsync(this);
+            _registered = true;
+            CaptureSnapshot();
+            return;
+        }
+
+        if (HasChanged())
+        {
+            CaptureSnapshot();
+            await _parent.UpdateMarkerAsync(this);
+        }
+    }
+
+    internal SbMarkerOptions ToOptions() => new()
+    {
+        Latitude = Position.Latitude,
+        Longitude = Position.Longitude,
+        Draggable = Draggable,
+        Title = EffectiveTitle,
+        AccuracyMeters = AccuracyMeters,
+        Color = Color
+    };
+
+    internal async Task NotifyClickAsync()
+    {
+        if (OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync();
+        }
+    }
+
+    internal async Task NotifyDragEndAsync(double latitude, double longitude)
+    {
+        var position = new SbLatLng(latitude, longitude);
+        Position = position;
+        _lastPosition = new SbLatLng(latitude, longitude);
+        await PositionChanged.InvokeAsync(position);
+    }
+
+    private bool HasChanged()
+    {
+        if (_lastPosition == null || !_lastPosition.Equals(Position))
+        {
+            return true;
+        }
+
+        return _lastDraggable != Draggable
+               || _lastAccuracy != AccuracyMeters
+               || !string.Equals(_lastTitle, EffectiveTitle, StringComparison.Ordinal)
+               || !string.Equals(_lastColor, Color, StringComparison.Ordinal);
+    }
+
+    private void CaptureSnapshot()
+    {
+        _lastPosition = new SbLatLng(Position.Latitude, Position.Longitude);
+        _lastDraggable = Draggable;
+        _lastAccuracy = AccuracyMeters;
+        _lastTitle = EffectiveTitle;
+        _lastColor = Color;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (_parent != null && _registered)
+        {
+            await _parent.UnregisterMarkerAsync(this);
+            _registered = false;
+        }
+    }
+}

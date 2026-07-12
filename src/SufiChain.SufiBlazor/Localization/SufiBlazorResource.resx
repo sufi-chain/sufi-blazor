@@ -155,4 +155,11 @@
   <data name="Rte:AlignCenter" xml:space="preserve"><value>Center</value></data>
   <data name="Rte:AlignRight" xml:space="preserve"><value>Right</value></data>
   <data name="Rte:AlignJustify" xml:space="preserve"><value>Justify</value></data>
+  <data name="Map:OpenInOpenStreetMap" xml:space="preserve"><value>Open in OpenStreetMap</value></data>
+  <data name="Map:PickLocation" xml:space="preserve"><value>Pick location</value></data>
+  <data name="Map:ShareLocation" xml:space="preserve"><value>Share location</value></data>
+  <data name="Map:UseMyLocation" xml:space="preserve"><value>Use my location</value></data>
+  <data name="Map:SearchPlace" xml:space="preserve"><value>Search for a place...</value></data>
+  <data name="Map:CurrentLocation" xml:space="preserve"><value>Current location</value></data>
+  <data name="Map:GeolocationFailed" xml:space="preserve"><value>Could not get your location.</value></data>
 </root>

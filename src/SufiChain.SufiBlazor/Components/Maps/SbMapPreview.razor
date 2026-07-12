@@ -1,0 +1,144 @@
+@namespace SufiChain.SufiBlazor.Components.Maps
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">
+    <div class="sb-map-preview__map">
+        <SbMap @ref="_map"
+               Center="_center"
+               Zoom="Zoom"
+               Height="@Height"
+               Interactive="false"
+               ShowAttribution="ShowAttribution"
+               Class="sb-map-preview__leaflet">
+            <SbMapMarker Position="_center"
+                         Label="@Label"
+                         AccuracyMeters="AccuracyMeters" />
+        </SbMap>
+        @if (OpenExternalOnClick)
+        {
+            <a class="sb-map-preview__overlay"
+               href="@ExternalUrl"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="@L["Map:OpenInOpenStreetMap"]">
+            </a>
+        }
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(Label) || OpenExternalOnClick)
+    {
+        <div class="sb-map-preview__footer">
+            @if (!string.IsNullOrWhiteSpace(Label))
+            {
+                <span class="sb-map-preview__label">@Label</span>
+            }
+            @if (OpenExternalOnClick)
+            {
+                <a class="sb-map-preview__link"
+                   href="@ExternalUrl"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    @L["Map:OpenInOpenStreetMap"]
+                </a>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private SbMap? _map;
+    private SbLatLng _center = new(0, 0);
+
+    /// <summary>
+    /// Latitude in decimal degrees.
+    /// </summary>
+    [Parameter]
+    public double Latitude { get; set; }
+
+    /// <summary>
+    /// Longitude in decimal degrees.
+    /// </summary>
+    [Parameter]
+    public double Longitude { get; set; }
+
+    /// <summary>
+    /// Optional GPS accuracy in meters.
+    /// </summary>
+    [Parameter]
+    public double? AccuracyMeters { get; set; }
+
+    /// <summary>
+    /// Optional place label.
+    /// </summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>
+    /// Preview map height.
+    /// </summary>
+    [Parameter]
+    public string Height { get; set; } = "140px";
+
+    /// <summary>
+    /// Zoom level for the preview.
+    /// </summary>
+    [Parameter]
+    public int Zoom { get; set; } = 15;
+
+    /// <summary>
+    /// When true, clicking the map surface or the footer link opens OpenStreetMap.
+    /// </summary>
+    [Parameter]
+    public bool OpenExternalOnClick { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show OSM attribution on the embedded map.
+    /// </summary>
+    [Parameter]
+    public bool ShowAttribution { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string ExternalUrl => SbGeoPosition.GetOpenStreetMapUrl(Latitude, Longitude, Zoom);
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-map-preview" };
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(' ', classes);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        _center = new SbLatLng(Latitude, Longitude);
+    }
+
+    /// <summary>
+    /// Invalidates the underlying Leaflet size (e.g. after dialog open).
+    /// </summary>
+    public Task InvalidateSizeAsync() =>
+        _map?.InvalidateSizeAsync() ?? Task.CompletedTask;
+}

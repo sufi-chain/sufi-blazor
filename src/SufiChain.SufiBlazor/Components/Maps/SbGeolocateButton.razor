@@ -1,0 +1,170 @@
+@namespace SufiChain.SufiBlazor.Components.Maps
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Contracts.Maps
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<SbIconButton Class="@CssClass"
+              Style="@Style"
+              Size="Size"
+              Color="Color"
+              Variant="Variant"
+              Disabled="@(Disabled || _loading)"
+              Loading="_loading"
+              AriaLabel="@(AriaLabel ?? L["Map:ShareLocation"])"
+              Title="@(Title ?? L["Map:ShareLocation"])"
+              OnClick="LocateAsync"
+              AdditionalAttributes="AdditionalAttributes">
+    <SbIcon Name="pin" Size="Size" />
+</SbIconButton>
+
+@code {
+    private SbMapInterop? _interop;
+    private bool _loading;
+
+    /// <summary>
+    /// Request high-accuracy GPS when available.
+    /// </summary>
+    [Parameter]
+    public bool HighAccuracy { get; set; } = true;
+
+    /// <summary>
+    /// Timeout in milliseconds.
+    /// </summary>
+    [Parameter]
+    public int TimeoutMs { get; set; } = 10000;
+
+    /// <summary>
+    /// Maximum cached age in milliseconds.
+    /// </summary>
+    [Parameter]
+    public int MaximumAgeMs { get; set; }
+
+    /// <summary>
+    /// Whether the button is disabled.
+    /// </summary>
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Button size.
+    /// </summary>
+    [Parameter]
+    public SbSize Size { get; set; } = SbSize.Md;
+
+    /// <summary>
+    /// Button color.
+    /// </summary>
+    [Parameter]
+    public SbColor Color { get; set; } = SbColor.Default;
+
+    /// <summary>
+    /// Button variant.
+    /// </summary>
+    [Parameter]
+    public SbButtonVariant Variant { get; set; } = SbButtonVariant.Ghost;
+
+    /// <summary>
+    /// Accessible label override.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Tooltip title override.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// Fired when a position is obtained.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbGeoPosition> OnLocated { get; set; }
+
+    /// <summary>
+    /// Fired when geolocation fails.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbGeolocationError> OnError { get; set; }
+
+    /// <summary>
+    /// Additional CSS classes.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>
+    /// Inline styles.
+    /// </summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>
+    /// Additional HTML attributes.
+    /// </summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-geolocate-button" };
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(' ', classes);
+        }
+    }
+
+    private async Task LocateAsync()
+    {
+        if (_loading || Disabled)
+        {
+            return;
+        }
+
+        _loading = true;
+        try
+        {
+            _interop ??= new SbMapInterop(JSRuntime);
+            var (position, error) = await _interop.TryGetCurrentPositionAsync(new SbGeolocationOptions
+            {
+                EnableHighAccuracy = HighAccuracy,
+                TimeoutMs = TimeoutMs,
+                MaximumAgeMs = MaximumAgeMs
+            });
+
+            if (position != null)
+            {
+                await OnLocated.InvokeAsync(position);
+            }
+            else if (error != null)
+            {
+                await OnError.InvokeAsync(error);
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // circuit gone
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (_interop != null)
+        {
+            await _interop.DisposeAsync();
+            _interop = null;
+        }
+    }
+}

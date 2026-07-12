@@ -1,0 +1,346 @@
+@namespace SufiChain.SufiBlazor.Components.Maps
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Layout
+@using SufiChain.SufiBlazor.Components.Overlays
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<SbDialog Open="Open"
+          OpenChanged="HandleOpenChanged"
+          Title="@(Title ?? L["Map:PickLocation"])"
+          Size="SbDialogSize.Lg"
+          Width="@Width"
+          Class="@DialogCssClass"
+          OnClose="HandleDialogClose">
+    <ChildContent>
+        <div class="sb-map-picker">
+            @if (ShowSearch || ShowGeolocate)
+            {
+                <div class="sb-map-picker__toolbar">
+                    @if (ShowSearch)
+                    {
+                        <div class="sb-map-picker__search">
+                            <SbPlaceSearch Language="@Language"
+                                           CountryCodes="@CountryCodes"
+                                           NominatimBaseUrl="@NominatimBaseUrl"
+                                           OnPlaceSelected="HandlePlaceSelected" />
+                        </div>
+                    }
+                    @if (ShowGeolocate)
+                    {
+                        <SbGeolocateButton OnLocated="HandleLocated"
+                                           OnError="HandleGeolocateError"
+                                           AriaLabel="@L["Map:UseMyLocation"]"
+                                           Title="@L["Map:UseMyLocation"]" />
+                    }
+                </div>
+            }
+
+            <SbMap @ref="_map"
+                   Center="_mapCenter"
+                   Zoom="_zoom"
+                   Height="@MapHeight"
+                   Interactive="true"
+                   OnClick="HandleMapClick"
+                   Class="sb-map-picker__map">
+                <SbMapMarker Position="_pinPosition"
+                             Draggable="true"
+                             Label="@_draft.Label"
+                             AccuracyMeters="_draft.AccuracyMeters"
+                             PositionChanged="HandlePinDragged" />
+            </SbMap>
+
+            @if (!string.IsNullOrWhiteSpace(_statusMessage))
+            {
+                <div class="sb-map-picker__status" role="status">@_statusMessage</div>
+            }
+        </div>
+    </ChildContent>
+    <Footer>
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+            <SbButton Variant="SbButtonVariant.Ghost" OnClick="CancelAsync">@L["Cancel"]</SbButton>
+            <SbButton OnClick="ConfirmAsync">@(ConfirmText ?? L["Confirm"])</SbButton>
+        </SbStack>
+    </Footer>
+</SbDialog>
+
+@code {
+    private SbMap? _map;
+    private SbGeoPosition _draft = new();
+    private SbLatLng _mapCenter = new(35.6892, 51.3890);
+    private SbLatLng _pinPosition = new(35.6892, 51.3890);
+    private int _zoom = 13;
+    private string? _statusMessage;
+    private bool _wasOpen;
+
+    /// <summary>
+    /// Whether the picker dialog is open.
+    /// </summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>
+    /// Fired when open state changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>
+    /// Bound geographic value.
+    /// </summary>
+    [Parameter]
+    public SbGeoPosition? Value { get; set; }
+
+    /// <summary>
+    /// Fired when the bound value changes (on confirm).
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbGeoPosition?> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Fired when the user confirms a location.
+    /// </summary>
+    [Parameter]
+    public EventCallback<SbGeoPosition> OnConfirm { get; set; }
+
+    /// <summary>
+    /// Fired when the user cancels.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    /// <summary>
+    /// Dialog title.
+    /// </summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>
+    /// Confirm button text.
+    /// </summary>
+    [Parameter]
+    public string? ConfirmText { get; set; }
+
+    /// <summary>
+    /// Whether to show place search.
+    /// </summary>
+    [Parameter]
+    public bool ShowSearch { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show the geolocate button.
+    /// </summary>
+    [Parameter]
+    public bool ShowGeolocate { get; set; } = true;
+
+    /// <summary>
+    /// Initial map center when Value is null.
+    /// </summary>
+    [Parameter]
+    public SbLatLng? InitialCenter { get; set; }
+
+    /// <summary>
+    /// Map height inside the dialog.
+    /// </summary>
+    [Parameter]
+    public string MapHeight { get; set; } = "360px";
+
+    /// <summary>
+    /// Dialog width override.
+    /// </summary>
+    [Parameter]
+    public string? Width { get; set; } = "720px";
+
+    /// <summary>
+    /// Preferred language for place search.
+    /// </summary>
+    [Parameter]
+    public string? Language { get; set; }
+
+    /// <summary>
+    /// Country codes for place search.
+    /// </summary>
+    [Parameter]
+    public string? CountryCodes { get; set; }
+
+    /// <summary>
+    /// Nominatim base URL.
+    /// </summary>
+    [Parameter]
+    public string NominatimBaseUrl { get; set; } = "https://nominatim.openstreetmap.org";
+
+    /// <summary>
+    /// Additional CSS classes on the dialog.
+    /// </summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    private string DialogCssClass
+    {
+        get
+        {
+            var classes = new List<string> { "sb-map-picker-dialog" };
+            if (!string.IsNullOrWhiteSpace(Class))
+            {
+                classes.Add(Class);
+            }
+            return string.Join(' ', classes);
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Open && !_wasOpen)
+        {
+            SeedDraftFromValue();
+            _statusMessage = null;
+            _wasOpen = true;
+            await Task.Yield();
+            if (_map != null)
+            {
+                await _map.InvalidateSizeAsync();
+                await _map.SetViewAsync(_mapCenter.Latitude, _mapCenter.Longitude, _zoom);
+            }
+        }
+        else if (!Open && _wasOpen)
+        {
+            _wasOpen = false;
+        }
+    }
+
+    private void SeedDraftFromValue()
+    {
+        if (Value != null)
+        {
+            _draft = new SbGeoPosition
+            {
+                Latitude = Value.Latitude,
+                Longitude = Value.Longitude,
+                AccuracyMeters = Value.AccuracyMeters,
+                Label = Value.Label
+            };
+        }
+        else if (InitialCenter != null)
+        {
+            _draft = new SbGeoPosition
+            {
+                Latitude = InitialCenter.Latitude,
+                Longitude = InitialCenter.Longitude
+            };
+        }
+        else
+        {
+            _draft = new SbGeoPosition
+            {
+                Latitude = 35.6892,
+                Longitude = 51.3890
+            };
+        }
+
+        _pinPosition = _draft.ToLatLng();
+        _mapCenter = new SbLatLng(_draft.Latitude, _draft.Longitude);
+        _zoom = 13;
+    }
+
+    private async Task HandleOpenChanged(bool open)
+    {
+        Open = open;
+        await OpenChanged.InvokeAsync(open);
+    }
+
+    private async Task HandleDialogClose(SbDialogCloseReason reason)
+    {
+        if (reason != SbDialogCloseReason.Programmatic)
+        {
+            await OnCancel.InvokeAsync();
+        }
+    }
+
+    private async Task HandleMapClick(SbMapClickEventArgs args)
+    {
+        _draft.Latitude = args.Latitude;
+        _draft.Longitude = args.Longitude;
+        _draft.AccuracyMeters = null;
+        _pinPosition = new SbLatLng(args.Latitude, args.Longitude);
+        _mapCenter = new SbLatLng(args.Latitude, args.Longitude);
+        _statusMessage = null;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task HandlePinDragged(SbLatLng position)
+    {
+        _draft.Latitude = position.Latitude;
+        _draft.Longitude = position.Longitude;
+        _draft.AccuracyMeters = null;
+        _pinPosition = position;
+        _statusMessage = null;
+        return Task.CompletedTask;
+    }
+
+    private async Task HandlePlaceSelected(SbPlaceResult place)
+    {
+        _draft.Latitude = place.Latitude;
+        _draft.Longitude = place.Longitude;
+        _draft.Label = place.DisplayName;
+        _draft.AccuracyMeters = null;
+        _pinPosition = new SbLatLng(place.Latitude, place.Longitude);
+        _mapCenter = new SbLatLng(place.Latitude, place.Longitude);
+        _zoom = 15;
+        _statusMessage = null;
+
+        if (_map != null)
+        {
+            await _map.SetViewAsync(place.Latitude, place.Longitude, _zoom);
+        }
+    }
+
+    private async Task HandleLocated(SbGeoPosition position)
+    {
+        _draft.Latitude = position.Latitude;
+        _draft.Longitude = position.Longitude;
+        _draft.AccuracyMeters = position.AccuracyMeters;
+        if (string.IsNullOrWhiteSpace(_draft.Label))
+        {
+            _draft.Label = L["Map:CurrentLocation"];
+        }
+
+        _pinPosition = position.ToLatLng();
+        _mapCenter = position.ToLatLng();
+        _zoom = 16;
+        _statusMessage = null;
+
+        if (_map != null)
+        {
+            await _map.SetViewAsync(position.Latitude, position.Longitude, _zoom);
+        }
+    }
+
+    private Task HandleGeolocateError(SbGeolocationError error)
+    {
+        _statusMessage = string.IsNullOrWhiteSpace(error.Message)
+            ? L["Map:GeolocationFailed"]
+            : error.Message;
+        return Task.CompletedTask;
+    }
+
+    private async Task ConfirmAsync()
+    {
+        var result = new SbGeoPosition
+        {
+            Latitude = _draft.Latitude,
+            Longitude = _draft.Longitude,
+            AccuracyMeters = _draft.AccuracyMeters,
+            Label = _draft.Label
+        };
+
+        await ValueChanged.InvokeAsync(result);
+        await OnConfirm.InvokeAsync(result);
+        await HandleOpenChanged(false);
+    }
+
+    private async Task CancelAsync()
+    {
+        await OnCancel.InvokeAsync();
+        await HandleOpenChanged(false);
+    }
+}

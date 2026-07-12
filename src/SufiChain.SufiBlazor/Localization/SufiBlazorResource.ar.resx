@@ -155,4 +155,11 @@
   <data name="Rte:AlignCenter" xml:space="preserve"><value>وسط</value></data>
   <data name="Rte:AlignRight" xml:space="preserve"><value>يمين</value></data>
   <data name="Rte:AlignJustify" xml:space="preserve"><value>موزون</value></data>
+  <data name="Map:OpenInOpenStreetMap" xml:space="preserve"><value>فتح في OpenStreetMap</value></data>
+  <data name="Map:PickLocation" xml:space="preserve"><value>اختر الموقع</value></data>
+  <data name="Map:ShareLocation" xml:space="preserve"><value>مشاركة الموقع</value></data>
+  <data name="Map:UseMyLocation" xml:space="preserve"><value>استخدم موقعي</value></data>
+  <data name="Map:SearchPlace" xml:space="preserve"><value>ابحث عن مكان...</value></data>
+  <data name="Map:CurrentLocation" xml:space="preserve"><value>الموقع الحالي</value></data>
+  <data name="Map:GeolocationFailed" xml:space="preserve"><value>تعذر الحصول على موقعك.</value></data>
 </root>
