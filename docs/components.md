@@ -23,6 +23,17 @@ Feature-oriented catalog. See **SufiChain.SufiBlazorDemo** and component XML doc
 - **SbTable** — Simple table markup.  
 - **SbPagination** — Page index/size, total count, optional page-size selector.
 
+## Maps
+
+OpenStreetMap / Leaflet map surfaces.
+
+- **SbMap** — Interactive map canvas (tiles, center, zoom, click).  
+- **SbMapMarker** — Pin with optional accuracy circle; nest inside `SbMap`.  
+- **SbMapPreview** — Compact read-only location card (chat bubbles, CRM).  
+- **SbMapPicker** — Dialog to search, geolocate, click, or drag a pin.  
+- **SbGeolocateButton** — Browser geolocation capture control.  
+- **SbPlaceSearch** — Nominatim place autocomplete.
+
 ## Layout
 
 - **SbStack** — Flex row/column, gap, justify, align.  

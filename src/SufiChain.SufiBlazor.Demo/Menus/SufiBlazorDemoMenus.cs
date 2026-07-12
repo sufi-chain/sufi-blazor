@@ -70,6 +70,10 @@ public static class SufiBlazorDemoMenus
     public const string Pagination = Data + ".Pagination";
     public const string StatCard = Data + ".StatCard";
 
+    // Maps
+    public const string Maps = Prefix + ".Maps";
+    public const string Map = Maps + ".Map";
+
     // Layout
     public const string Stack = Layout + ".Stack";
     public const string Grid = Layout + ".Grid";

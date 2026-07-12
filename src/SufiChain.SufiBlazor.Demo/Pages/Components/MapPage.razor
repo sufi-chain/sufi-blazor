@@ -1,0 +1,115 @@
+@page "/demo/sufi-blazor/map"
+@using SufiChain.SufiBlazor.Components.Maps
+
+<PageTitle>@(L["Menu:Demo:Map"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Map"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:MapDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:MapBasic"]" SourceCode="@basicMap">
+        <ExampleContent>
+            <SbMap Center="_center" Zoom="12" Height="280px" OnClick="HandleMapClick">
+                <SbMapMarker Position="_center" Label="@L["Demo:MapTehranLabel"]" />
+            </SbMap>
+            @if (_lastClick != null)
+            {
+                <SbText Class="mt-2" Size="SbSize.Sm" Color="SbColor.Muted">
+                    @L["Demo:MapClickFormat", _lastClick.Latitude, _lastClick.Longitude]
+                </SbText>
+            }
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MapPreview"]" SourceCode="@previewMap">
+        <ExampleContent>
+            <div style="max-width: 360px;">
+                <SbMapPreview Latitude="35.6892"
+                              Longitude="51.3890"
+                              AccuracyMeters="18"
+                              Label="@L["Demo:MapTehranLabel"]"
+                              Height="160px" />
+            </div>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:MapPicker"]" SourceCode="@pickerMap" RelatedCode="@pickerCodeBehind">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Wrap="true">
+                <SbButton OnClick="@(() => _pickerOpen = true)">@L["Demo:MapOpenPicker"]</SbButton>
+                <SbGeolocateButton OnLocated="HandleLocated" OnError="HandleGeoError" />
+            </SbStack>
+
+            @if (_picked != null)
+            {
+                <SbText Class="mt-2" Size="SbSize.Sm">
+                    @L["Demo:MapPickedFormat", _picked.Latitude, _picked.Longitude, _picked.Label ?? "-"]
+                </SbText>
+            }
+            @if (!string.IsNullOrWhiteSpace(_geoError))
+            {
+                <SbText Class="mt-2" Size="SbSize.Sm" Color="SbColor.Danger">@_geoError</SbText>
+            }
+
+            <SbMapPicker @bind-Open="_pickerOpen"
+                         @bind-Value="_picked"
+                         Language="en"
+                         CountryCodes="ir" />
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbMap" />
+    <DocViewer DocName="SbMapPreview" />
+    <DocViewer DocName="SbMapPicker" />
+</DemoLayout>
+
+@code {
+    private readonly SbLatLng _center = new(35.6892, 51.3890);
+    private SbMapClickEventArgs? _lastClick;
+    private bool _pickerOpen;
+    private SbGeoPosition? _picked;
+    private string? _geoError;
+
+    private Task HandleMapClick(SbMapClickEventArgs args)
+    {
+        _lastClick = args;
+        return Task.CompletedTask;
+    }
+
+    private Task HandleLocated(SbGeoPosition position)
+    {
+        _picked = position;
+        _geoError = null;
+        return Task.CompletedTask;
+    }
+
+    private Task HandleGeoError(SbGeolocationError error)
+    {
+        _geoError = error.Message;
+        return Task.CompletedTask;
+    }
+
+    private const string basicMap = @"<SbMap Center=""new SbLatLng(35.6892, 51.3890)"" Zoom=""12"" Height=""280px"">
+    <SbMapMarker Position=""new SbLatLng(35.6892, 51.3890)"" Label=""Tehran"" />
+</SbMap>";
+
+    private const string previewMap = @"<SbMapPreview Latitude=""35.6892""
+              Longitude=""51.3890""
+              AccuracyMeters=""18""
+              Label=""Tehran""
+              Height=""160px"" />";
+
+    private const string pickerMap = @"<SbButton OnClick=""@(() => _pickerOpen = true)"">Pick location</SbButton>
+<SbGeolocateButton OnLocated=""HandleLocated"" />
+
+<SbMapPicker @bind-Open=""_pickerOpen""
+             @bind-Value=""_picked""
+             CountryCodes=""ir"" />";
+
+    private const string pickerCodeBehind = @"private bool _pickerOpen;
+private SbGeoPosition? _picked;";
+}

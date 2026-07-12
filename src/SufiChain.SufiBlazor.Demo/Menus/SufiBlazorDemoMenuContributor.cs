@@ -100,12 +100,22 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
         dataGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.StatCard, l["Menu:Demo:StatCard"], "/demo/sufi-blazor/stat-card", order: 4));
         sufiBlazorDemo.AddItem(dataGroup);
 
+        // Maps
+        var mapsGroup = new ApplicationMenuItem(
+            name: SufiBlazorDemoMenus.Maps,
+            displayName: l["Menu:Demo:Maps"],
+            icon: "map",
+            order: 5
+        );
+        mapsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Map, l["Menu:Demo:Map"], "/demo/sufi-blazor/map", "pin", order: 1));
+        sufiBlazorDemo.AddItem(mapsGroup);
+
         // Layout
         var layoutGroup = new ApplicationMenuItem(
             name: SufiBlazorDemoMenus.Layout,
             displayName: l["Menu:Demo:Layout"],
             icon: "component",
-            order: 5
+            order: 6
         );
         layoutGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Stack, l["Menu:Demo:Stack"], "/demo/sufi-blazor/stack", order: 1));
         layoutGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Grid, l["Menu:Demo:Grid"], "/demo/sufi-blazor/grid", order: 2));
@@ -118,7 +128,7 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
             name: SufiBlazorDemoMenus.Navigation,
             displayName: l["Menu:Demo:Navigation"],
             icon: "compass",
-            order: 6
+            order: 7
         );
         navigationGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Tabs, l["Menu:Demo:Tabs"], "/demo/sufi-blazor/tabs", order: 1));
         navigationGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Stepper, l["Menu:Demo:Stepper"], "/demo/sufi-blazor/stepper", order: 2));
@@ -133,7 +143,7 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
             name: SufiBlazorDemoMenus.Overlays,
             displayName: l["Menu:Demo:Overlays"],
             icon: "layers",
-            order: 7
+            order: 8
         );
         overlaysGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Dialog, l["Menu:Demo:Dialog"], "/demo/sufi-blazor/dialog", order: 1));
         overlaysGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Drawer, l["Menu:Demo:Drawer"], "/demo/sufi-blazor/drawer", order: 2));
@@ -148,7 +158,7 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
             name: SufiBlazorDemoMenus.Feedback,
             displayName: l["Menu:Demo:Feedback"],
             icon: "info",
-            order: 8
+            order: 9
         );
         feedbackGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Alert, l["Menu:Demo:Alert"], "/demo/sufi-blazor/alert", order: 1));
         feedbackGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Toast, l["Menu:Demo:Toast"], "/demo/sufi-blazor/toast", order: 2));
@@ -164,7 +174,7 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
             name: SufiBlazorDemoMenus.Surfaces,
             displayName: l["Menu:Demo:Surfaces"],
             icon: "maximize",
-            order: 9
+            order: 10
         );
         surfacesGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Card, l["Menu:Demo:Card"], "/demo/sufi-blazor/card", order: 1));
         surfacesGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Surface, l["Menu:Demo:Surface"], "/demo/sufi-blazor/surface", order: 2));
@@ -176,7 +186,7 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
             name: SufiBlazorDemoMenus.Typography,
             displayName: l["Menu:Demo:Typography"],
             icon: "bold",
-            order: 10
+            order: 11
         );
         typographyGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Text, l["Menu:Demo:Text"], "/demo/sufi-blazor/text", order: 1));
         typographyGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Icon, l["Menu:Demo:Icon"], "/demo/sufi-blazor/icon", order: 2));

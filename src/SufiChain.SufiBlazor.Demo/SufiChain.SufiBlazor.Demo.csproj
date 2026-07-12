@@ -110,6 +110,14 @@
       <DocToCopy Include="$(DocsSourceComponents)\layout\SbSpacer.md" />
       <DocToCopy Include="$(DocsSourceComponents)\layout\SbStack.md" />
       <DocToCopy Include="$(DocsSourceComponents)\layout\LAYOUT_REVIEW.md" />
+
+      <!-- Maps -->
+      <DocToCopy Include="$(DocsSourceComponents)\maps\SbMap.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\maps\SbMapMarker.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\maps\SbMapPreview.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\maps\SbMapPicker.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\maps\SbGeolocateButton.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\maps\SbPlaceSearch.md" />
       
       <!-- Navigation -->
       <DocToCopy Include="$(DocsSourceComponents)\navigation\SbAccordion.md" />

@@ -1,9 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using SufiChain.SufiBlazor.Demo.Localization;
-using SufiChain.SufiAbp.UI;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
+
+using SufiChain.SufiAbp.UI;
 
 namespace SufiChain.SufiBlazor.Demo;
 

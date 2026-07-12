@@ -4,12 +4,13 @@
 
 ## Vendor stack
 
-| Editor | Libraries | SufiBlazor interop |
+| Feature | Libraries | SufiBlazor interop |
 | --- | --- | --- |
 | Rich text (Quill) | `quill.min.js`, `quill.snow.css` | `sufiblazor-editor.js`, `SbEditorInterop` |
 | Markdown (EasyMDE) | `easymde.min.js`, `easymde.min.css`, marked.js, highlight.js, mermaid | `sufiblazor-markdown-editor.js`, `SbMarkdownEditorInterop` |
+| Maps (Leaflet) | `vendor/leaflet/leaflet.js`, `leaflet.css`, marker images | `sufiblazor-map.js`, `SbMapInterop` |
 
-Vendor files ship under `_content/SufiChain.SufiBlazor/vendor/`.
+Vendor files ship under `_content/SufiChain.SufiBlazor/vendor/`. Leaflet loads on demand when an `SbMap` (or map helper) is used, with CDN fallback.
 
 ## Sufi Platform (SufiTheme)
 
