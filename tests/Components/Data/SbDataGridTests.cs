@@ -130,6 +130,57 @@ public class SbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void RendersRowsWhenItemsArriveAfterEmptyFirstRender()
+    {
+        // Reproduces the Copilots/MCP-tools race: first render binds empty Items while
+        // the page is still loading; later Items swap must paint without a topbar click.
+        var empty = new List<TestItem>();
+        var loaded = CreateTestItems(2);
+
+        var cut = RenderDataGrid(empty);
+        Assert.Contains("No data available", cut.Markup);
+
+        cut.Render(p => p
+            .Add(x => x.Items, loaded)
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.ShowColumnFilters, false)
+            .AddChildContent(ColumnsTemplate));
+
+        Assert.Contains("Item 1", cut.Markup);
+        Assert.Contains("Item 2", cut.Markup);
+        Assert.DoesNotContain("No data available", cut.Markup);
+    }
+
+    [Fact]
+    public void RendersRowsWhenItemsSwapDuringLoadingFlagToggle()
+    {
+        // MCP tools pattern: Loading true with empty list, then Loading false with a new list.
+        var empty = new List<TestItem>();
+        var loaded = CreateTestItems(3);
+
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.Items, empty)
+            .Add(x => x.Loading, true)
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.ShowColumnFilters, false)
+            .AddChildContent(ColumnsTemplate));
+
+        cut.Render(p => p
+            .Add(x => x.Items, loaded)
+            .Add(x => x.Loading, false)
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.ShowColumnFilters, false)
+            .AddChildContent(ColumnsTemplate));
+
+        Assert.Contains("Item 1", cut.Markup);
+        Assert.Contains("Item 3", cut.Markup);
+        Assert.DoesNotContain("No data available", cut.Markup);
+    }
+
+    [Fact]
     public void RendersEmptyStateWhenItemsIsNull()
     {
         // Arrange & Act

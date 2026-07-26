@@ -237,9 +237,9 @@
     @if (ShowPagination && TotalCount > 0 && !VirtualizationEnabled)
     {
         <div class="sb-datagrid__pagination">
-            <SbPagination PageIndex="@PageIndex"
+            <SbPagination PageIndex="@_pageIndex"
                           PageIndexChanged="@OnPageIndexChanged"
-                          PageSize="@PageSize"
+                          PageSize="@_pageSize"
                           PageSizeChanged="@OnPageSizeChanged"
                           TotalCount="@TotalCount"
                           ShowPageSizeSelector="@ShowPageSizeSelector"
@@ -815,9 +815,24 @@
     
     private bool _isFirstRender = true;
     private bool _parametersChanged = false;
+    private bool _suppressNextParameterRefresh;
+    private IEnumerable<TItem>? _itemsAtLastRefresh;
+    private Func<SbDataRequest, Task<SbDataResponse<TItem>>>? _itemsProviderAtLastRefresh;
+
+    /// <summary>
+    /// Client-owned page index. Prefer this over mutating the <see cref="PageIndex"/> parameter,
+    /// so clicks stay correct while the parent catches up via <see cref="PageIndexChanged"/>.
+    /// </summary>
+    private int _pageIndex;
+    private int _pageSize = 10;
+    private int? _pendingPageIndex;
+    private int? _pendingPageSize;
     
     protected override void OnInitialized()
     {
+        _pageIndex = PageIndex;
+        _pageSize = PageSize > 0 ? PageSize : 10;
+
         if (SelectedKeys != null)
         {
             _selectedKeys = new HashSet<string>(SelectedKeys);
@@ -827,6 +842,8 @@
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
+
+        SyncPagingParametersFromParent();
         
         if (SelectedKeys != null)
         {
@@ -838,9 +855,63 @@
         {
             _expandedRows = new HashSet<string>(ExpandedRowKeys);
         }
-        
-        // Mark that parameters changed so we can refresh data after render
+
+        var itemsChanged = !ReferenceEquals(Items, _itemsAtLastRefresh);
+        var providerChanged = !ReferenceEquals(ItemsProvider, _itemsProviderAtLastRefresh);
+
+        // After RefreshDataAsync we call StateHasChanged; that re-render must not loop.
+        // But if Items/ItemsProvider identity changed on the same cycle (e.g. parent
+        // finished LoadAsync while the empty first refresh was still suppressing),
+        // honor the new data — otherwise the grid stays on "No data available"
+        // until an unrelated UI event (topbar click) forces another parameter pass.
+        if (_suppressNextParameterRefresh)
+        {
+            _suppressNextParameterRefresh = false;
+            if (!itemsChanged && !providerChanged)
+            {
+                return;
+            }
+        }
+
+        // Client mode after columns exist: apply Items immediately during this parameter
+        // pass so async parent loads (MCP tools, copilots, etc.) paint without waiting for
+        // OnAfterRenderAsync + suppress fencing.
+        if (!_isFirstRender && !IsServerMode && itemsChanged)
+        {
+            LoadClientData();
+            _itemsAtLastRefresh = Items;
+            return;
+        }
+
         _parametersChanged = true;
+    }
+
+    private void SyncPagingParametersFromParent()
+    {
+        if (_pendingPageIndex.HasValue)
+        {
+            if (PageIndex == _pendingPageIndex.Value)
+            {
+                _pendingPageIndex = null;
+            }
+            // Parent has not echoed the local change yet — keep _pageIndex.
+        }
+        else if (PageIndex != _pageIndex)
+        {
+            _pageIndex = PageIndex;
+        }
+
+        if (_pendingPageSize.HasValue)
+        {
+            if (PageSize == _pendingPageSize.Value)
+            {
+                _pendingPageSize = null;
+            }
+        }
+        else if (PageSize != _pageSize && PageSize > 0)
+        {
+            _pageSize = PageSize;
+        }
     }
     
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -853,6 +924,9 @@
             _isFirstRender = false;
             _parametersChanged = false;
             await RefreshDataAsync();
+            _itemsAtLastRefresh = Items;
+            _itemsProviderAtLastRefresh = ItemsProvider;
+            _suppressNextParameterRefresh = true;
             StateHasChanged();
         }
     }
@@ -921,20 +995,44 @@
             }
         }
         
+        // Hybrid anti-double-page: when parent already server/in-memory paged Items
+        // (Items is one page of a larger TotalCount), do not Skip again or overwrite TotalCount.
+        var effectivePageSize = _pageSize > 0 ? _pageSize : PageSize;
+        var looksLikeAlreadyPagedSlice =
+            ShowPagination &&
+            effectivePageSize > 0 &&
+            TotalCount > items.Count &&
+            items.Count <= effectivePageSize;
+
+        if (looksLikeAlreadyPagedSlice)
+        {
+            _displayItems = items;
+            _virtualizedItems = new();
+            return;
+        }
+
         TotalCount = items.Count;
         
         // When virtualization is enabled, load all items (virtualization handles visible rows)
-        // Otherwise, apply pagination
+        // Otherwise, apply client-side pagination over the full Items set
         if (VirtualizationEnabled)
         {
             _displayItems = items;
             _virtualizedItems = items.Select((item, index) => (item, index)).ToList();
         }
-        else if (ShowPagination && PageSize > 0)
+        else if (ShowPagination && effectivePageSize > 0)
         {
+            var pageIndex = Math.Max(0, _pageIndex);
+            var maxPage = Math.Max(0, (int)Math.Ceiling(TotalCount / (double)effectivePageSize) - 1);
+            if (pageIndex > maxPage)
+            {
+                pageIndex = maxPage;
+                SetLocalPageIndex(pageIndex);
+            }
+
             _displayItems = items
-                .Skip(PageIndex * PageSize)
-                .Take(PageSize)
+                .Skip(pageIndex * effectivePageSize)
+                .Take(effectivePageSize)
                 .ToList();
             _virtualizedItems = new();
         }
@@ -1030,8 +1128,8 @@
         
         var request = new SbDataRequest
         {
-            PageIndex = PageIndex,
-            PageSize = PageSize,
+            PageIndex = _pageIndex,
+            PageSize = _pageSize > 0 ? _pageSize : PageSize,
             Sorts = _currentSort != null ? new[] { _currentSort } : Array.Empty<SbSort>(),
             Filters = _activeFilters.Values.ToArray(),
             IncludeTotalCount = true
@@ -1195,20 +1293,45 @@
         }
     }
     
+    private void SetLocalPageIndex(int pageIndex)
+    {
+        _pageIndex = pageIndex;
+        _pendingPageIndex = pageIndex;
+        PageIndex = pageIndex;
+    }
+
+    private void SetLocalPageSize(int pageSize)
+    {
+        _pageSize = pageSize;
+        _pendingPageSize = pageSize;
+        PageSize = pageSize;
+    }
+
     private async Task OnPageIndexChanged(int newIndex)
     {
-        PageIndex = newIndex;
-        await PageIndexChanged.InvokeAsync(newIndex);
+        if (newIndex == _pageIndex)
+        {
+            return;
+        }
+
+        SetLocalPageIndex(newIndex);
+        // Slice first so UI updates even if the parent handler is slow / no-op.
         await RefreshDataAsync();
+        await PageIndexChanged.InvokeAsync(newIndex);
     }
     
     private async Task OnPageSizeChanged(int newSize)
     {
-        PageSize = newSize;
-        await PageSizeChanged.InvokeAsync(newSize);
-        PageIndex = 0;
-        await PageIndexChanged.InvokeAsync(0);
+        if (newSize == _pageSize && _pageIndex == 0)
+        {
+            return;
+        }
+
+        SetLocalPageSize(newSize);
+        SetLocalPageIndex(0);
         await RefreshDataAsync();
+        await PageSizeChanged.InvokeAsync(newSize);
+        await PageIndexChanged.InvokeAsync(0);
     }
     
     private async Task ToggleRowExpand(string key)
@@ -1676,7 +1799,7 @@
         }
         
         // Reset to first page when filter changes
-        PageIndex = 0;
+        SetLocalPageIndex(0);
         await PageIndexChanged.InvokeAsync(0);
         
         await OnFiltersChanged.InvokeAsync(ActiveFilters);
@@ -1691,7 +1814,7 @@
     public async Task ClearAllFiltersAsync()
     {
         _activeFilters.Clear();
-        PageIndex = 0;
+        SetLocalPageIndex(0);
         await PageIndexChanged.InvokeAsync(0);
         await OnFiltersChanged.InvokeAsync(ActiveFilters);
         await RefreshDataAsync();
@@ -1718,7 +1841,7 @@
     public async Task SetOnlyFilterAsync(string field, SbFilterOperator op, object? value, object? value2 = null)
     {
         _activeFilters.Clear();
-        PageIndex = 0;
+        SetLocalPageIndex(0);
         var filter = new SbFilter(field, op, value, value2);
         _activeFilters[field] = filter;
         await PageIndexChanged.InvokeAsync(0);
@@ -1772,8 +1895,9 @@
     private string GetPageInfo()
     {
         if (TotalCount == 0) return "No items";
-        var start = PageIndex * PageSize + 1;
-        var end = Math.Min((PageIndex + 1) * PageSize, TotalCount);
+        var pageSize = _pageSize > 0 ? _pageSize : PageSize;
+        var start = _pageIndex * pageSize + 1;
+        var end = Math.Min((_pageIndex + 1) * pageSize, TotalCount);
         return $"{start}-{end} of {TotalCount}";
     }
     
