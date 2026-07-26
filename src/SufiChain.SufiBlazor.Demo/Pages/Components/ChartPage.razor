@@ -1,0 +1,56 @@
+@page "/demo/sufi-blazor/chart"
+@using SufiChain.SufiBlazor.Components.Data
+
+<PageTitle>Chart - SufiBlazor Demo</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">Chart</SbHeading>
+    <SbText Color="SbColor.Muted">Lightweight SVG charts (Line, Bar, Donut, Sparkline) rendered with --sb-* design tokens.</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="Line chart">
+        <ExampleContent>
+            <SbChart ChartType="SbChartType.Line"
+                     Values="@(new double[] { 4, 8, 6, 12, 9, 15, 11, 18 })"
+                     Labels="@(new[] { "Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon" })"
+                     Height="180" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="Bar chart">
+        <ExampleContent>
+            <SbChart ChartType="SbChartType.Bar"
+                     Values="@(new double[] { 30, 45, 22, 60, 38 })"
+                     Height="180"
+                     Color="--sb-color-info" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="Donut chart">
+        <ExampleContent>
+            <SbChart ChartType="SbChartType.Donut"
+                     Values="@(new double[] { 12, 8, 5, 3 })"
+                     Labels="@(new[] { "Open","In progress","Resolved","Closed" })"
+                     Height="180" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="Sparkline">
+        <ExampleContent>
+            <SbChart ChartType="SbChartType.Sparkline"
+                     Values="@(new double[] { 2, 4, 3, 6, 5, 8, 7, 9, 11, 10, 13, 15 })"
+                     Height="48"
+                     Color="--sb-color-success" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="Empty state">
+        <ExampleContent>
+            <SbChart ChartType="SbChartType.Line"
+                     Values="@(new double[] { })"
+                     Height="160"
+                     EmptyText="No data yet" />
+        </ExampleContent>
+    </DemoSection>
+</DemoLayout>

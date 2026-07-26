@@ -1,0 +1,217 @@
+@namespace SufiChain.SufiBlazor.Components.Data
+@using System.Globalization
+
+@if (Values == null || Values.Count == 0)
+{
+    <div class="sb-chart sb-chart--empty @Class" style="@ComputedStyle" role="img" aria-label="@AriaLabel">
+        <span class="sb-chart__empty">@EmptyText</span>
+    </div>
+}
+else if (ChartType == SbChartType.Donut)
+{
+    <div class="sb-chart sb-chart--donut @Class" style="@ComputedStyle" role="img" aria-label="@AriaLabel">
+        @RenderDonut()
+    </div>
+}
+else
+{
+    var viewBox = $"0 0 {Width} {Height}";
+    <svg class="sb-chart sb-chart--@ChartType.ToString().ToLower() @Class"
+         style="@ComputedStyle"
+         viewBox="@viewBox"
+         preserveAspectRatio="none"
+         role="img"
+         aria-label="@AriaLabel">
+        @if (ChartType == SbChartType.Bar)
+        {
+            @RenderBars()
+        }
+        else
+        {
+            @RenderLine()
+        }
+    </svg>
+}
+
+@code {
+    /// <summary>Chart variant to render.</summary>
+    [Parameter] public SbChartType ChartType { get; set; } = SbChartType.Line;
+
+    /// <summary>Numeric series. For Donut, each value is a slice.</summary>
+    [Parameter] public IReadOnlyList<double>? Values { get; set; }
+
+    /// <summary>Labels aligned to <see cref="Values"/>. Optional.</summary>
+    [Parameter] public IReadOnlyList<string>? Labels { get; set; }
+
+    /// <summary>Per-slice colors for Donut (CSS color or --sb-* token name). Optional.</summary>
+    [Parameter] public IReadOnlyList<string>? Colors { get; set; }
+
+    /// <summary>Chart height in CSS pixels.</summary>
+    [Parameter] public int Height { get; set; } = 160;
+
+    /// <summary>Chart width used for the SVG viewBox. Defaults to a 3:1 aspect.</summary>
+    [Parameter] public int Width { get; set; } = 480;
+
+    /// <summary>Main stroke/area color (CSS color or --sb-* token name). Defaults to primary.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Whether to draw the baseline axis. Ignored for Sparkline/Donut.</summary>
+    [Parameter] public bool ShowAxis { get; set; } = true;
+
+    /// <summary>Accessible label describing the chart.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>Text shown when there is no data.</summary>
+    [Parameter] public string EmptyText { get; set; } = "No data";
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public string? Style { get; set; }
+
+    private string ComputedStyle => $"height:{Height}px;{(string.IsNullOrEmpty(Style) ? null : Style)}";
+
+    private string StrokeColor => ResolveColor(Color, "var(--sb-color-primary)");
+
+    private string AxisColor => "var(--sb-color-border)";
+
+    private double MaxValue => Values is { Count: > 0 } ? Values.Max() : 0;
+    private double MinValue => Values is { Count: > 0 } ? Values.Min() : 0;
+
+    private string ResolveColor(string? value, string fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        return value!.StartsWith("--", StringComparison.Ordinal)
+            ? $"var({value})"
+            : value!;
+    }
+
+    private string FormatValue(double v) => v.ToString("0.##", CultureInfo.InvariantCulture);
+
+    private RenderFragment RenderLine() => __builder =>
+    {
+        var count = Values!.Count;
+        var max = MaxValue;
+        var min = MinValue;
+        var range = max - min;
+        if (range <= 0) { range = max == 0 ? 1 : max; }
+
+        var padX = 4;
+        var innerW = Width - padX * 2;
+        var innerH = Height - 8;
+        var stepX = count > 1 ? innerW / (count - 1) : 0;
+
+        var points = new List<(double X, double Y)>(count);
+        for (var i = 0; i < count; i++)
+        {
+            var x = padX + i * stepX;
+            var y = 4 + innerH - ((Values![i] - min) / range) * innerH;
+            points.Add((x, y));
+        }
+
+        var linePath = string.Join(" ", points.Select(p => $"{FormatValue(p.X)},{FormatValue(p.Y)}"));
+        var areaPath = $"M {FormatValue(padX)},{FormatValue(Height - 4)} L {linePath.Replace(" ", " L ")} L {FormatValue(padX + (count - 1) * stepX)},{FormatValue(Height - 4)} Z";
+
+        if (ShowAxis && ChartType != SbChartType.Sparkline)
+        {
+            <line x1="@padX" y1="@(Height - 4)" x2="@(Width - padX)" y2="@(Height - 4)"
+                  stroke="@AxisColor" stroke-width="1" />
+        }
+
+        <path d="@areaPath" fill="@StrokeColor" fill-opacity="0.12" stroke="none" />
+        <polyline points="@linePath" fill="none" stroke="@StrokeColor"
+                  stroke-width="@(ChartType == SbChartType.Sparkline ? 1.5 : 2)"
+                  stroke-linecap="round" stroke-linejoin="round" />
+
+        @if (ChartType != SbChartType.Sparkline)
+        {
+            foreach (var p in points)
+            {
+                <circle cx="@FormatValue(p.X)" cy="@FormatValue(p.Y)" r="2.5"
+                        fill="@StrokeColor" />
+            }
+        }
+    };
+
+    private RenderFragment RenderBars() => __builder =>
+    {
+        var count = Values!.Count;
+        var max = MaxValue;
+        if (max <= 0) { max = 1; }
+
+        var gap = 4;
+        var innerW = Width - 4;
+        var barW = count > 0 ? (innerW - gap * (count - 1)) / count : 0;
+        var innerH = Height - 8;
+
+        for (var i = 0; i < count; i++)
+        {
+            var x = 2 + i * (barW + gap);
+            var h = (Values![i] / max) * innerH;
+            var y = Height - 4 - h;
+            var color = Colors != null && i < Colors.Count
+                ? ResolveColor(Colors[i], StrokeColor)
+                : StrokeColor;
+
+            <rect x="@FormatValue(x)" y="@FormatValue(y)"
+                  width="@FormatValue(barW)" height="@FormatValue(h)"
+                  rx="2" ry="2" fill="@color" />
+        }
+
+        if (ShowAxis)
+        {
+            <line x1="2" y1="@(Height - 4)" x2="@(Width - 2)" y2="@(Height - 4)"
+                  stroke="@AxisColor" stroke-width="1" />
+        }
+    };
+
+    private RenderFragment RenderDonut() => __builder =>
+    {
+        var total = Values!.Sum();
+        if (total <= 0) { total = 1; }
+
+        var size = Math.Min(Height, 160);
+        var stroke = size / 8.0;
+        var r = (size - stroke) / 2.0;
+        var cx = size / 2.0;
+        var cy = size / 2.0;
+        var circumference = 2 * Math.PI * r;
+
+        var offset = 0.0;
+        for (var i = 0; i < Values!.Count; i++)
+        {
+            var fraction = Values[i] / total;
+            var dash = fraction * circumference;
+            var color = Colors != null && i < Colors.Count
+                ? ResolveColor(Colors[i], StrokeColor)
+                : DonutPalette(i);
+
+            <svg width="@size" height="@size" viewBox="@($"0 0 {size} {size}")" class="sb-chart__donut-svg">
+                <circle cx="@FormatValue(cx)" cy="@FormatValue(cy)" r="@FormatValue(r)"
+                        fill="none" stroke="@color" stroke-width="@FormatValue(stroke)"
+                        stroke-dasharray="@($"{FormatValue(dash)} {FormatValue(circumference - dash)}")"
+                        stroke-dashoffset="@FormatValue(-offset)"
+                        transform="rotate(-90 @FormatValue(cx) @FormatValue(cy))" />
+            </svg>;
+
+            offset += dash;
+        }
+    };
+
+    private string DonutPalette(int index)
+    {
+        var palette = new[]
+        {
+            "var(--sb-color-primary)",
+            "var(--sb-color-info)",
+            "var(--sb-color-success)",
+            "var(--sb-color-warning)",
+            "var(--sb-color-danger)",
+            "var(--sb-color-secondary)"
+        };
+        return palette[index % palette.Length];
+    }
+}
