@@ -98,6 +98,7 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
         dataGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Table, l["Menu:Demo:Table"], "/demo/sufi-blazor/table", order: 2));
         dataGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Pagination, l["Menu:Demo:Pagination"], "/demo/sufi-blazor/pagination", order: 3));
         dataGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.StatCard, l["Menu:Demo:StatCard"], "/demo/sufi-blazor/stat-card", order: 4));
+        dataGroup.AddItem(new ApplicationMenuItem("SufiBlazorDemo.Chart", "Chart", "/demo/sufi-blazor/chart", "chart-line", order: 5));
         sufiBlazorDemo.AddItem(dataGroup);
 
         // Maps
@@ -180,6 +181,18 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
         surfacesGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Surface, l["Menu:Demo:Surface"], "/demo/sufi-blazor/surface", order: 2));
         surfacesGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Divider, l["Menu:Demo:Divider"], "/demo/sufi-blazor/divider", order: 3));
         sufiBlazorDemo.AddItem(surfacesGroup);
+
+        var conversationGroup = new ApplicationMenuItem(
+            name: SufiBlazorDemoMenus.Conversation,
+            displayName: l["Menu:Demo:Conversation"],
+            icon: "chat",
+            order: 85);
+        conversationGroup.AddItem(new ApplicationMenuItem(
+            SufiBlazorDemoMenus.ConversationComposer,
+            l["Menu:Demo:ConversationComposer"],
+            "/demo/sufi-blazor/conversation",
+            order: 1));
+        sufiBlazorDemo.AddItem(conversationGroup);
 
         // Typography & Common
         var typographyGroup = new ApplicationMenuItem(

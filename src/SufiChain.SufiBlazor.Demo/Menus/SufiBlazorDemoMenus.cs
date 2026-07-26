@@ -110,6 +110,10 @@ public static class SufiBlazorDemoMenus
     public const string Surface = Surfaces + ".Surface";
     public const string Divider = Surfaces + ".Divider";
 
+    // Conversation
+    public const string Conversation = Prefix + ".Conversation";
+    public const string ConversationComposer = Conversation + ".Composer";
+
     // Typography
     public const string Text = Typography + ".Text";
     public const string Icon = Typography + ".Icon";
