@@ -227,6 +227,17 @@ public static class SufiIcons
                 $"<svg {SvgOutlineAttrs}><path d=\"M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2\"/><rect x=\"8\" y=\"2\" width=\"8\" height=\"4\" rx=\"1\" ry=\"1\"/><path d=\"M9 14l2 2 4-4\"/></svg>"),
             ["clipboard-list"] = new("clipboard-list", SiIconCategory.Actions, "Checklist items",
                 $"<svg {SvgOutlineAttrs}><path d=\"M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2\"/><rect x=\"8\" y=\"2\" width=\"8\" height=\"4\" rx=\"1\" ry=\"1\"/><path d=\"M12 11h4M12 16h4M8 11h.01M8 16h.01\"/></svg>"),
+            // SufiForms product mark: fillable form sheet with checkboxes + input field
+            // (distinct from clipboard-list — no clip; reads clearly at icon-rail size).
+            ["form"] = new("form", SiIconCategory.Actions, "SufiForms — form definitions, surveys, and fillable fields",
+                $"<svg {SvgOutlineAttrs}>" +
+                "<rect x=\"4\" y=\"2\" width=\"16\" height=\"20\" rx=\"2\"/>" +
+                "<rect x=\"7\" y=\"6\" width=\"3\" height=\"3\" rx=\"0.5\"/>" +
+                "<path d=\"M12 7.5h5\"/>" +
+                "<rect x=\"7\" y=\"11\" width=\"3\" height=\"3\" rx=\"0.5\"/>" +
+                "<path d=\"M12 12.5h5\"/>" +
+                "<rect x=\"7\" y=\"16\" width=\"10\" height=\"3\" rx=\"0.5\"/>" +
+                "</svg>"),
             ["cut"] = new("cut", SiIconCategory.Actions, "Cut or SufiChainsor action",
                 $"<svg {SvgOutlineAttrs}><circle cx=\"6\" cy=\"6\" r=\"3\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><line x1=\"20\" y1=\"4\" x2=\"8.12\" y2=\"15.88\"/><line x1=\"14.47\" y1=\"14.48\" x2=\"20\" y2=\"20\"/><line x1=\"8.12\" y1=\"8.12\" x2=\"12\" y2=\"12\"/></svg>"),
             ["paste"] = new("paste", SiIconCategory.Actions, "Paste from clipboard",
@@ -361,6 +372,8 @@ public static class SufiIcons
                 $"<svg {SvgOutlineAttrs}><path d=\"M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2\"/><circle cx=\"8.5\" cy=\"7\" r=\"4\"/><line x1=\"23\" y1=\"11\" x2=\"17\" y2=\"11\"/></svg>"),
             ["id-card"] = new("id-card", SiIconCategory.Users, "User identity card",
                 $"<svg {SvgOutlineAttrs}><rect x=\"2\" y=\"5\" width=\"20\" height=\"14\" rx=\"2\"/><line x1=\"2\" y1=\"10\" x2=\"22\" y2=\"10\"/></svg>"),
+            ["contact"] = new("contact", SiIconCategory.Users, "Contact or address book entry",
+                $"<svg {SvgOutlineAttrs}><path d=\"M17 18a2 2 0 00-2-2H9a2 2 0 00-2 2\"/><rect x=\"3\" y=\"4\" width=\"18\" height=\"18\" rx=\"2\"/><circle cx=\"12\" cy=\"10\" r=\"2\"/><path d=\"M8 2v2M16 2v2\"/></svg>"),
             ["user-check"] = new("user-check", SiIconCategory.Users, "Verified user",
                 $"<svg {SvgOutlineAttrs}><path d=\"M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2\"/><circle cx=\"8.5\" cy=\"7\" r=\"4\"/><polyline points=\"17 11 19 13 23 9\"/></svg>"),
             ["user-x"] = new("user-x", SiIconCategory.Users, "Remove or blocked user",
@@ -495,6 +508,8 @@ public static class SufiIcons
                 $"<svg {SvgOutlineAttrs}><path d=\"M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z\"/></svg>"),
             ["message-circle"] = new("message-circle", SiIconCategory.Communication, "Message bubble round",
                 $"<svg {SvgOutlineAttrs}><path d=\"M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z\"/></svg>"),
+            ["chat-dots"] = new("chat-dots", SiIconCategory.Communication, "Chat with typing indicator",
+                $"<svg {SvgOutlineAttrs}><path d=\"M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z\"/><circle cx=\"8\" cy=\"10\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"12\" cy=\"10\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/><circle cx=\"16\" cy=\"10\" r=\"1\" fill=\"currentColor\" stroke=\"none\"/></svg>"),
             ["reply"] = new("reply", SiIconCategory.Communication, "Reply to message",
                 $"<svg {SvgOutlineAttrs}><polyline points=\"9 17 4 12 9 7\"/><path d=\"M20 18v-2a4 4 0 00-4-4H4\"/></svg>"),
             ["forward"] = new("forward", SiIconCategory.Communication, "Forward message",
@@ -503,6 +518,16 @@ public static class SufiIcons
                 $"<svg {SvgOutlineAttrs}><polyline points=\"22 12 16 12 14 15 10 15 8 12 2 12\"/><path d=\"M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z\"/></svg>"),
             ["outbox"] = new("outbox", SiIconCategory.Communication, "Outbox tray",
                 $"<svg {SvgOutlineAttrs}><path d=\"M12 3v9\"/><path d=\"M8 8l4 4 4-4\"/><path d=\"M3 12v6a2 2 0 002 2h14a2 2 0 002-2v-6\"/><path d=\"M5.45 18.89L2 12v-6a2 2 0 012-2h2.76a2 2 0 001.79 1.11L12 8h4.45\"/></svg>"),
+            // SufiCom product mark: dual conversations + multi-channel signal arcs
+            // (messaging, chat, SMS/email/voice/Telegram channels — not a plain mail envelope).
+            ["sufi-com"] = new("sufi-com", SiIconCategory.Communication, "SufiCom messaging, chat, and channels",
+                $"<svg {SvgOutlineAttrs}>" +
+                "<path d=\"M9 3h8a2 2 0 012 2v6a2 2 0 01-2 2h-1\"/>" +
+                "<path d=\"M4 7h10a2 2 0 012 2v6a2 2 0 01-2 2H10l-3.5 2.5V17H4a2 2 0 01-2-2V9a2 2 0 012-2z\"/>" +
+                "<path d=\"M7 11h5M7 14h3\"/>" +
+                "<path d=\"M18.5 13a3.5 3.5 0 010 5\"/>" +
+                "<path d=\"M21 11a6 6 0 010 9\"/>" +
+                "</svg>"),
 
             // ============================================
             // Location Icons
@@ -583,6 +608,8 @@ public static class SufiIcons
                 $"<svg {SvgOutlineAttrs}><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/></svg>"),
             ["list"] = new("list", SiIconCategory.Layout, "List layout",
                 $"<svg {SvgOutlineAttrs}><line x1=\"8\" y1=\"6\" x2=\"21\" y2=\"6\"/><line x1=\"8\" y1=\"12\" x2=\"21\" y2=\"12\"/><line x1=\"8\" y1=\"18\" x2=\"21\" y2=\"18\"/><line x1=\"3\" y1=\"6\" x2=\"3.01\" y2=\"6\"/><line x1=\"3\" y1=\"12\" x2=\"3.01\" y2=\"12\"/><line x1=\"3\" y1=\"18\" x2=\"3.01\" y2=\"18\"/></svg>"),
+            ["layout"] = new("layout", SiIconCategory.Layout, "Page or panel layout",
+                $"<svg {SvgOutlineAttrs}><rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M3 9h18\"/><path d=\"M9 21V9\"/></svg>"),
             ["layout-sidebar-left"] = new("layout-sidebar-left", SiIconCategory.Layout, "Sidebar on the left",
                 $"<svg {SvgOutlineAttrs}><rect x=\"3\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\"/><rect x=\"11\" y=\"3\" width=\"10\" height=\"18\" rx=\"1\"/></svg>"),
             ["layout-sidebar-right"] = new("layout-sidebar-right", SiIconCategory.Layout, "Sidebar on the right",
@@ -593,6 +620,16 @@ public static class SufiIcons
                 $"<svg {SvgOutlineAttrs}><rect x=\"3\" y=\"3\" width=\"13\" height=\"18\" rx=\"2\"/><path d=\"M7 8h6\"/><path d=\"M7 12h6\"/><path d=\"M7 16h4\"/><path d=\"M18 13l3 3-6 6h-3v-3z\"/></svg>"),
             ["newspaper"] = new("newspaper", SiIconCategory.Layout, "News or published content",
                 $"<svg {SvgOutlineAttrs}><path d=\"M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8a2 2 0 00-2 2v16a2 2 0 01-2 2\"/><path d=\"M10 6h8\"/><path d=\"M10 10h8\"/><path d=\"M10 14h5\"/></svg>"),
+            ["align-start"] = new("align-start", SiIconCategory.Layout, "Align content to start",
+                $"<svg {SvgOutlineAttrs}><rect x=\"2\" y=\"5\" width=\"5\" height=\"14\" rx=\"1\"/><rect x=\"9\" y=\"7\" width=\"5\" height=\"10\" rx=\"1\"/><path d=\"M22 3v18\"/></svg>"),
+            ["align-end"] = new("align-end", SiIconCategory.Layout, "Align content to end",
+                $"<svg {SvgOutlineAttrs}><path d=\"M2 3v18\"/><rect x=\"10\" y=\"7\" width=\"5\" height=\"10\" rx=\"1\"/><rect x=\"17\" y=\"5\" width=\"5\" height=\"14\" rx=\"1\"/></svg>"),
+            ["align-stretch"] = new("align-stretch", SiIconCategory.Layout, "Stretch content to fill",
+                $"<svg {SvgOutlineAttrs}><path d=\"M4 2v4\"/><path d=\"M20 2v4\"/><path d=\"M4 18v4\"/><path d=\"M20 18v4\"/><path d=\"M4 6h16\"/><path d=\"M4 12h16\"/><path d=\"M4 18h16\"/></svg>"),
+            ["align-space-between"] = new("align-space-between", SiIconCategory.Layout, "Distribute with space between",
+                $"<svg {SvgOutlineAttrs}><rect x=\"2\" y=\"5\" width=\"5\" height=\"14\" rx=\"1\"/><rect x=\"9.5\" y=\"7\" width=\"5\" height=\"10\" rx=\"1\"/><rect x=\"17\" y=\"5\" width=\"5\" height=\"14\" rx=\"1\"/></svg>"),
+            ["align-distribute"] = new("align-distribute", SiIconCategory.Layout, "Distribute with space around",
+                $"<svg {SvgOutlineAttrs}><rect x=\"4\" y=\"5\" width=\"4\" height=\"14\" rx=\"1\"/><rect x=\"10\" y=\"7\" width=\"4\" height=\"10\" rx=\"1\"/><rect x=\"16\" y=\"5\" width=\"4\" height=\"14\" rx=\"1\"/></svg>"),
 
             // ============================================
             // Typography Icons
