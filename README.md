@@ -1,9 +1,13 @@
 # SufiBlazor
 
-![SufiBlazor](docs/assets/sufi-blazor-dark-bg.png)
+![SufiBlazor](docs/assets/sufi-Blazor-baner.png)
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![GitHub](https://img.shields.io/badge/GitHub-sufi--chain%2Fsufi--blazor-181717?logo=github)](https://github.com/sufi-chain/sufi-blazor)
+[![GitHub release](https://img.shields.io/github/v/release/sufi-chain/sufi-blazor?include_prereleases&sort=semver)](https://github.com/sufi-chain/sufi-blazor/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/sufi-chain/sufi-blazor)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/sufi-chain/sufi-blazor)](https://github.com/sufi-chain/sufi-blazor/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sufi-chain/sufi-blazor)](https://github.com/sufi-chain/sufi-blazor/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/sufi-chain/sufi-blazor)](https://github.com/sufi-chain/sufi-blazor/issues)
+[![GitHub last commit](https://img.shields.io/github/last-commit/sufi-chain/sufi-blazor)](https://github.com/sufi-chain/sufi-blazor/commits)
 
 SufiBlazor is an independent Blazor UI component library and design system for ASP.NET Core 10+ applications. It can be used inside Sufi Platform, but it is not tied to Sufi Platform, ABP, SufiTheme, or any other third-party application framework. Any Blazor project that targets modern ASP.NET Core can use it as its primary UI layer.
 
@@ -51,7 +55,7 @@ Inside Sufi Platform:
 
 - `SufiBlazor` provides the base UI component system
 - `SufiTheme` provides the host shell, layout, and branded navigation frame
-- `SufiAbp` provides the broader platform abstractions and host integration patterns
+- `Sufi Platform` provides the broader platform abstractions and host integration patterns
 
 That relationship is important, but it should not hide the fact that SufiBlazor can also be used on its own in any Blazor project targeting ASP.NET Core 10+.
 

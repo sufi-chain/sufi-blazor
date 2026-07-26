@@ -22,4 +22,4 @@ Data grid with sorting, filtering, pagination, selection, editing, and optional 
 - Prefer `KeySelector` for stable row identity.  
 - For server-side, map `SbDataRequest` (paging, sort, filters) to your API and return `SbDataResponse<T>`.
 
-See **DataGridPage** in **SufiChain.SufiBlazorDemo** for examples.
+See **DataGridPage** in **SufiChain.SufiBlazor.Demo** for examples.

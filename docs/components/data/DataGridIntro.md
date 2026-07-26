@@ -6,11 +6,11 @@
 
 | Demo | Description |
 |------|-------------|
-| [Basic](/sufi-blazor-demo/data-grid/basic) | Simple client-side grid with columns |
-| [Selection](/sufi-blazor-demo/data-grid/selection) | Single or multiple row selection with `KeySelector`, `SelectedKeysChanged`, `SelectedItemsChanged` |
-| [Striped & Bordered](/sufi-blazor-demo/data-grid/styled) | Visual variants: striped rows, borders |
-| [Compact](/sufi-blazor-demo/data-grid/compact) | Density: compact, default, comfortable |
-| [Empty State](/sufi-blazor-demo/data-grid/empty) | Custom content when there are no items |
+| [Basic](/demo/sufi-blazor/data-grid/basic) | Simple client-side grid with columns |
+| [Selection](/demo/sufi-blazor/data-grid/selection) | Single or multiple row selection with `KeySelector`, `SelectedKeysChanged`, `SelectedItemsChanged` |
+| [Striped & Bordered](/demo/sufi-blazor/data-grid/styled) | Visual variants: striped rows, borders |
+| [Compact](/demo/sufi-blazor/data-grid/compact) | Density: compact, default, comfortable |
+| [Empty State](/demo/sufi-blazor/data-grid/empty) | Custom content when there are no items |
 
 ## API Reference
 

@@ -197,7 +197,7 @@ Components that use `L` and the keys above include:
 ## Adding a New Localized String
 
 1. **Choose a key** — Use PascalCase or the existing conventions (e.g. `Noun_Placeholder`, `Filter*`).
-2. **Add to all three .resx files** in `src/modules/sufi-blazor/src/SufiChain.SufiBlazor/Localization/`:
+2. **Add to all three .resx files** in `src/SufiChain.SufiBlazor/Localization/` (repo root: `independent-projects/sufi-blazor/src/SufiChain.SufiBlazor/Localization/`):
    - `SufiBlazorResource.resx` (default/en)
    - `SufiBlazorResource.fa.resx`
    - `SufiBlazorResource.ar.resx`

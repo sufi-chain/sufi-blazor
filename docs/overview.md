@@ -28,8 +28,10 @@ You can use SufiBlazor in:
 | Category | Typical use |
 | --- | --- |
 | Actions | Buttons, icon buttons, and links |
-| Forms | Inputs, selectors, date pickers, range pickers, time pickers, and rich-text editing |
-| Data | Tables, grids, pagination, metrics, and status displays |
+| Forms | Inputs, selectors, date pickers, tag autocomplete, mark/markdown editors |
+| Data | Tables, grids, pagination, metrics, SVG charts (`SbChart`), and status displays |
+| Maps | Leaflet-based map canvas, markers, pickers, geolocation, and place search |
+| Conversation | Composer, timeline, and message bubbles for chat-like UIs |
 | Layout | Stacks, grids, containers, dividers, and page-composition primitives |
 | Navigation | Tabs, breadcrumbs, menus, and accordions |
 | Overlays | Dialogs, drawers, popovers, tooltips, and menus |
@@ -45,7 +47,7 @@ When SufiBlazor is used inside Sufi Platform:
 
 - it provides the base interactive component layer
 - SufiTheme builds the host shell and layout on top of it
-- SufiAbp provides the platform abstractions, host wiring, and module composition rules around it
+- **Sufi Platform** provides the platform abstractions, host wiring, and module composition rules around it
 
 That relationship matters for platform developers, but the library remains usable outside that stack.
 
@@ -75,4 +77,6 @@ That relationship matters for platform developers, but the library remains usabl
 - [Standalone adoption](standalone-adoption.md)
 - [Editors and bundling](editors-and-bundling.md)
 - [Demo host integration](demo-host-integration.md)
+- [Architecture decisions](architecture/decisions.md)
+- [Package map](architecture/package-map.md)
 - [Adding Icons](adding-icons.md)

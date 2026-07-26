@@ -1,6 +1,6 @@
 # SufiBlazor Components
 
-Feature-oriented catalog. See **SufiChain.SufiBlazorDemo** and component XML docs for API details.
+Feature-oriented catalog. See **SufiChain.SufiBlazor.Demo** and component XML docs for API details.
 
 ## Actions
 
@@ -13,15 +13,19 @@ Feature-oriented catalog. See **SufiChain.SufiBlazorDemo** and component XML doc
 - **SbTextField** — Label, placeholder, type (text, password, etc.), required, error, helper text, clearable, adornments.  
 - **SbTextArea** — Multi-line.  
 - **SbSelect** / **SbSelectOption** — Single or multiple; options from markup or collection.  
+- **SbTagAutocomplete** — Multi-select autocomplete with chips; search, create-on-type, max tags. See [SbTagAutocomplete](components/forms/SbTagAutocomplete.md).  
 - **SbCheckbox**, **SbRadio**, **SbSwitch** — Booleans.  
 - **SbDatePicker**, **SbTimePicker** — Date/time.  
+- **SbRichTextEditor**, **SbMarkdownEditor** — Rich text and markdown with on-demand vendor JS.  
+- **SbMarkEditor** — Unified markdown/markup/JSON editor over `SbMarkdownEditor`. See [SbMarkEditor](components/forms/SbMarkEditor.md).  
 - **SbForm** / **SbFormField** — Form wrapper and labeled field with validation.
 
 ## Data
 
 - **SbDataGrid** — See [DataGrid](data-grid.md).  
 - **SbTable** — Simple table markup.  
-- **SbPagination** — Page index/size, total count, optional page-size selector.
+- **SbPagination** — Page index/size, total count, optional page-size selector.  
+- **SbChart** — SVG line, bar, donut, and sparkline charts (no third-party JS). See [SbChart](components/data/SbChart.md).
 
 ## Maps
 
@@ -34,13 +38,21 @@ OpenStreetMap / Leaflet map surfaces.
 - **SbGeolocateButton** — Browser geolocation capture control.  
 - **SbPlaceSearch** — Nominatim place autocomplete.
 
+## Conversation
+
+Chat-like UI primitives (domain-agnostic).
+
+- **SbConversationComposer** — In-field composer with start/end/overflow action slots. See [SbConversationComposer](components/conversation/SbConversationComposer.md).  
+- **SbConversationTimeline** — Message list with loading, empty, and thinking states. See [SbConversationTimeline](components/conversation/SbConversationTimeline.md).  
+- **SbConversationMessage** — Single bubble with badge, meta, body, and footer slots. See [SbConversationMessage](components/conversation/SbConversationMessage.md).
+
 ## Layout
 
 - **SbStack** — Flex row/column, gap, justify, align.  
 - **SbGrid** — CSS grid; column counts, gap.  
 - **SbContainer**, **SbSpacer** — Max-width container and flex spacer.
 
-> App shell chrome (`SbAppShell`, `SbSidebar`, etc.) was removed from SufiBlazor. Use **SufiTheme** for layout shells. Details: [LAYOUT_REVIEW](components/layout/LAYOUT_REVIEW.md).
+> App shell chrome (`SbAppShell`, `SbSidebar`, etc.) was removed from SufiBlazor. Use **SufiTheme** for layout shells. Details: [Architecture decisions](architecture/decisions.md).
 
 ## Builder
 
@@ -58,7 +70,7 @@ Visual editor and page-builder primitives. See [Builder Components](builder.md).
 
 - **SbTabs** / **SbTab** — Tabbed content.  
 - **SbBreadcrumb** / **SbBreadcrumbItem** — Breadcrumbs.  
-- **SbNavMenu** / **SbNavItem** — Hierarchical nav; used in Kom layouts.
+- **SbNavMenu** / **SbNavItem** — Hierarchical nav; used in SufiTheme layouts.
 
 ## Overlays
 

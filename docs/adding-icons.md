@@ -42,7 +42,7 @@ For solid/filled icons (e.g. dots, filled shapes), use `fill="currentColor"` and
 
 ### 2. Add the icon to the registry
 
-Open `sufi-platform/src/modules/sufi-blazor/src/SufiChain.SufiBlazor/Icons/SufiIcons.cs` and find the method `CreateIconRegistry()`. Add a new entry to the dictionary:
+Open `src/SufiChain.SufiBlazor/Icons/SufiIcons.cs` (repo root: `independent-projects/sufi-blazor/src/SufiChain.SufiBlazor/Icons/SufiIcons.cs`) and find the method `CreateIconRegistry()`. Add a new entry to the dictionary:
 
 ```csharp
 ["your-icon-name"] = new("your-icon-name", SiIconCategory.YourCategory, "Short description for search/accessibility",
@@ -55,7 +55,7 @@ Open `sufi-platform/src/modules/sufi-blazor/src/SufiChain.SufiBlazor/Icons/SufiI
 
 ### 3. Verify in the demo
 
-Run the SufiBlazorDemo app and open the Icon page (e.g. `/components/icon`). Your icon should appear in the grid and in search. You can filter by category to confirm it’s in the right group.
+Run the SufiBlazor Demo gallery and open the Icon page (e.g. `/demo/sufi-blazor/icon`). Your icon should appear in the grid and in search. You can filter by category to confirm it’s in the right group.
 
 ### 4. Use the icon in the app
 

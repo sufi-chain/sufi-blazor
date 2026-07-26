@@ -24,7 +24,7 @@ See [Installation](installation.md) for full steps.
 | `SbDataGrid`, forms, overlays | SufiTheme bundling for editor vendors |
 | Localization via `SufiBlazorResource` | Account layout chrome |
 
-**App chrome** lives in **SufiTheme** (`SufiAppShell`, `SufiSidebar`, etc.). SufiBlazor only provides layout **primitives** (`SbStack`, `SbGrid`, `SbContainer`, `SbSpacer`). See [LAYOUT_REVIEW](components/layout/LAYOUT_REVIEW.md).
+**App chrome** lives in **SufiTheme** (`SufiAppShell`, `SufiSidebar`, etc.). SufiBlazor only provides layout **primitives** (`SbStack`, `SbGrid`, `SbContainer`, `SbSpacer`). See [Architecture decisions](architecture/decisions.md).
 
 ## Rich text and markdown editors
 

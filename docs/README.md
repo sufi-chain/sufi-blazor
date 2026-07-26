@@ -1,5 +1,7 @@
 # SufiBlazor
 
+![SufiBlazor](assets/sufi-Blazor-baner.png)
+
 SufiBlazor is an independent Blazor UI component library and design system for ASP.NET Core 10+ applications. It can be used inside Sufi Platform, but it is not tied to Sufi Platform, ABP, SufiTheme, or any other third-party application framework. Any Blazor project that targets modern ASP.NET Core can use it as its primary UI layer.
 
 For Sufi Platform, SufiBlazor is the default component system used by generated hosts and first-party modules. Outside Sufi Platform, it can still be adopted on its own as a self-contained component library for forms, data display, overlays, navigation, theming, RTL support, and application-level UI composition.
@@ -31,7 +33,7 @@ Inside Sufi Platform:
 
 - `SufiBlazor` provides the base UI component system
 - `SufiTheme` provides the host shell, layout, and branded navigation frame
-- `SufiAbp` provides the broader platform abstractions and host integration patterns
+- **Sufi Platform** provides the broader platform abstractions and host integration patterns
 
 That relationship is important, but it should not hide the fact that SufiBlazor can also be used on its own in any Blazor project targeting ASP.NET Core 10+.
 
@@ -52,7 +54,17 @@ It does not try to become the complete internal engineering manual for the indep
 
 ```
 docs/
+├── architecture/       # ADRs and package map
+│   ├── decisions.md
+│   └── package-map.md
 ├── components/         # Component reference by category
+│   ├── actions/
+│   ├── builder/
+│   ├── conversation/   # SbConversationComposer, Timeline, Message
+│   ├── data/           # SbDataGrid, SbChart, …
+│   ├── forms/          # SbSelect, SbMarkEditor, SbTagAutocomplete, …
+│   ├── maps/
+│   └── …
 ├── builder.md          # Visual editor / page builder primitives
 ├── standalone-adoption.md
 ├── editors-and-bundling.md
@@ -73,3 +85,4 @@ docs/
 - Open `docs/builder.md` when building visual editors, page builders, or property inspectors.
 - Open `docs/standalone-adoption.md` for plain Blazor without SufiTheme/ABP.
 - Open `docs/demo-host-integration.md` to understand how the platform demo gallery is wired.
+- Open `docs/architecture/decisions.md` for shell/bundling boundaries and `docs/architecture/package-map.md` for project dependencies.

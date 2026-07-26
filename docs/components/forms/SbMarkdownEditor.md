@@ -168,7 +168,7 @@ context.Services.AddMdToolbarContributor<MyMdToolbarContributor>();
 
 ## File Manager integration
 
-Use `SufiChain.SufiAbp.FileManager.MarkdownEditor` for gallery image and file attachment toolbar buttons. See **FileManagerMarkdownEditorIntegration** documentation.
+Use `SufiChain.SufiPlatform.FileManager` markdown-editor integration for gallery image and file attachment toolbar buttons. See File Manager docs under `sufi-platform/docs/modules/file-manager/`.
 
 ```razor
 <FileGalleryHost />

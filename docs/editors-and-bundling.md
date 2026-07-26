@@ -56,4 +56,4 @@ SufiTheme adds `FontFamilyToolbarContributor` (Persian fonts, RTL cultures only)
 
 - [Standalone adoption](standalone-adoption.md)
 - [Installation](installation.md)
-- SufiTheme bundling: `sufi-abp/docs/sufi-theme/configuration.md`
+- SufiTheme bundling: [SufiTheme configuration](../../sufi-theme/docs/configuration.md)
