@@ -6,7 +6,7 @@
      @ondragleave="OnDragLeave"
      @ondrop="OnDrop"
      @ondrop:preventDefault="true">
-    
+
     @if (ChildContent != null)
     {
         @ChildContent
@@ -29,90 +29,121 @@
 
 @code {
     private bool _isDragOver;
-    
+
+    /// <summary>
+    /// Shared drag session (provide via <c>CascadingValue</c>).
+    /// </summary>
+    [CascadingParameter]
+    public SbDragSession? DragSession { get; set; }
+
     /// <summary>
     /// Zone content.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
-    
+
     /// <summary>
     /// Placeholder text when empty.
     /// </summary>
     [Parameter]
     public string PlaceholderText { get; set; } = "Drag items here";
-    
+
     /// <summary>
     /// Text shown during drag over.
     /// </summary>
     [Parameter]
     public string DropText { get; set; } = "Drop here";
-    
+
     /// <summary>
     /// Accepted data types.
     /// </summary>
     [Parameter]
     public string[]? AcceptedTypes { get; set; }
-    
+
     /// <summary>
     /// Whether the zone is disabled.
     /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
-    
+
     /// <summary>
     /// Callback when item is dropped.
     /// </summary>
     [Parameter]
     public EventCallback<SbDropEventArgs> OnItemDropped { get; set; }
-    
+
     /// <summary>
     /// Callback when drag enters.
     /// </summary>
     [Parameter]
     public EventCallback OnDragEnter { get; set; }
-    
+
     /// <summary>
     /// Callback when drag leaves.
     /// </summary>
     [Parameter]
     public EventCallback OnDragExit { get; set; }
-    
+
     /// <summary>
     /// Additional CSS classes.
     /// </summary>
     [Parameter]
     public string? Class { get; set; }
-    
+
+    private bool AcceptsCurrentDrag()
+    {
+        if (Disabled)
+        {
+            return false;
+        }
+
+        if (DragSession is null)
+        {
+            return AcceptedTypes is null || AcceptedTypes.Length == 0;
+        }
+
+        return DragSession.IsAccepted(AcceptedTypes);
+    }
+
     private async Task OnDragOver(DragEventArgs e)
     {
-        if (Disabled) return;
-        
+        if (!AcceptsCurrentDrag())
+        {
+            return;
+        }
+
         if (!_isDragOver)
         {
             _isDragOver = true;
             await OnDragEnter.InvokeAsync();
         }
     }
-    
+
     private async Task OnDragLeave(DragEventArgs e)
     {
         _isDragOver = false;
         await OnDragExit.InvokeAsync();
     }
-    
+
     private async Task OnDrop(DragEventArgs e)
     {
-        if (Disabled) return;
-        
+        if (!AcceptsCurrentDrag())
+        {
+            _isDragOver = false;
+            return;
+        }
+
         _isDragOver = false;
-        
+
         var args = new SbDropEventArgs
         {
             ClientX = e.ClientX,
-            ClientY = e.ClientY
+            ClientY = e.ClientY,
+            Data = DragSession?.Data,
+            DataType = DragSession?.ItemType
         };
-        
+
         await OnItemDropped.InvokeAsync(args);
+        DragSession?.End();
     }
 }

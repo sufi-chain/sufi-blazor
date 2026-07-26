@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Components;
+
 namespace SufiChain.SufiBlazor.Components.Builder;
 
 /// <summary>
@@ -63,6 +65,16 @@ public class SbPropertyDefinition
     /// Options for select/dropdown editors.
     /// </summary>
     public IEnumerable<SbPropertyOption>? Options { get; set; }
+
+    /// <summary>
+    /// Optional key used by hosts to resolve a <see cref="CustomEditor"/> (e.g. module pickers).
+    /// </summary>
+    public string? EditorKey { get; set; }
+
+    /// <summary>
+    /// Custom editor fragment rendered when <see cref="EditorType"/> is <see cref="SbPropertyEditorType.Custom"/>.
+    /// </summary>
+    public RenderFragment? CustomEditor { get; set; }
     
     /// <summary>
     /// Creates a new property definition.
@@ -123,5 +135,6 @@ public enum SbPropertyEditorType
     Color,
     Date,
     TextArea,
+    /// <summary>Host-supplied editor via <see cref="SbPropertyDefinition.CustomEditor"/>.</summary>
     Custom
 }

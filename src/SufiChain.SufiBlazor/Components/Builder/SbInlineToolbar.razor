@@ -15,9 +15,11 @@
                     title="@action.Tooltip"
                     disabled="@action.Disabled"
                     @onclick="() => OnActionClick(action)">
-                @if (action.Icon != null)
+                @if (!string.IsNullOrEmpty(action.Icon))
                 {
-                    @action.Icon
+                    <span class="sb-inline-toolbar__icon">
+                        <SbIcon Name="@action.Icon" Size="SbSize.Sm" />
+                    </span>
                 }
                 else if (!string.IsNullOrEmpty(action.IconText))
                 {

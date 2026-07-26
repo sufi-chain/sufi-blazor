@@ -1,7 +1,7 @@
 @namespace SufiChain.SufiBlazor.Components.Builder
 
 <div class="sb-draggable-item @(_isDragging ? "sb-draggable-item--dragging" : "") @(Disabled ? "sb-draggable-item--disabled" : "") @Class"
-     draggable="@(!Disabled)"
+     draggable="@DraggableValue"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd">
     @ChildContent
@@ -9,67 +9,113 @@
 
 @code {
     private bool _isDragging;
-    
+
+    /// <summary>
+    /// Renders the literal "true"/"false" value the browser requires for the
+    /// enumerated <c>draggable</c> attribute (an empty value maps to <c>false</c>).
+    /// </summary>
+    private string DraggableValue => Disabled ? "false" : "true";
+
+    /// <summary>
+    /// Shared drag session (provide via <c>CascadingValue</c>).
+    /// </summary>
+    [CascadingParameter]
+    public SbDragSession? DragSession { get; set; }
+
     /// <summary>
     /// Item content.
     /// </summary>
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
-    
+
     /// <summary>
     /// Data to transfer.
     /// </summary>
     [Parameter]
     public object? Data { get; set; }
-    
+
     /// <summary>
     /// Item type for filtering.
     /// </summary>
     [Parameter]
     public string? ItemType { get; set; }
-    
+
     /// <summary>
     /// Whether the item is disabled.
     /// </summary>
     [Parameter]
     public bool Disabled { get; set; }
-    
+
     /// <summary>
     /// Callback when drag starts.
     /// </summary>
     [Parameter]
     public EventCallback<SbDragStartEventArgs> OnDragStarted { get; set; }
-    
+
     /// <summary>
     /// Callback when drag ends.
     /// </summary>
     [Parameter]
     public EventCallback OnDragEnded { get; set; }
-    
+
     /// <summary>
     /// Additional CSS classes.
     /// </summary>
     [Parameter]
     public string? Class { get; set; }
-    
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+
+    private async Task LogAsync(string message)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "[DnD:Draggable]", message,
+                "itemType=", ItemType, "data=", Data, "hasSession=", DragSession is not null);
+        }
+        catch
+        {
+            // ignore diagnostic failures
+        }
+    }
+
     private async Task OnDragStart(DragEventArgs e)
     {
-        if (Disabled) return;
-        
+        if (Disabled)
+        {
+            await LogAsync("dragstart SKIP (disabled)");
+            return;
+        }
+
         _isDragging = true;
-        
+        await LogAsync("dragstart");
+
         var args = new SbDragStartEventArgs
         {
             Data = Data,
             ItemType = ItemType
         };
-        
+
         await OnDragStarted.InvokeAsync(args);
+
+        if (args.Cancel)
+        {
+            _isDragging = false;
+            DragSession?.End();
+            await LogAsync("dragstart CANCELLED");
+            return;
+        }
+
+        DragSession?.Begin(args.Data ?? Data, args.ItemType ?? ItemType);
+        await LogAsync("dragstart session.Begin done");
     }
-    
+
     private async Task OnDragEnd(DragEventArgs e)
     {
         _isDragging = false;
+        await LogAsync("dragend");
+        DragSession?.End();
         await OnDragEnded.InvokeAsync();
     }
 }
