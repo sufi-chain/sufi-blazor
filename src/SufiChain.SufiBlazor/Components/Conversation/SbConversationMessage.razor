@@ -1,0 +1,123 @@
+@namespace SufiChain.SufiBlazor.Components.Conversation
+
+<div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrWhiteSpace(BadgeLabel) || !string.IsNullOrWhiteSpace(SenderLabel) || Timestamp.HasValue)
+    {
+        <div class="sb-conversation-message__meta">
+            @if (HeaderContent != null)
+            {
+                @HeaderContent
+            }
+            else
+            {
+                @if (!string.IsNullOrWhiteSpace(BadgeLabel))
+                {
+                    <span class="@($"sb-conversation-message__badge{(IsHighlightedBadge ? " sb-conversation-message__badge--highlight" : string.Empty)}")">
+                        @BadgeLabel
+                    </span>
+                }
+                @if (!string.IsNullOrWhiteSpace(SenderLabel))
+                {
+                    <span class="sb-conversation-message__sender">@SenderLabel</span>
+                }
+                @if (Timestamp.HasValue)
+                {
+                    <span class="sb-conversation-message__time">@Timestamp.Value.ToLocalTime().ToString(TimestampFormat)</span>
+                }
+            }
+        </div>
+    }
+
+    <div class="@BubbleCssClass">
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+        else if (!string.IsNullOrWhiteSpace(Body))
+        {
+            <div class="sb-conversation-message__body">@Body</div>
+        }
+
+        @if (FooterContent != null)
+        {
+            <div class="sb-conversation-message__footer">
+                @FooterContent
+            </div>
+        }
+        else if (AttachmentLabels.Count > 0)
+        {
+            <div class="sb-conversation-message__attachments">
+                @foreach (var label in AttachmentLabels)
+                {
+                    <span class="sb-conversation-message__attachment">@label</span>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>Message body text used when <see cref="ChildContent"/> is null.</summary>
+    [Parameter]
+    public string? Body { get; set; }
+
+    /// <summary>Optional sender label.</summary>
+    [Parameter]
+    public string? SenderLabel { get; set; }
+
+    /// <summary>Optional badge label (e.g. Internal note).</summary>
+    [Parameter]
+    public string? BadgeLabel { get; set; }
+
+    /// <summary>Whether the badge uses the highlight style.</summary>
+    [Parameter]
+    public bool IsHighlightedBadge { get; set; }
+
+    /// <summary>Optional timestamp.</summary>
+    [Parameter]
+    public DateTimeOffset? Timestamp { get; set; }
+
+    /// <summary>Timestamp display format.</summary>
+    [Parameter]
+    public string TimestampFormat { get; set; } = "g";
+
+    /// <summary>Bubble alignment.</summary>
+    [Parameter]
+    public SbConversationAlignment Alignment { get; set; } = SbConversationAlignment.Start;
+
+    /// <summary>Default attachment labels when no footer template is supplied.</summary>
+    [Parameter]
+    public IReadOnlyList<string> AttachmentLabels { get; set; } = Array.Empty<string>();
+
+    /// <summary>Custom header/meta content.</summary>
+    [Parameter]
+    public RenderFragment? HeaderContent { get; set; }
+
+    /// <summary>Custom bubble body.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Custom footer (attachments/actions).</summary>
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+
+    /// <summary>Optional CSS class.</summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>Optional inline style.</summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>Additional attributes.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass =>
+        $"sb-conversation-message sb-conversation-message--{Alignment.ToString().ToLowerInvariant()} {Class}".Trim();
+
+    private string BubbleCssClass =>
+        Alignment == SbConversationAlignment.End
+            ? "sb-conversation-message__bubble sb-conversation-message__bubble--end"
+            : "sb-conversation-message__bubble sb-conversation-message__bubble--start";
+}

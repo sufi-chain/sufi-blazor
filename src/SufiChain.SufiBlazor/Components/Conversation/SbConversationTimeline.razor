@@ -1,0 +1,142 @@
+@namespace SufiChain.SufiBlazor.Components.Conversation
+
+<div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">
+    @if (IsLoading)
+    {
+        <div class="sb-conversation-timeline__loading">
+            @(LoadingContent ?? (RenderFragment)(builder =>
+            {
+                builder.AddContent(0, LoadingText ?? "Loading…");
+            }))
+        </div>
+    }
+    else if ((Messages == null || !Messages.Any()) && !IsWaitingForResponse)
+    {
+        <div class="sb-conversation-timeline__empty">
+            @(EmptyContent ?? (RenderFragment)(builder =>
+            {
+                builder.AddContent(0, EmptyText ?? "No messages yet.");
+            }))
+        </div>
+    }
+    else
+    {
+        <div class="sb-conversation-timeline__messages">
+            @if (Messages != null)
+            {
+                @foreach (var message in Messages)
+                {
+                    <div class="sb-conversation-timeline__item">
+                        @if (MessageTemplate != null)
+                        {
+                            @MessageTemplate(message)
+                        }
+                        else
+                        {
+                            <SbConversationMessage Body="@message.Body"
+                                                   SenderLabel="@message.SenderLabel"
+                                                   BadgeLabel="@message.BadgeLabel"
+                                                   IsHighlightedBadge="@message.IsHighlightedBadge"
+                                                   Timestamp="@message.Timestamp"
+                                                   Alignment="@message.Alignment"
+                                                   AttachmentLabels="@message.AttachmentLabels" />
+                        }
+                    </div>
+                }
+            }
+
+            @if (IsWaitingForResponse)
+            {
+                <div class="sb-conversation-timeline__item">
+                    @if (WaitingContent != null)
+                    {
+                        @WaitingContent
+                    }
+                    else
+                    {
+                        <div class="sb-conversation-message sb-conversation-message--start sb-conversation-message--thinking">
+                            @if (!string.IsNullOrWhiteSpace(WaitingSenderLabel))
+                            {
+                                <div class="sb-conversation-message__meta">
+                                    <span class="sb-conversation-message__sender">@WaitingSenderLabel</span>
+                                </div>
+                            }
+                            <div class="sb-conversation-message__bubble sb-conversation-message__bubble--start sb-conversation-message__bubble--thinking">
+                                <div class="sb-conversation-timeline__thinking" role="status" aria-live="polite">
+                                    <span class="sb-conversation-timeline__thinking-dots" aria-hidden="true">
+                                        <span class="sb-conversation-timeline__thinking-dot"></span>
+                                        <span class="sb-conversation-timeline__thinking-dot"></span>
+                                        <span class="sb-conversation-timeline__thinking-dot"></span>
+                                    </span>
+                                    <span class="sb-conversation-timeline__thinking-text">
+                                        @(WaitingText ?? "Thinking…")
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Messages to render.</summary>
+    [Parameter]
+    public IEnumerable<SbConversationMessageModel>? Messages { get; set; }
+
+    /// <summary>Shows the loading state.</summary>
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    /// <summary>Shows an assistant thinking bubble after the last message.</summary>
+    [Parameter]
+    public bool IsWaitingForResponse { get; set; }
+
+    /// <summary>Default empty-state text.</summary>
+    [Parameter]
+    public string? EmptyText { get; set; }
+
+    /// <summary>Default loading text.</summary>
+    [Parameter]
+    public string? LoadingText { get; set; }
+
+    /// <summary>Default thinking-bubble text.</summary>
+    [Parameter]
+    public string? WaitingText { get; set; }
+
+    /// <summary>Optional sender label for the thinking bubble.</summary>
+    [Parameter]
+    public string? WaitingSenderLabel { get; set; }
+
+    /// <summary>Custom empty-state content.</summary>
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    /// <summary>Custom loading content.</summary>
+    [Parameter]
+    public RenderFragment? LoadingContent { get; set; }
+
+    /// <summary>Custom thinking-bubble content.</summary>
+    [Parameter]
+    public RenderFragment? WaitingContent { get; set; }
+
+    /// <summary>Optional per-message template.</summary>
+    [Parameter]
+    public RenderFragment<SbConversationMessageModel>? MessageTemplate { get; set; }
+
+    /// <summary>Optional CSS class.</summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>Optional inline style.</summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>Additional attributes.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass => $"sb-conversation-timeline {Class}".Trim();
+}

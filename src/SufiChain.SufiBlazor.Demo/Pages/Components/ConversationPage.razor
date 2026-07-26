@@ -1,0 +1,149 @@
+@page "/demo/sufi-blazor/conversation"
+
+@using SufiChain.SufiBlazor.Components.Conversation
+
+<PageTitle>@(L["Menu:Demo:Conversation"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:Conversation"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:ConversationDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:ConversationTimeline"]" SourceCode="@timelineSource">
+        <ExampleContent>
+            <SbConversationTimeline Messages="_messages"
+                                    EmptyText="@L["Demo:ConversationEmpty"]"
+                                    style="max-width: 36rem;" />
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ConversationComposer"]" SourceCode="@composerSource">
+        <ExampleContent>
+            <SbConversationComposer Value="_draft"
+                                    ValueChanged="OnDraftChanged"
+                                    Placeholder="@L["Demo:ConversationPlaceholder"]"
+                                    PendingItems="_pending"
+                                    OnRemovePending="OnRemovePending"
+                                    OnSend="OnSend"
+                                    style="max-width: 36rem;">
+                <StartActions>
+                    <SbIconButton Size="SbSize.Sm"
+                                  Variant="SbButtonVariant.Ghost"
+                                  AriaLabel="@L["Demo:ConversationAttach"]"
+                                  OnClick="AddMockAttachment">
+                        <Icon><SbIcon Name="paperclip" Size="SbSize.Sm" /></Icon>
+                    </SbIconButton>
+                    <SbIconButton Size="SbSize.Sm"
+                                  Variant="SbButtonVariant.Ghost"
+                                  AriaLabel="@L["Demo:ConversationEmoji"]">
+                        <Icon><SbIcon Name="message-circle" Size="SbSize.Sm" /></Icon>
+                    </SbIconButton>
+                </StartActions>
+                <OverflowActions>
+                    <SbIconButton Size="SbSize.Sm"
+                                  Variant="SbButtonVariant.Ghost"
+                                  Color="SbColor.Primary"
+                                  AriaLabel="@L["Demo:ConversationAi"]"
+                                  OnClick="InjectAiDraft">
+                        <Icon><SbIcon Name="sparkles" Size="SbSize.Sm" /></Icon>
+                    </SbIconButton>
+                </OverflowActions>
+                <EndActions>
+                    <SbIconButton Size="SbSize.Sm"
+                                  Variant="SbButtonVariant.Ghost"
+                                  AriaLabel="@L["Demo:ConversationVoice"]">
+                        <Icon><SbIcon Name="microphone" Size="SbSize.Sm" /></Icon>
+                    </SbIconButton>
+                </EndActions>
+            </SbConversationComposer>
+        </ExampleContent>
+    </DemoSection>
+
+    <DocViewer DocName="SbConversationComposer" />
+</DemoLayout>
+
+@code {
+    private string _draft = string.Empty;
+    private readonly List<SbConversationPendingItem> _pending = new();
+    private List<SbConversationMessageModel> _messages = new()
+    {
+        new()
+        {
+            Id = "1",
+            Body = "Hello — can you help with my ticket?",
+            BadgeLabel = "Public",
+            Timestamp = DateTimeOffset.Now.AddMinutes(-12),
+            Alignment = SbConversationAlignment.Start
+        },
+        new()
+        {
+            Id = "2",
+            Body = "Internal: checking SLA calendar before reply.",
+            BadgeLabel = "Internal",
+            IsHighlightedBadge = true,
+            Timestamp = DateTimeOffset.Now.AddMinutes(-8),
+            Alignment = SbConversationAlignment.End
+        },
+        new()
+        {
+            Id = "3",
+            Body = "Sure — I will follow up shortly.",
+            BadgeLabel = "Public",
+            Timestamp = DateTimeOffset.Now.AddMinutes(-3),
+            Alignment = SbConversationAlignment.End,
+            AttachmentLabels = new[] { "notes.pdf" }
+        }
+    };
+
+    private Task OnDraftChanged(string value)
+    {
+        _draft = value;
+        return Task.CompletedTask;
+    }
+
+    private void AddMockAttachment()
+    {
+        _pending.Add(new SbConversationPendingItem
+        {
+            Kind = SbConversationPendingKind.Attachment,
+            Label = "screenshot.png",
+            Icon = "paperclip"
+        });
+    }
+
+    private Task OnRemovePending(SbConversationPendingItem item)
+    {
+        _pending.Remove(item);
+        return Task.CompletedTask;
+    }
+
+    private void InjectAiDraft()
+    {
+        _draft = L["Demo:ConversationAiDraft"];
+    }
+
+    private Task OnSend(SbConversationSendRequest request)
+    {
+        _messages.Add(new SbConversationMessageModel
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            Body = request.Body,
+            BadgeLabel = "Public",
+            Timestamp = DateTimeOffset.Now,
+            Alignment = SbConversationAlignment.End,
+            AttachmentLabels = _pending.Select(p => p.Label).ToList()
+        });
+        _pending.Clear();
+        _draft = string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private string timelineSource = @"<SbConversationTimeline Messages=""_messages"" />";
+
+    private string composerSource = @"<SbConversationComposer Value=""_draft"" OnSend=""OnSend"">
+  <StartActions>...</StartActions>
+  <OverflowActions>...</OverflowActions>
+  <EndActions>...</EndActions>
+</SbConversationComposer>";
+}

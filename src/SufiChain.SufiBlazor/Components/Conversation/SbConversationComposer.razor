@@ -1,0 +1,240 @@
+@namespace SufiChain.SufiBlazor.Components.Conversation
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">
+    @if (HeaderContent != null)
+    {
+        <div class="sb-conversation-composer__header">
+            @HeaderContent
+        </div>
+    }
+
+    <div class="sb-conversation-composer__shell" @ref="_shellRef">
+        @if (PendingContent != null)
+        {
+            <div class="sb-conversation-composer__pending">
+                @PendingContent
+            </div>
+        }
+        else if (PendingItems is { Count: > 0 })
+        {
+            <div class="sb-conversation-composer__pending">
+                @foreach (var item in PendingItems)
+                {
+                    <span class="sb-conversation-composer__chip">
+                        @if (!string.IsNullOrWhiteSpace(item.Icon))
+                        {
+                            <SbIcon Name="@item.Icon" Size="SbSize.Sm" />
+                        }
+                        <span>@item.Label</span>
+                        @if (OnRemovePending.HasDelegate)
+                        {
+                            <button type="button"
+                                    class="sb-conversation-composer__chip-remove"
+                                    @onclick="() => OnRemovePending.InvokeAsync(item)"
+                                    aria-label="Remove">
+                                ×
+                            </button>
+                        }
+                    </span>
+                }
+            </div>
+        }
+
+        <textarea @ref="_textAreaRef"
+                  class="sb-conversation-composer__textarea"
+                  rows="@Rows"
+                  placeholder="@Placeholder"
+                  disabled="@IsDisabled"
+                  value="@_draft"
+                  @oninput="HandleDraftInputAsync"
+                  @onkeydown="HandleKeyDownAsync"></textarea>
+
+        <div class="sb-conversation-composer__actions">
+            <div class="sb-conversation-composer__actions-start">
+                @StartActions
+            </div>
+            <div class="sb-conversation-composer__actions-end">
+                @OverflowActions
+                @EndActions
+                @if (ShowDefaultSend)
+                {
+                    <SbIconButton Class="sb-conversation-composer__send"
+                                  Color="SbColor.Primary"
+                                  Disabled="@(IsDisabled || !EffectiveCanSend)"
+                                  OnClick="SendAsync"
+                                  Title="@SendLabel"
+                                  AriaLabel="@SendLabel">
+                        <Icon><SbIcon Name="arrow-up" /></Icon>
+                    </SbIconButton>
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (FooterContent != null)
+    {
+        <div class="sb-conversation-composer__footer">
+            @FooterContent
+        </div>
+    }
+</div>
+
+@code {
+   private ElementReference _shellRef;
+   private ElementReference _textAreaRef;
+   private string _draft = string.Empty;
+   private string _lastParentValue = string.Empty;
+   private bool _updatingFromInput;
+
+   /// <summary>Draft text value.</summary>
+   [Parameter]
+   public string Value { get; set; } = string.Empty;
+
+    /// <summary>Raised when draft text changes.</summary>
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    /// <summary>Placeholder text.</summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>Textarea starting rows.</summary>
+    [Parameter]
+    public int Rows { get; set; } = 1;
+
+    /// <summary>Disables the composer.</summary>
+    [Parameter]
+    public bool IsDisabled { get; set; }
+
+    /// <summary>Host override for whether send is allowed. When null, derived from draft/pending.</summary>
+    [Parameter]
+    public bool? CanSend { get; set; }
+
+    /// <summary>Shows the built-in send button.</summary>
+    [Parameter]
+    public bool ShowDefaultSend { get; set; } = true;
+
+    /// <summary>Send button aria/title label.</summary>
+    [Parameter]
+    public string SendLabel { get; set; } = "Send";
+
+    /// <summary>Optional UI capability hints.</summary>
+    [Parameter]
+    public SbConversationComposerCapabilities? Capabilities { get; set; }
+
+    /// <summary>Default pending chips (when <see cref="PendingContent"/> is null).</summary>
+    [Parameter]
+    public IReadOnlyList<SbConversationPendingItem>? PendingItems { get; set; }
+
+    /// <summary>Custom pending strip inside the composer card.</summary>
+    [Parameter]
+    public RenderFragment? PendingContent { get; set; }
+
+    /// <summary>In-field start cluster (emoji, attach, …).</summary>
+    [Parameter]
+    public RenderFragment? StartActions { get; set; }
+
+    /// <summary>In-field end cluster (mic, custom, …) before send.</summary>
+    [Parameter]
+    public RenderFragment? EndActions { get; set; }
+
+    /// <summary>In-field overflow / AI addon cluster (still inside the field).</summary>
+    [Parameter]
+    public RenderFragment? OverflowActions { get; set; }
+
+    /// <summary>Optional content above the shell (not a toolbar bar for addons).</summary>
+    [Parameter]
+    public RenderFragment? HeaderContent { get; set; }
+
+    /// <summary>Optional content below the shell (busy text, hints).</summary>
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+
+    /// <summary>Raised when send is requested.</summary>
+    [Parameter]
+    public EventCallback<SbConversationSendRequest> OnSend { get; set; }
+
+    /// <summary>Raised when a default pending chip is removed.</summary>
+    [Parameter]
+    public EventCallback<SbConversationPendingItem> OnRemovePending { get; set; }
+
+    /// <summary>Optional CSS class.</summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>Optional inline style.</summary>
+    [Parameter]
+    public string? Style { get; set; }
+
+    /// <summary>Additional attributes.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>Shell element reference for host popovers/menus.</summary>
+    public ElementReference ShellRef => _shellRef;
+
+    /// <summary>Textarea element reference for host JS helpers.</summary>
+    public ElementReference TextAreaRef => _textAreaRef;
+
+    private string CssClass => $"sb-conversation-composer {Class}".Trim();
+
+    private bool EffectiveCanSend =>
+        CanSend ?? (!string.IsNullOrWhiteSpace(_draft) || (PendingItems?.Count > 0));
+
+   protected override void OnParametersSet()
+   {
+       // Adopt external Value only when the parent actually changed it (clear after
+       // send, AI suggest, programmatic set). Skip the input round-trip and skip
+       // unrelated host re-renders so the textarea DOM/value is left alone while typing.
+       if (_updatingFromInput)
+       {
+           _updatingFromInput = false;
+           return;
+       }
+
+       var incoming = Value ?? string.Empty;
+       if (!string.Equals(incoming, _lastParentValue, StringComparison.Ordinal))
+       {
+           _lastParentValue = incoming;
+           _draft = incoming;
+       }
+   }
+
+   private async Task HandleDraftInputAsync(ChangeEventArgs args)
+   {
+       _draft = args.Value?.ToString() ?? string.Empty;
+       _updatingFromInput = true;
+       // Do not advance _lastParentValue here. Hosts that skip ValueChanged (to avoid
+       // remounting) keep a stale Value; treating local typing as the parent value
+       // would make the next empty parent Value look like an external clear.
+       await ValueChanged.InvokeAsync(_draft);
+   }
+
+    private async Task HandleKeyDownAsync(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter" && !args.ShiftKey)
+        {
+            await SendAsync();
+        }
+    }
+
+    private async Task SendAsync()
+    {
+        if (IsDisabled || !EffectiveCanSend || !OnSend.HasDelegate)
+        {
+            return;
+        }
+
+        await OnSend.InvokeAsync(new SbConversationSendRequest
+        {
+            Body = _draft
+        });
+
+        // Clear after a successful send. While typing, _lastParentValue is intentionally
+        // not advanced (see HandleDraftInputAsync), so a parent Value="" round-trip alone
+        // would look unchanged and leave the textarea stuck with the sent text.
+        _draft = string.Empty;
+        _lastParentValue = string.Empty;
+    }
+}
