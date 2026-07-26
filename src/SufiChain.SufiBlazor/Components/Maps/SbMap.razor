@@ -15,10 +15,11 @@
     private ElementReference _mapElement;
     private SbMapInterop? _interop;
     private DotNetObjectReference<SbMap>? _dotNetRef;
-    private string? _mapId;
-    private bool _initialized;
-    private SbLatLng? _lastCenter;
-    private int _lastZoom;
+   private string? _mapId;
+   private bool _initialized;
+   private bool _disposed;
+   private SbLatLng? _lastCenter;
+   private int _lastZoom;
     private bool _lastInteractive;
     private readonly Dictionary<string, SbMapMarker> _markers = new();
     private readonly HashSet<string> _pendingMarkerIds = new();
@@ -155,13 +156,18 @@
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await InitializeAsync();
-            return;
-        }
+   protected override async Task OnAfterRenderAsync(bool firstRender)
+   {
+       if (_disposed)
+       {
+           return;
+       }
+
+       if (firstRender)
+       {
+           await InitializeAsync();
+           return;
+       }
 
         if (!_initialized || _interop == null || string.IsNullOrEmpty(_mapId))
         {
@@ -204,11 +210,15 @@
 
         try
         {
-            _mapId = await _interop.InitializeMapAsync(_mapElement, _dotNetRef, options);
-            if (string.IsNullOrEmpty(_mapId))
-            {
-                return;
-            }
+           _mapId = await _interop.InitializeMapAsync(_mapElement, _dotNetRef, options);
+           if (_disposed)
+           {
+               return;
+           }
+           if (string.IsNullOrEmpty(_mapId))
+           {
+               return;
+           }
 
             _initialized = true;
             _lastCenter = new SbLatLng(Center.Latitude, Center.Longitude);
@@ -225,11 +235,15 @@
 
             _pendingMarkerIds.Clear();
         }
-        catch (JSDisconnectedException)
-        {
-            // circuit gone during init
-        }
-    }
+       catch (JSDisconnectedException)
+       {
+           // circuit gone during init
+       }
+       catch (ObjectDisposedException)
+       {
+           // component disposed during init (e.g. chat accepted / container removed)
+       }
+   }
 
     /// <summary>
     /// Invalidates Leaflet size after layout changes (e.g. dialog open).
@@ -395,19 +409,25 @@
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        if (_interop != null && !string.IsNullOrEmpty(_mapId))
-        {
-            try
-            {
-                await _interop.DestroyMapAsync(_mapId);
-            }
-            catch (JSDisconnectedException)
-            {
-                // ignore
-            }
-        }
+   public async ValueTask DisposeAsync()
+   {
+       _disposed = true;
+
+       if (_interop != null && !string.IsNullOrEmpty(_mapId))
+       {
+           try
+           {
+               await _interop.DestroyMapAsync(_mapId);
+           }
+           catch (JSDisconnectedException)
+           {
+               // ignore
+           }
+           catch (ObjectDisposedException)
+           {
+               // ignore
+           }
+       }
 
         _dotNetRef?.Dispose();
         _dotNetRef = null;
