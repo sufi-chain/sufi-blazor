@@ -32,6 +32,7 @@
   <Target Name="CopyDocsToWwwroot" BeforeTargets="Build">
     <ItemGroup>
       <!-- Getting Started / General Docs -->
+      <DocToCopy Include="$(DocsSourceRoot)\README.md" />
       <DocToCopy Include="$(DocsSourceRoot)\installation.md" />
       <DocToCopy Include="$(DocsSourceRoot)\theming.md" />
       <DocToCopy Include="$(DocsSourceRoot)\overview.md" />
@@ -42,6 +43,11 @@
       <DocToCopy Include="$(DocsSourceRoot)\demo-host-integration.md" />
       <DocToCopy Include="$(DocsSourceRoot)\data-grid.md" />
       <DocToCopy Include="$(DocsSourceRoot)\adding-icons.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\localization.md" />
+
+      <!-- Architecture -->
+      <DocToCopy Include="$(DocsSourceRoot)\architecture\decisions.md" />
+      <DocToCopy Include="$(DocsSourceRoot)\architecture\package-map.md" />
       
       <!-- Actions -->
       <DocToCopy Include="$(DocsSourceComponents)\actions\SbButton.md" />
@@ -62,6 +68,7 @@
       <DocToCopy Include="$(DocsSourceComponents)\data\SbPagination.md" />
       <DocToCopy Include="$(DocsSourceComponents)\data\SbStatCard.md" />
       <DocToCopy Include="$(DocsSourceComponents)\data\SbTable.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\data\SbChart.md" />
       
       <!-- Feedback -->
       <DocToCopy Include="$(DocsSourceComponents)\feedback\SbAlert.md" />
@@ -91,6 +98,7 @@
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbRadioGroup.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbRichTextEditor.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbMarkdownEditor.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbMarkEditor.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSelect.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSelectOption.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSimpleSelect.md" />
@@ -98,6 +106,7 @@
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSlugEditor.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSwitch.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbTagInput.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbTagAutocomplete.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbTextArea.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbTextField.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbTimePicker.md" />
@@ -109,7 +118,19 @@
       <DocToCopy Include="$(DocsSourceComponents)\layout\SbGridItem.md" />
       <DocToCopy Include="$(DocsSourceComponents)\layout\SbSpacer.md" />
       <DocToCopy Include="$(DocsSourceComponents)\layout\SbStack.md" />
-      <DocToCopy Include="$(DocsSourceComponents)\layout\LAYOUT_REVIEW.md" />
+
+      <!-- Builder -->
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbAddButton.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbDragHandle.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbDraggableItem.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbDropZone.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbInlineToolbar.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbInspectorPanel.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbInspectorSection.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbPropertyGrid.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbResizable.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbSortableList.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\builder\SbSplitPane.md" />
 
       <!-- Maps -->
       <DocToCopy Include="$(DocsSourceComponents)\maps\SbMap.md" />
@@ -142,10 +163,13 @@
       <DocToCopy Include="$(DocsSourceComponents)\overlays\SbPopover.md" />
       <DocToCopy Include="$(DocsSourceComponents)\overlays\SbTooltip.md" />
       
-      <!-- Surfaces -->
-      <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbCard.md" />
+      <!-- Conversation -->
       <DocToCopy Include="$(DocsSourceComponents)\conversation\SbConversationComposer.md" />
       <DocToCopy Include="$(DocsSourceComponents)\conversation\SbConversationTimeline.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\conversation\SbConversationMessage.md" />
+
+      <!-- Surfaces -->
+      <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbCard.md" />
       <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbDivider.md" />
       <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbSurface.md" />
       
