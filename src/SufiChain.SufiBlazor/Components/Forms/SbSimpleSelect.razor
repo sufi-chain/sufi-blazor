@@ -282,6 +282,15 @@
 
         if (hasMatchingOption)
         {
+            // Options can register during ChildContent after the trigger already painted
+            // Value.ToString() (e.g. a Guid). Refresh once so the label updates.
+            if (firstRender || EqualityComparer<TValue>.Default.Equals(Value, _lastRecoveredValue))
+            {
+                _lastRecoveredValue = default;
+                _ = InvokeAsync(StateHasChanged);
+                return;
+            }
+
             _lastRecoveredValue = default;
             return;
         }
