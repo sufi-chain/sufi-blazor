@@ -541,4 +541,59 @@ window.SufiBlazor = window.SufiBlazor || {};
       }
     },
   };
+
+  /**
+   * Split pane divider drag (pointer, not HTML5 DnD).
+   */
+  sb.splitPane = {
+    active: null,
+
+    /**
+     * @param {HTMLElement} container
+     * @param {Object} dotNetRef
+     * @param {string} orientation - "horizontal" | "vertical"
+     */
+    startDrag: function (container, dotNetRef, orientation) {
+      if (!container || !dotNetRef) return;
+      if (sb.splitPane.active) return;
+
+      sb.splitPane.active = {
+        container: container,
+        dotNetRef: dotNetRef,
+        orientation: (orientation || "horizontal").toLowerCase(),
+      };
+
+      document.body.classList.add("sb-resizing");
+      document.addEventListener("mousemove", sb.splitPane._onMouseMove);
+      document.addEventListener("mouseup", sb.splitPane._onMouseUp);
+    },
+
+    _onMouseMove: function (e) {
+      var active = sb.splitPane.active;
+      if (!active || !active.container) return;
+
+      var rect = active.container.getBoundingClientRect();
+      var position;
+      if (active.orientation === "vertical") {
+        if (rect.height <= 0) return;
+        position = ((e.clientY - rect.top) / rect.height) * 100;
+      } else {
+        if (rect.width <= 0) return;
+        position = ((e.clientX - rect.left) / rect.width) * 100;
+      }
+
+      active.dotNetRef.invokeMethodAsync("UpdatePosition", position);
+    },
+
+    _onMouseUp: function () {
+      var active = sb.splitPane.active;
+      if (!active) return;
+
+      active.dotNetRef.invokeMethodAsync("EndDrag");
+      document.body.classList.remove("sb-resizing");
+      document.removeEventListener("mousemove", sb.splitPane._onMouseMove);
+      document.removeEventListener("mouseup", sb.splitPane._onMouseUp);
+      sb.splitPane.active = null;
+    },
+  };
 })(window.SufiBlazor);

@@ -144,6 +144,8 @@
       
       <!-- Surfaces -->
       <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbCard.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\conversation\SbConversationComposer.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\conversation\SbConversationTimeline.md" />
       <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbDivider.md" />
       <DocToCopy Include="$(DocsSourceComponents)\surfaces\SbSurface.md" />
       

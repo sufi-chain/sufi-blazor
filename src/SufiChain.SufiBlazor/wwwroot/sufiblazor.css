@@ -10,13 +10,13 @@
   /* ----------------------------------------
      Colors - Light Theme (Default)
      ---------------------------------------- */
-  /* Primary */
-  --sb-color-primary: #7356C3;
-  --sb-color-primary-hover: #8166D3;
-  --sb-color-primary-active: #6555AB;
-  --sb-color-primary-50: rgba(115, 86, 195, 0.08);
-  --sb-color-primary-100: #EDE8F9;
-  --sb-color-primary-light: #EDE8F9;
+  /* Primary — teal accent */
+  --sb-color-primary: #0F766E;
+  --sb-color-primary-hover: #0D9488;
+  --sb-color-primary-active: #115E59;
+  --sb-color-primary-50: rgba(15, 118, 110, 0.08);
+  --sb-color-primary-100: #CCFBF1;
+  --sb-color-primary-light: #CCFBF1;
   --sb-color-on-primary: #FCFCFC;
   /* Secondary */
   --sb-color-secondary: #5A546A;
@@ -91,6 +91,27 @@
   --sb-outline-variant: var(--sb-color-border);
   --sb-primary-container: var(--sb-color-primary-light);
   --sb-error: var(--sb-color-danger);
+  /* Orphan aliases used by modules/components with light-only hex fallbacks */
+  --sb-color-surface-muted: var(--sb-color-surface-variant);
+  --sb-color-surface-secondary: var(--sb-color-surface-variant);
+  --sb-color-surface-default: var(--sb-color-surface);
+  --sb-color-surface-raised: var(--sb-color-surface-variant);
+  --sb-color-surface-subtle: var(--sb-color-surface-variant);
+  --sb-surface-muted: var(--sb-color-surface-muted);
+  --sb-color-border-subtle: var(--sb-color-border);
+  --sb-color-primary-subtle: var(--sb-color-primary-light);
+  --sb-color-primary-soft: var(--sb-color-primary-100);
+  --sb-color-primary-text: var(--sb-color-primary-active);
+  --sb-color-primary-alpha: var(--sb-color-primary-50);
+  --sb-color-info-subtle: var(--sb-color-info-50);
+  --sb-color-warning-subtle: var(--sb-color-warning-50);
+  --sb-color-success-subtle: var(--sb-color-success-50);
+  --sb-color-danger-subtle: var(--sb-color-danger-50);
+  --sb-color-muted: var(--sb-color-text-muted);
+  --sb-color-text-primary: var(--sb-color-text);
+  --sb-color-error: var(--sb-color-danger);
+  --sb-z-menu: 1300;
+  --sb-z-select: 1300;
   /* ----------------------------------------
      Typography
      ---------------------------------------- */
@@ -199,7 +220,7 @@
   /* ----------------------------------------
      Focus Ring
      ---------------------------------------- */
-  --sb-focus-ring-color: #8E73D8;
+  --sb-focus-ring-color: #2DD4BF;
   --sb-focus-ring-width: 2px;
   --sb-focus-ring-offset: 2px;
   /* ----------------------------------------
@@ -218,12 +239,12 @@
 
 .sb-theme-dark {
     /* Colors - Dark Theme */
-    --sb-color-primary: #7356C3;
-    --sb-color-primary-hover: #8166D3;
-    --sb-color-primary-active: #6555AB;
-    --sb-color-primary-50: rgba(115, 86, 195, 0.08);
-    --sb-color-primary-100: #2C2638;
-    --sb-color-primary-light: #2C2638;
+    --sb-color-primary: #14B8A6;
+    --sb-color-primary-hover: #2DD4BF;
+    --sb-color-primary-active: #0D9488;
+    --sb-color-primary-50: rgba(20, 184, 166, 0.08);
+    --sb-color-primary-100: #163A36;
+    --sb-color-primary-light: #163A36;
     --sb-color-on-primary: #FCFCFC;
 
     --sb-color-secondary: #5A546A;
@@ -262,7 +283,7 @@
     --sb-color-info-light: #083344;
     --sb-color-on-info: #0f172a;
 
-    /* Neutral / Surface — restrained dark monochromatic palette with violet tint */
+    /* Neutral / Surface — restrained dark monochromatic palette */
     --sb-color-surface: #1F172B;            /* Main Surface */
     --sb-color-surface-variant: #2C2638;    /* Card Surface */
     --sb-color-background: #160E23;         /* Background (Dark) */
@@ -270,6 +291,18 @@
     --sb-color-border-strong: #4C455C;      /* Muted Surface */
     --sb-color-sidebar-dark: #160E23;       /* Background (Dark) */
     --sb-color-surface-hover: rgba(255, 255, 255, 0.06);
+    /* Recessed wells (chat timeline, muted panels) sit below main surface */
+    --sb-color-surface-muted: var(--sb-color-background);
+    --sb-color-surface-secondary: var(--sb-color-surface-variant);
+    --sb-color-surface-default: var(--sb-color-surface);
+    --sb-color-surface-raised: var(--sb-color-surface-variant);
+    --sb-color-surface-subtle: var(--sb-color-surface-muted);
+    --sb-surface-muted: var(--sb-color-surface-muted);
+    /* Selected / tinted rows need a visible teal wash on dark surfaces */
+    --sb-color-primary-subtle: rgba(20, 184, 166, 0.22);
+    --sb-color-primary-soft: rgba(20, 184, 166, 0.28);
+    --sb-color-primary-text: #5EEAD4;
+    --sb-color-primary-alpha: rgba(20, 184, 166, 0.28);
 
     /* Text */
     --sb-color-text: #FCFCFC;               /* White Text */
@@ -288,7 +321,7 @@
     --sb-shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.6);
 
     /* Focus Ring */
-    --sb-focus-ring-color: #8E73D8;         /* Focus Border */
+    --sb-focus-ring-color: #5EEAD4;         /* Focus Border */
 }
 
 /* ============================================
@@ -999,6 +1032,11 @@ samp,
     line-height: var(--sb-line-height-normal);
 }
 
+.sb-text--lead {
+    font-size: var(--sb-font-size-xl);
+    line-height: var(--sb-line-height-relaxed);
+}
+
 .sb-text--caption {
     font-size: var(--sb-font-size-xs);
     line-height: var(--sb-line-height-normal);
@@ -1200,11 +1238,15 @@ samp,
     align-items: center;
     justify-content: center;
     gap: var(--sb-space-2);
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
     border: none;
     border-radius: var(--sb-radius-md);
     font-family: inherit;
     font-weight: var(--sb-font-weight-medium);
     text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
     transition: background-color var(--sb-duration-fast) var(--sb-easing-default),
         color var(--sb-duration-fast) var(--sb-easing-default),
@@ -1405,12 +1447,17 @@ samp,
 
 /* Button content */
 .sb-button__content {
-    display: inline-flex;
-    align-items: center;
+    display: block;
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .sb-button__icon {
     display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: center;
     color: inherit;
@@ -9804,7 +9851,7 @@ body.sb-resizing {
     min-height: 120px;
     border-radius: var(--sb-radius-md, 8px);
     overflow: hidden;
-    background: var(--sb-color-surface-muted, #f1f5f9);
+    background: var(--sb-color-surface-muted, var(--sb-color-surface-variant));
     z-index: 0;
 }
 
@@ -9816,17 +9863,17 @@ body.sb-resizing {
     width: 100%;
     height: 100%;
     font: inherit;
-    background: var(--sb-color-surface-muted, #f1f5f9);
+    background: var(--sb-color-surface-muted, var(--sb-color-surface-variant));
 }
 
 .sb-map-preview {
     display: flex;
     flex-direction: column;
     gap: var(--sb-space-2, 0.5rem);
-    border: 1px solid var(--sb-color-border, #e2e8f0);
+    border: 1px solid var(--sb-color-border);
     border-radius: var(--sb-radius-md, 8px);
     overflow: hidden;
-    background: var(--sb-color-surface, #fff);
+    background: var(--sb-color-surface);
 }
 
 .sb-map-preview__map {
@@ -9842,35 +9889,6 @@ body.sb-resizing {
     inset: 0;
     z-index: 500;
     cursor: pointer;
-}
-
-.sb-map-preview__footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sb-space-2, 0.5rem);
-    padding: 0 var(--sb-space-3, 0.75rem) var(--sb-space-3, 0.75rem);
-    flex-wrap: wrap;
-}
-
-.sb-map-preview__label {
-    font-size: var(--sb-font-size-sm, 0.875rem);
-    color: var(--sb-color-text, #0f172a);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 70%;
-}
-
-.sb-map-preview__link {
-    font-size: var(--sb-font-size-sm, 0.875rem);
-    color: var(--sb-color-primary, #2563eb);
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.sb-map-preview__link:hover {
-    text-decoration: underline;
 }
 
 .sb-map-picker {
@@ -9891,7 +9909,7 @@ body.sb-resizing {
 }
 
 .sb-map-picker__map {
-    border: 1px solid var(--sb-color-border, #e2e8f0);
+    border: 1px solid var(--sb-color-border);
 }
 
 .sb-map-picker__status {
@@ -9906,4 +9924,295 @@ body.sb-resizing {
 .sb-geolocate-button {
     flex-shrink: 0;
 }
+
+/* ========== Conversation ========== */
+
+.sb-conversation-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-3, 0.75rem);
+    min-height: 0;
+}
+
+.sb-conversation-timeline__loading,
+.sb-conversation-timeline__empty {
+    padding: var(--sb-space-4, 1rem);
+    text-align: center;
+    color: var(--sb-color-text-muted);
+}
+
+.sb-conversation-timeline__messages {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-3, 0.75rem);
+}
+
+.sb-conversation-timeline__item {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sb-conversation-timeline__thinking {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sb-space-2, 0.5rem);
+}
+
+.sb-conversation-timeline__thinking-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sb-conversation-timeline__thinking-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 999px;
+    background: var(--sb-color-text-muted);
+    animation: sb-conversation-thinking 1.2s ease-in-out infinite;
+}
+
+.sb-conversation-timeline__thinking-dot:nth-child(2) {
+    animation-delay: 0.15s;
+}
+
+.sb-conversation-timeline__thinking-dot:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.sb-conversation-timeline__thinking-text {
+    color: var(--sb-color-text-muted);
+    font-size: var(--sb-font-size-sm, 0.875rem);
+}
+
+.sb-conversation-message__bubble--thinking {
+    min-inline-size: 7.5rem;
+}
+
+@keyframes sb-conversation-thinking {
+    0%, 80%, 100% {
+        opacity: 0.35;
+        transform: translateY(0);
+    }
+    40% {
+        opacity: 1;
+        transform: translateY(-0.15rem);
+    }
+}
+
+.sb-conversation-message {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-1, 0.25rem);
+    max-width: min(100%, 42rem);
+}
+
+.sb-conversation-message--start {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
+.sb-conversation-message--end {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.sb-conversation-message__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sb-space-2, 0.5rem);
+    font-size: var(--sb-font-size-xs, 0.75rem);
+    color: var(--sb-color-text-muted);
+}
+
+.sb-conversation-message__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    background: var(--sb-color-surface);
+}
+
+.sb-conversation-message__badge--highlight {
+    border-color: var(--sb-color-warning, #f59e0b);
+    color: var(--sb-color-warning, #b45309);
+    background: color-mix(in srgb, var(--sb-color-warning, #f59e0b) 12%, transparent);
+}
+
+.sb-conversation-message__bubble {
+    border-radius: 0.9rem;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    background: var(--sb-color-surface);
+    word-break: break-word;
+}
+
+.sb-conversation-message__bubble--end {
+    background: color-mix(in srgb, var(--sb-color-primary) 10%, var(--sb-color-surface));
+    border-color: color-mix(in srgb, var(--sb-color-primary) 25%, var(--sb-color-border-subtle, var(--sb-color-border)));
+}
+
+.sb-conversation-message__body {
+    white-space: pre-wrap;
+    line-height: 1.5;
+}
+
+.sb-conversation-message__footer,
+.sb-conversation-message__attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sb-space-2, 0.5rem);
+    margin-top: var(--sb-space-2, 0.5rem);
+}
+
+.sb-conversation-message__attachment {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.5rem;
+    background: var(--sb-color-surface-muted, var(--sb-color-surface-variant));
+    font-size: var(--sb-font-size-xs, 0.75rem);
+}
+
+.sb-conversation-composer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-2, 0.5rem);
+}
+
+.sb-conversation-composer__header {
+    min-width: 0;
+}
+
+.sb-conversation-composer__shell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    border-radius: 0.75rem;
+    background: var(--sb-color-surface-muted, var(--sb-color-surface-variant));
+    padding: 0.5rem 0.75rem;
+}
+
+.sb-conversation-composer__pending {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.sb-conversation-composer__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    background: var(--sb-color-surface);
+    border: 1px solid var(--sb-color-border-subtle, var(--sb-color-border));
+    font-size: var(--sb-font-size-xs, 0.75rem);
+}
+
+.sb-conversation-composer__chip-remove {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 0.15rem;
+    color: var(--sb-color-text-muted);
+}
+
+.sb-conversation-composer__textarea {
+    width: 100%;
+    border: 0;
+    outline: none;
+    resize: vertical;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    line-height: 1.5;
+    min-height: 2.5rem;
+    max-height: 10rem;
+    overflow-y: auto;
+    field-sizing: content;
+    padding: 0;
+}
+
+.sb-conversation-composer__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-top: 0.15rem;
+}
+
+.sb-conversation-composer__actions-start,
+.sb-conversation-composer__actions-end {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.sb-conversation-composer__actions-end {
+    margin-inline-start: auto;
+}
+
+.sb-conversation-composer__send {
+    font-weight: 700;
+}
+
+.sb-conversation-composer__footer {
+    min-width: 0;
+}
+
+@media (max-width: 767px) {
+    .sb-conversation-composer__actions {
+        flex-wrap: wrap;
+    }
+}
+
+/* =========================================================================
+   SbChart — lightweight SVG charts (Line / Bar / Donut / Sparkline)
+   ========================================================================= */
+.sb-chart {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sb-chart--line,
+.sb-chart--bar,
+.sb-chart--sparkline {
+    overflow: visible;
+}
+
+.sb-chart--donut {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.sb-chart__donut-svg {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+}
+
+.sb-chart--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sb-color-text-muted);
+    border: 1px dashed var(--sb-color-border);
+    border-radius: var(--sb-radius-md);
+}
+
+.sb-chart__empty {
+    font-size: var(--sb-font-size-sm);
+}
+
 
