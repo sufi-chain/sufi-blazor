@@ -16,6 +16,11 @@ public enum SbTextVariant
     BodySmall,
 
     /// <summary>
+    /// Lead/introductory text (larger than body).
+    /// </summary>
+    Lead,
+
+    /// <summary>
     /// Caption text.
     /// </summary>
     Caption,

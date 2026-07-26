@@ -21,6 +21,7 @@ A versatile typography component for rendering text with various styles and sema
 |---------|-------------|-------------|
 | Body | `<p>` | Standard body text |
 | BodySmall | `<p>` | Smaller body text |
+| Lead | `<p>` | Lead/introductory text (larger than body) |
 | Caption | `<span>` | Small caption text |
 | Overline | `<span>` | Small uppercase text |
 | Code | `<code>` | Monospace code text |
@@ -36,6 +37,7 @@ A versatile typography component for rendering text with various styles and sema
 - `sb-text` - Base class
 - `sb-text--body` - Body variant
 - `sb-text--bodysmall` - Small body variant
+- `sb-text--lead` - Lead/introductory variant
 - `sb-text--caption` - Caption variant
 - `sb-text--overline` - Overline variant
 - `sb-text--code` - Code variant
@@ -59,6 +61,10 @@ A versatile typography component for rendering text with various styles and sema
 
 <SbText Variant="SbTextVariant.BodySmall">
     This is smaller body text for secondary information.
+</SbText>
+
+<SbText Variant="SbTextVariant.Lead">
+    This is lead text for introductory paragraphs and emphasis.
 </SbText>
 
 <SbText Variant="SbTextVariant.Caption">
