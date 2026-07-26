@@ -10,7 +10,7 @@ on:
         type: string
         required: false
       push_to_baget:
-        description: Push to internal BaGet (nuget.sabp.ir)
+        description: Push to internal BaGet (nuget.sufiplatform.com)
         type: boolean
         default: true
       push_to_nuget_org:
@@ -22,16 +22,16 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  HARBOR_REGISTRY: reg.sabp.ir
-  SDK_IMAGE: reg.sabp.ir/sufi-chain/dotnet-sdk-build:10.0.202
-  GIT_HOST: git.sabp.ir
+  HARBOR_REGISTRY: reg.sufiplatform.com
+  SDK_IMAGE: reg.sufiplatform.com/sufi-chain/dotnet-sdk-build:10.0.202
+  GIT_HOST: github.com
   REPOSITORY: ${{ gitea.repository }}
   REF_NAME: ${{ gitea.ref_name }}
   RELEASE_TAG: ${{ gitea.event.release.tag_name }}
   INPUT_PACKAGE_VERSION: ${{ inputs.package_version }}
   INPUT_PUSH_TO_BAGET: ${{ inputs.push_to_baget }}
   INPUT_PUSH_TO_NUGET_ORG: ${{ inputs.push_to_nuget_org }}
-  BAGET_SOURCE_URL: https://nuget.sabp.ir/v3/index.json
+  BAGET_SOURCE_URL: https://nuget.sufiplatform.com/v3/index.json
   NUGET_ORG_SOURCE_URL: https://api.nuget.org/v3/index.json
   NUGET_PUSH_PARALLELISM: 4
   PACKAGE_OUTPUT: ./artifacts/nuget

@@ -3,7 +3,7 @@
 ![SufiBlazor](docs/assets/sufi-blazor-dark-bg.png)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Repository](https://img.shields.io/badge/git-git.sabp.ir-2b6df6.svg)](https://git.sabp.ir/sufi-chain/sufi-blazor)
+[![GitHub](https://img.shields.io/badge/GitHub-sufi--chain%2Fsufi--blazor-181717?logo=github)](https://github.com/sufi-chain/sufi-blazor)
 
 SufiBlazor is an independent Blazor UI component library and design system for ASP.NET Core 10+ applications. It can be used inside Sufi Platform, but it is not tied to Sufi Platform, ABP, SufiTheme, or any other third-party application framework. Any Blazor project that targets modern ASP.NET Core can use it as its primary UI layer.
 
@@ -32,7 +32,7 @@ The solution contains:
 
 ## Repository
 
-The canonical Git repository is `https://git.sabp.ir/sufi-chain/sufi-blazor`.
+The canonical Git repository is `https://github.com/sufi-chain/sufi-blazor`.
 
 ## Where it can be used
 
