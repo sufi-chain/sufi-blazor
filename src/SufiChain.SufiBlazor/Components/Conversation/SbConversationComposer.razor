@@ -1,5 +1,8 @@
 @namespace SufiChain.SufiBlazor.Components.Conversation
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@inject IJSRuntime JsRuntime
+@implements IAsyncDisposable
 
 <div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">
     @if (HeaderContent != null)
@@ -47,8 +50,7 @@
                   placeholder="@Placeholder"
                   disabled="@IsDisabled"
                   value="@_draft"
-                  @oninput="HandleDraftInputAsync"
-                  @onkeydown="HandleKeyDownAsync"></textarea>
+                  @oninput="HandleDraftInputAsync"></textarea>
 
         <div class="sb-conversation-composer__actions">
             <div class="sb-conversation-composer__actions-start">
@@ -86,6 +88,8 @@
    private string _draft = string.Empty;
    private string _lastParentValue = string.Empty;
    private bool _updatingFromInput;
+   private bool _enterBound;
+   private DotNetObjectReference<SbConversationComposer>? _dotNetRef;
 
    /// <summary>Draft text value.</summary>
    [Parameter]
@@ -201,6 +205,32 @@
        }
    }
 
+   protected override async Task OnAfterRenderAsync(bool firstRender)
+   {
+       if (!firstRender || _enterBound)
+       {
+           return;
+       }
+
+       try
+       {
+           _dotNetRef = DotNetObjectReference.Create(this);
+           await JsRuntime.InvokeVoidAsync(
+               "SufiBlazor.conversationComposer.bindEnterToSend",
+               _textAreaRef,
+               _dotNetRef,
+               nameof(OnEnterSendAsync));
+           _enterBound = true;
+       }
+       catch (JSDisconnectedException)
+       {
+       }
+       catch (InvalidOperationException)
+       {
+           // Static prerender — retry on the next interactive render.
+       }
+   }
+
    private async Task HandleDraftInputAsync(ChangeEventArgs args)
    {
        _draft = args.Value?.ToString() ?? string.Empty;
@@ -211,13 +241,9 @@
        await ValueChanged.InvokeAsync(_draft);
    }
 
-    private async Task HandleKeyDownAsync(KeyboardEventArgs args)
-    {
-        if (args.Key == "Enter" && !args.ShiftKey)
-        {
-            await SendAsync();
-        }
-    }
+    /// <summary>Invoked from JS after Enter is preventDefaulted.</summary>
+    [JSInvokable]
+    public Task OnEnterSendAsync() => SendAsync();
 
     private async Task SendAsync()
     {
@@ -226,15 +252,67 @@
             return;
         }
 
-        await OnSend.InvokeAsync(new SbConversationSendRequest
-        {
-            Body = _draft
-        });
+        var body = _draft;
 
-        // Clear after a successful send. While typing, _lastParentValue is intentionally
-        // not advanced (see HandleDraftInputAsync), so a parent Value="" round-trip alone
-        // would look unchanged and leave the textarea stuck with the sent text.
+        // Clear the visible draft before awaiting OnSend so long host sends and
+        // Enter cannot leave/resurrect the text. Do NOT raise ValueChanged yet —
+        // many hosts still read their bound Value/Prompt inside OnSend.
         _draft = string.Empty;
         _lastParentValue = string.Empty;
+        await SyncTextAreaDomAsync(string.Empty);
+
+        try
+        {
+            await OnSend.InvokeAsync(new SbConversationSendRequest
+            {
+                Body = body
+            });
+
+            await ValueChanged.InvokeAsync(string.Empty);
+        }
+        catch
+        {
+            // Restore draft if the host rejects the send (e.g. validation / API failure).
+            _draft = body;
+            _lastParentValue = string.Empty;
+            await SyncTextAreaDomAsync(body);
+            throw;
+        }
+    }
+
+    private async Task SyncTextAreaDomAsync(string value)
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("SufiBlazor.conversationComposer.setValue", _textAreaRef, value);
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_enterBound)
+        {
+            try
+            {
+                await JsRuntime.InvokeVoidAsync("SufiBlazor.conversationComposer.unbindEnterToSend", _textAreaRef);
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+            }
+
+            _enterBound = false;
+        }
+
+        _dotNetRef?.Dispose();
+        _dotNetRef = null;
     }
 }

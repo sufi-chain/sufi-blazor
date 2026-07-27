@@ -214,6 +214,60 @@ window.SufiBlazor = window.SufiBlazor || {};
   };
 
   /**
+   * Conversation composer helpers.
+   * Enter-to-send must preventDefault in the browser before Blazor's async
+   * keydown handler runs; otherwise the textarea keeps / re-inserts the draft.
+   */
+  sb.conversationComposer = {
+    enterHandlers: new WeakMap(),
+
+    /**
+     * Bind Enter (without Shift) to send: preventDefault synchronously, then
+     * invoke the .NET send callback.
+     * @param {HTMLTextAreaElement} textarea
+     * @param {Object} dotNetRef
+     * @param {string} methodName
+     */
+    bindEnterToSend: function (textarea, dotNetRef, methodName) {
+      if (!textarea || !dotNetRef) return;
+      sb.conversationComposer.unbindEnterToSend(textarea);
+
+      function handler(e) {
+        if (e.key !== "Enter" || e.shiftKey || e.isComposing) {
+          return;
+        }
+        e.preventDefault();
+        dotNetRef.invokeMethodAsync(methodName || "OnEnterSendAsync");
+      }
+
+      textarea.addEventListener("keydown", handler);
+      sb.conversationComposer.enterHandlers.set(textarea, handler);
+    },
+
+    /**
+     * @param {HTMLTextAreaElement} textarea
+     */
+    unbindEnterToSend: function (textarea) {
+      if (!textarea) return;
+      var handler = sb.conversationComposer.enterHandlers.get(textarea);
+      if (!handler) return;
+      textarea.removeEventListener("keydown", handler);
+      sb.conversationComposer.enterHandlers.delete(textarea);
+    },
+
+    /**
+     * Force the textarea DOM value (Blazor one-way value binding can lag behind
+     * browser default actions after Enter).
+     * @param {HTMLTextAreaElement} textarea
+     * @param {string} value
+     */
+    setValue: function (textarea, value) {
+      if (!textarea) return;
+      textarea.value = value == null ? "" : String(value);
+    },
+  };
+
+  /**
    * Select dropdown utilities
    */
   sb.select = {

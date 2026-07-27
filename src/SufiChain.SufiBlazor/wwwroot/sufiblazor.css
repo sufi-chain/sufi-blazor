@@ -1396,6 +1396,15 @@ samp,
     background-color: var(--sb-color-surface-variant);
 }
 
+.sb-button--ghost.sb-button--muted {
+    color: var(--sb-color-text-secondary, var(--sb-color-text-muted));
+}
+
+.sb-button--ghost.sb-button--muted:hover:not(:disabled) {
+    color: var(--sb-color-text);
+    background-color: var(--sb-color-surface-hover, var(--sb-color-surface-variant));
+}
+
 /* Link variant */
 .sb-button--link {
     background-color: transparent;
