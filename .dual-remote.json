@@ -4,7 +4,7 @@
   "syncMode": "two-way",
   "giteaRemoteName": "origin",
   "githubRemoteName": "github",
-  "giteaUrl": "https://github.com/sufi-chain/sufi-blazor.git",
+  "giteaUrl": "https://git.sufichain.com/sufi-chain/sufi-blazor.git",
   "githubUrl": "https://github.com/sufi-chain/sufi-blazor.git",
   "githubReadOnly": false,
   "pushDefault": "ask",
