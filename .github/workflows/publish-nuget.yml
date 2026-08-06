@@ -23,8 +23,7 @@ env:
   PACKAGE_OUTPUT: ./artifacts/nuget
   PACKAGE_PROJECTS: >-
     src/SufiChain.SufiBlazor/SufiChain.SufiBlazor.csproj
-    src/SufiChain.SufiBlazor.Demo.Localization/SufiChain.SufiBlazor.Demo.Localization.csproj
-    src/SufiChain.SufiBlazor.Demo/SufiChain.SufiBlazor.Demo.csproj
+  EXPECTED_PACKAGE_ID: SufiChain.SufiBlazor
 
 concurrency:
   group: publish-nuget-org-${{ github.ref_name }}
@@ -33,6 +32,7 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment: nuget-org
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -113,9 +113,14 @@ jobs:
           done
 
           find "$package_dir" -type f -name '*.nupkg' ! -name '*.symbols.nupkg' ! -name "*.${VERSION}.nupkg" -exec rm -f {} +
+          expected_package="$package_dir/${EXPECTED_PACKAGE_ID}.${VERSION}.nupkg"
+          if [ ! -f "$expected_package" ]; then
+            echo "Expected package was not produced: $expected_package" >&2
+            exit 1
+          fi
           package_count="$(find "$package_dir" -type f -name "*.${VERSION}.nupkg" ! -name '*.symbols.nupkg' | wc -l | tr -d ' ')"
-          if [ "$package_count" = "0" ]; then
-            echo "No NuGet packages for resolved version $VERSION were produced in $package_dir." >&2
+          if [ "$package_count" != "1" ]; then
+            echo "Expected exactly one package, but found $package_count in $package_dir." >&2
             exit 1
           fi
           echo "Packed $package_count package(s) for version $VERSION into $package_dir."

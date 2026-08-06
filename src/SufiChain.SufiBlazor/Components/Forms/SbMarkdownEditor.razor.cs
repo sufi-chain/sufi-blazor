@@ -416,6 +416,33 @@ public partial class SbMarkdownEditor : ComponentBase, IAsyncDisposable
         return false;
     }
 
+    private IEnumerable<SbMarkdownToolbarItem> GetVisibleToolbarItems()
+    {
+        SbMarkdownToolbarItem? pendingSeparator = null;
+
+        foreach (var item in _toolbarItems)
+        {
+            if (item.IsSeparator)
+            {
+                pendingSeparator = item;
+                continue;
+            }
+
+            if (item is MdToolbarContributedItem contributed && contributed.IsVisible?.Invoke() == false)
+            {
+                continue;
+            }
+
+            if (pendingSeparator != null)
+            {
+                yield return pendingSeparator;
+                pendingSeparator = null;
+            }
+
+            yield return item;
+        }
+    }
+
     private async Task OnToolbarClickAsync(SbMarkdownToolbarItem item)
     {
         if (item is MdToolbarContributedItem contributedItem && contributedItem.OnClickAsync != null)

@@ -8679,6 +8679,165 @@ body.sb-resizing {
     color: var(--sb-color-text);
 }
 
+/* Dark theme / design-token overrides for CodeMirror (EasyMDE) */
+.sb-markdown-editor .EasyMDEContainer .CodeMirror {
+    background: var(--sb-color-surface);
+    color: var(--sb-color-text);
+    border-color: var(--sb-color-border);
+}
+
+.sb-markdown-editor .EasyMDEContainer .CodeMirror-gutters {
+    background: var(--sb-color-surface-variant);
+    border-right-color: var(--sb-color-border);
+    color: var(--sb-color-text-muted);
+}
+
+/* RTL: CodeMirror 5's RTL support is incomplete — it sets
+   margin-left on the sizer for the gutter but the gutter stays
+   at left:0 (vendor CSS default). We flip the layout manually. */
+.sb-markdown-editor[dir="rtl"] .EasyMDEContainer .CodeMirror-gutters {
+    left: auto !important;
+    right: 0 !important;
+    border-right-color: transparent;
+    border-left-color: var(--sb-color-border);
+}
+
+.sb-markdown-editor[dir="rtl"] .EasyMDEContainer .CodeMirror-sizer {
+    margin-left: 0 !important;
+    margin-right: 36px !important;
+}
+
+.sb-markdown-editor[dir="rtl"] .EasyMDEContainer .CodeMirror-cursor {
+    border-left: none;
+    border-right: 2px solid var(--sb-color-primary);
+}
+
+.sb-markdown-editor[dir="rtl"] .EasyMDEContainer .CodeMirror-linenumber {
+    text-align: right;
+    padding: 0 5px 0 3px;
+}
+
+.sb-markdown-editor .EasyMDEContainer .CodeMirror-linenumber {
+    color: var(--sb-color-text-muted);
+}
+
+.sb-markdown-editor .EasyMDEContainer .CodeMirror-cursor {
+    border-left-color: var(--sb-color-primary);
+}
+
+.sb-markdown-editor .EasyMDEContainer .CodeMirror-selected {
+    background: color-mix(in srgb, var(--sb-color-primary) 20%, transparent);
+}
+
+.sb-markdown-editor .EasyMDEContainer .CodeMirror-focused .CodeMirror-selected {
+    background: color-mix(in srgb, var(--sb-color-primary) 30%, transparent);
+}
+
+.sb-markdown-editor .EasyMDEContainer .CodeMirror-activeline-background {
+    background: color-mix(in srgb, var(--sb-color-primary) 10%, transparent);
+}
+
+.sb-markdown-editor .EasyMDEContainer .editor-toolbar {
+    background: var(--sb-color-surface-variant);
+    border-color: var(--sb-color-border);
+}
+
+.sb-markdown-editor .EasyMDEContainer .editor-toolbar button {
+    color: var(--sb-color-text);
+}
+
+.sb-markdown-editor .EasyMDEContainer .editor-toolbar button:hover:not(:disabled),
+.sb-markdown-editor .EasyMDEContainer .editor-toolbar button.active {
+    background: var(--sb-color-surface);
+    border-color: var(--sb-color-border);
+}
+
+.sb-markdown-editor .EasyMDEContainer .editor-statusbar {
+    background: var(--sb-color-surface-variant);
+    border-top-color: var(--sb-color-border);
+    color: var(--sb-color-text-muted);
+}
+
+.sb-markdown-editor .editor-preview,
+.sb-markdown-editor .editor-preview-side,
+.sb-markdown-editor .editor-preview-full {
+    background: var(--sb-color-surface);
+    color: var(--sb-color-text);
+    border-color: var(--sb-color-border);
+}
+
+.sb-markdown-editor .editor-preview pre,
+.sb-markdown-editor .editor-preview-side pre,
+.sb-markdown-editor .editor-preview-full pre {
+    background: var(--sb-color-surface-variant);
+    color: var(--sb-color-text);
+    border: 1px solid var(--sb-color-border);
+}
+
+.sb-markdown-editor .editor-preview table td,
+.sb-markdown-editor .editor-preview table th,
+.sb-markdown-editor .editor-preview-side table td,
+.sb-markdown-editor .editor-preview-side table th,
+.sb-markdown-editor .editor-preview-full table td,
+.sb-markdown-editor .editor-preview-full table th {
+    border-color: var(--sb-color-border);
+}
+
+.sb-markdown-editor .editor-preview blockquote,
+.sb-markdown-editor .editor-preview-side blockquote,
+.sb-markdown-editor .editor-preview-full blockquote {
+    border-left-color: var(--sb-color-primary);
+    color: var(--sb-color-text-muted);
+}
+
+/* CodeMirror syntax tokens (cm-s-easymde theme) */
+.cm-s-easymde .cm-header,
+.cm-s-easymde .cm-strong {
+    color: var(--sb-color-text);
+}
+
+.cm-s-easymde .cm-comment {
+    color: var(--sb-color-text-muted);
+}
+
+.cm-s-easymde .cm-link,
+.cm-s-easymde .cm-url {
+    color: var(--sb-color-primary);
+}
+
+.cm-s-easymde .cm-quote {
+    color: var(--sb-color-info);
+}
+
+.cm-s-easymde .cm-keyword {
+    color: var(--sb-color-warning);
+}
+
+.cm-s-easymde .cm-string {
+    color: var(--sb-color-success);
+}
+
+.cm-s-easymde .cm-number {
+    color: var(--sb-color-info);
+}
+
+.cm-s-easymde .cm-tag {
+    color: var(--sb-color-danger);
+}
+
+.cm-s-easymde .cm-attribute {
+    color: var(--sb-color-warning);
+}
+
+.cm-s-easymde .cm-header-1,
+.cm-s-easymde .cm-header-2,
+.cm-s-easymde .cm-header-3,
+.cm-s-easymde .cm-header-4,
+.cm-s-easymde .cm-header-5,
+.cm-s-easymde .cm-header-6 {
+    color: var(--sb-color-text);
+}
+
 .sb-markdown-editor .EasyMDEContainer.sided--no-fullscreen {
     display: flex;
     flex-wrap: wrap;
@@ -8761,6 +8920,46 @@ body.sb-resizing {
 .sb-markdown-editor[dir="rtl"] .sb-markdown-alert {
     border-left: none;
     border-right: 4px solid var(--sb-color-primary);
+}
+
+.sb-markdown-editor[dir="rtl"] .editor-preview,
+.sb-markdown-editor[dir="rtl"] .editor-preview-side,
+.sb-markdown-editor[dir="rtl"] .editor-preview-full,
+.sb-markdown-editor[dir="rtl"] .sb-markdown-preview {
+    direction: rtl;
+    text-align: right;
+}
+
+.sb-markdown-editor[dir="rtl"] .editor-preview blockquote,
+.sb-markdown-editor[dir="rtl"] .editor-preview-side blockquote,
+.sb-markdown-editor[dir="rtl"] .sb-markdown-preview blockquote {
+    border-left: none;
+    border-right: 4px solid var(--sb-color-primary);
+    padding-left: 0;
+    padding-right: var(--sb-space-4);
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.sb-markdown-editor[dir="rtl"] .editor-preview ul,
+.sb-markdown-editor[dir="rtl"] .editor-preview ol,
+.sb-markdown-editor[dir="rtl"] .editor-preview-side ul,
+.sb-markdown-editor[dir="rtl"] .editor-preview-side ol,
+.sb-markdown-editor[dir="rtl"] .sb-markdown-preview ul,
+.sb-markdown-editor[dir="rtl"] .sb-markdown-preview ol {
+    padding-left: 0;
+    padding-right: var(--sb-space-6);
+}
+
+.sb-markdown-editor[dir="rtl"] .editor-preview pre,
+.sb-markdown-editor[dir="rtl"] .editor-preview code,
+.sb-markdown-editor[dir="rtl"] .editor-preview-side pre,
+.sb-markdown-editor[dir="rtl"] .editor-preview-side code,
+.sb-markdown-editor[dir="rtl"] .sb-markdown-preview pre,
+.sb-markdown-editor[dir="rtl"] .sb-markdown-preview code {
+    direction: ltr;
+    text-align: left;
+    unicode-bidi: plaintext;
 }
 
 /* ============================================
@@ -10222,6 +10421,98 @@ body.sb-resizing {
 
 .sb-chart__empty {
     font-size: var(--sb-font-size-sm);
+}
+
+/* ============================================
+   SbMarkdownEditor - Mermaid Diagram Styling
+   ============================================ */
+
+.sb-markdown-editor .sb-markdown-preview .mermaid,
+.sb-markdown-editor .editor-preview .mermaid,
+.sb-markdown-editor .editor-preview-side .mermaid {
+    width: 100%;
+    max-width: 100%;
+    overflow: auto;
+    margin: var(--sb-space-3) 0;
+    display: block;
+}
+
+.sb-markdown-editor .sb-markdown-preview .mermaid svg,
+.sb-markdown-editor .editor-preview .mermaid svg,
+.sb-markdown-editor .editor-preview-side .mermaid svg {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    display: block;
+}
+
+/* Ensure mermaid containers are responsive */
+.sb-markdown-preview .mermaid,
+.editor-preview .mermaid,
+.editor-preview-side .mermaid {
+    box-sizing: border-box;
+}
+
+/* Mermaid error styling */
+.sb-markdown-mermaid-error {
+    background: var(--sb-color-surface-danger, #fef2f2);
+    border: 1px solid var(--sb-color-danger, #ef4444);
+    border-radius: var(--sb-radius-sm);
+    padding: var(--sb-space-3);
+    color: var(--sb-color-danger, #ef4444);
+    font-family: var(--sb-font-family-mono, ui-monospace, monospace);
+    font-size: var(--sb-font-size-sm);
+    overflow-x: auto;
+}
+
+/* Light theme mermaid styling */
+.sb-theme-light .sb-markdown-editor .sb-markdown-preview .mermaid svg,
+.sb-theme-light .sb-markdown-editor .editor-preview .mermaid svg,
+.sb-theme-light .sb-markdown-editor .editor-preview-side .mermaid svg {
+    fill: var(--sb-color-text, #1e293b);
+}
+
+.sb-theme-light .sb-markdown-editor .sb-markdown-preview .mermaid .node text,
+.sb-theme-light .sb-markdown-editor .editor-preview .mermaid .node text,
+.sb-theme-light .sb-markdown-editor .editor-preview-side .mermaid .node text {
+    fill: var(--sb-color-text, #1e293b);
+}
+
+.sb-theme-light .sb-markdown-editor .sb-markdown-preview .mermaid .edge path,
+.sb-theme-light .sb-markdown-editor .editor-preview .mermaid .edge path,
+.sb-theme-light .sb-markdown-editor .editor-preview-side .mermaid .edge path {
+    stroke: var(--sb-color-border, #e2e8f0);
+}
+
+.sb-theme-light .sb-markdown-editor .sb-markdown-preview .mermaid .edge text,
+.sb-theme-light .sb-markdown-editor .editor-preview .mermaid .edge text,
+.sb-theme-light .sb-markdown-editor .editor-preview-side .mermaid .edge text {
+    fill: var(--sb-color-text-muted, #94a3b8);
+}
+
+/* Dark theme mermaid styling */
+.sb-theme-dark .sb-markdown-editor .sb-markdown-preview .mermaid svg,
+.sb-theme-dark .sb-markdown-editor .editor-preview .mermaid svg,
+.sb-theme-dark .sb-markdown-editor .editor-preview-side .mermaid svg {
+    fill: var(--sb-color-text, #f1f5f9);
+}
+
+.sb-theme-dark .sb-markdown-editor .sb-markdown-preview .mermaid .node text,
+.sb-theme-dark .sb-markdown-editor .editor-preview .mermaid .node text,
+.sb-theme-dark .sb-markdown-editor .editor-preview-side .mermaid .node text {
+    fill: var(--sb-color-text, #f1f5f9);
+}
+
+.sb-theme-dark .sb-markdown-editor .sb-markdown-preview .mermaid .edge path,
+.sb-theme-dark .sb-markdown-editor .editor-preview .mermaid .edge path,
+.sb-theme-dark .sb-markdown-editor .editor-preview-side .mermaid .edge path {
+    stroke: var(--sb-color-border, #334159);
+}
+
+.sb-theme-dark .sb-markdown-editor .sb-markdown-preview .mermaid .edge text,
+.sb-theme-dark .sb-markdown-editor .editor-preview .mermaid .edge text,
+.sb-theme-dark .sb-markdown-editor .editor-preview-side .mermaid .edge text {
+    fill: var(--sb-color-text-muted, #94a3b8);
 }
 
 

@@ -12,7 +12,7 @@
     @if (!HideToolbar && !IsDiffReview && IsReady && !ReadOnly)
     {
         <div class="sb-markdown-editor__toolbar" role="toolbar">
-            @foreach (var item in _toolbarItems)
+            @foreach (var item in GetVisibleToolbarItems())
             {
                 @if (item.IsSeparator)
                 {

@@ -52,7 +52,6 @@ public class MdToolbarService : IMdToolbarService
 
         var groupOrder = _options.GroupOrder;
         var sortedItems = allItems
-            .Where(item => item.IsVisible?.Invoke() ?? true)
             .OrderBy(item =>
             {
                 var groupIndex = groupOrder.IndexOf(item.Group);
