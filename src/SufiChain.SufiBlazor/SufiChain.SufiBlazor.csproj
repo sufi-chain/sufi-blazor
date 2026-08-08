@@ -8,7 +8,7 @@
     <!-- Package information -->
     <PackageId>SufiChain.SufiBlazor</PackageId>
     <Description>SufiBlazor - A modern, RTL/LTR-aware Blazor component library with comprehensive theming support.</Description>
-    <PackageTags>blazor;components;ui;rtl;ltr;theming;css-variables;sufi;sabp</PackageTags>
+    <PackageTags>blazor;components;ui;rtl;ltr;theming;css-variables;sufi;sufi</PackageTags>
     <PackageIcon>sufi-chain.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
