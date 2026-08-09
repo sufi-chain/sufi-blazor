@@ -28,7 +28,6 @@
                id="@EffectiveId"
                name="@NameAttributeValue"
                class="sb-text-field__input"
-               value="@CurrentValueAsString"
                placeholder="@Placeholder"
                disabled="@Disabled"
                readonly="@ReadOnly"
@@ -37,8 +36,8 @@
                aria-describedby="@EffectiveAriaDescribedBy"
                inputmode="@InputMode"
                autocomplete="@EffectiveAutoComplete"
-               @oninput="HandleInput"
-               @onchange="HandleChange"
+               @bind="CurrentValueAsString"
+               @bind:event="oninput"
                @attributes="AdditionalAttributes" />
 
         @if (Clearable && !string.IsNullOrEmpty(CurrentValueAsString))
@@ -302,16 +301,6 @@
         result = default!;
         validationErrorMessage = string.Format(InvalidValueMessage, value);
         return false;
-    }
-
-    private void HandleInput(ChangeEventArgs e)
-    {
-        CurrentValueAsString = e.Value?.ToString();
-    }
-
-    private void HandleChange(ChangeEventArgs e)
-    {
-        CurrentValueAsString = e.Value?.ToString();
     }
 
     private async Task HandleClear()

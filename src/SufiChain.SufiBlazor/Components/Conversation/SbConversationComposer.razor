@@ -49,8 +49,9 @@
                   rows="@Rows"
                   placeholder="@Placeholder"
                   disabled="@IsDisabled"
-                  value="@_draft"
-                  @oninput="HandleDraftInputAsync"></textarea>
+                  @bind:get="_draft"
+                  @bind:set="HandleDraftInputAsync"
+                  @bind:event="oninput"></textarea>
 
         <div class="sb-conversation-composer__actions">
             <div class="sb-conversation-composer__actions-start">
@@ -231,9 +232,9 @@
        }
    }
 
-   private async Task HandleDraftInputAsync(ChangeEventArgs args)
+   private async Task HandleDraftInputAsync(string? value)
    {
-       _draft = args.Value?.ToString() ?? string.Empty;
+       _draft = value ?? string.Empty;
        _updatingFromInput = true;
        // Do not advance _lastParentValue here. Hosts that skip ValueChanged (to avoid
        // remounting) keep a stale Value; treating local typing as the parent value

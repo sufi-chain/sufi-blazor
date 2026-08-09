@@ -2,6 +2,8 @@
 
 A text input component with support for labels, placeholders, adornments, password visibility toggle, and form validation. Can be used with its own **Label** and **Required** parameters, or wrapped in **SbFormField** for label, helper text, and error message layout.
 
+Text changes use Blazor's `oninput` bind pipeline, preventing delayed Interactive Server render batches from replacing newer browser input.
+
 ## Parameters
 
 | Parameter | Type | Default | Description |

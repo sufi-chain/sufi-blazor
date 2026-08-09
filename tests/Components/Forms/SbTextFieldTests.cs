@@ -130,6 +130,28 @@ public class SbTextFieldTests : BunitContext
     }
 
     [Fact]
+    public void RapidInputReportsCompleteBrowserValue()
+    {
+        var reportedValues = new List<string>();
+        var cut = RenderTextFieldWithCustomCallback(p => p
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string>(
+                this,
+                value =>
+                {
+                    _textFieldValue = value;
+                    reportedValues.Add(value);
+                })));
+
+        var input = cut.Find("input");
+        input.Input("a");
+        input.Input("ar");
+        input.Input("ari");
+        input.Input("aria");
+
+        Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
+    }
+
+    [Fact]
     public void RendersPlaceholder()
     {
         // Arrange & Act

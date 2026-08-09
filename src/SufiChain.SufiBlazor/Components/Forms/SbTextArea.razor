@@ -12,9 +12,9 @@
         </label>
     }
     <textarea class="sb-textarea__input"
-              value="@Value"
-              @oninput="OnInput"
-              @onchange="OnChange"
+              @bind:get="Value"
+              @bind:set="OnInputAsync"
+              @bind:event="oninput"
               placeholder="@Placeholder"
               disabled="@Disabled"
               readonly="@ReadOnly"
@@ -171,15 +171,8 @@
         }
     }
     
-    private async Task OnInput(ChangeEventArgs e)
+    private async Task OnInputAsync(string? value)
     {
-        var value = e.Value?.ToString();
-        await ValueChanged.InvokeAsync(value);
-    }
-    
-    private async Task OnChange(ChangeEventArgs e)
-    {
-        var value = e.Value?.ToString();
         await ValueChanged.InvokeAsync(value);
     }
 }

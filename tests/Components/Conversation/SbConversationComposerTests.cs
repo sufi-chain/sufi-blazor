@@ -25,6 +25,25 @@ public class SbConversationComposerTests : BunitContext
     }
 
     [Fact]
+    public void Rapid_Input_Reports_Complete_Browser_Value()
+    {
+        var reportedValues = new List<string>();
+        var cut = Render<SbConversationComposer>(parameters => parameters
+            .Add(p => p.ValueChanged, EventCallback.Factory.Create<string>(
+                this,
+                value => reportedValues.Add(value))));
+
+        var textarea = cut.Find("textarea");
+        textarea.Input("a");
+        textarea.Input("ar");
+        textarea.Input("ari");
+        textarea.Input("aria");
+
+        Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
+        Assert.Equal("aria", textarea.GetAttribute("value"));
+    }
+
+    [Fact]
     public void Timeline_Renders_Messages()
     {
         var messages = new List<SbConversationMessageModel>

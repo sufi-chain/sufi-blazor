@@ -148,6 +148,24 @@ public class SbTextAreaTests : BunitContext
     }
 
     [Fact]
+    public void RapidInputReportsCompleteBrowserValue()
+    {
+        var reportedValues = new List<string?>();
+        var cut = RenderTextArea(p => p
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(
+                this,
+                value => reportedValues.Add(value))));
+
+        var textarea = cut.Find("textarea");
+        textarea.Input("a");
+        textarea.Input("ar");
+        textarea.Input("ari");
+        textarea.Input("aria");
+
+        Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
+    }
+
+    [Fact]
     public void RendersPlaceholder()
     {
         // Arrange & Act

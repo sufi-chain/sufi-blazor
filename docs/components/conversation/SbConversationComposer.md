@@ -25,3 +25,5 @@ Do **not** place a separate toolbar bar above the field. Pending chips may sit a
 ## Send contract
 
 `OnSend` raises `SbConversationSendRequest` with `Body` and an optional metadata dictionary. Domain adapters map this to Chat or Ticketing APIs.
+
+The textarea uses Blazor's `oninput` bind pipeline so rapid typing remains ordered when an Interactive Server circuit has staging or internet latency.
