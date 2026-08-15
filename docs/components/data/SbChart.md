@@ -30,7 +30,7 @@ A lightweight, dependency-free SVG chart component supporting Line, Bar, Donut, 
 
 ## Color tokens
 
-Pass a token name (without `var()`) and `SbChart` resolves it to `var(--sb-color-*)`. Example: `Color="--sb-color-success"` renders as `var(--sb-color-success)`. Raw CSS colors (e.g. `"#0F766E"`) are also accepted.
+Pass a token name (without `var()`) and `SbChart` resolves it to `var(--sb-color-*)`. Example: `Color="--sb-color-success"` renders as `var(--sb-color-success)`. Raw CSS colors (e.g. `"#7C3AED"`) are also accepted.
 
 ## Examples
 
