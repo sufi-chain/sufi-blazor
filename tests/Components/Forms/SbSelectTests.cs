@@ -232,6 +232,22 @@ public class SbSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task RapidSearchInputPreservesCompleteBrowserValue()
+    {
+        var cut = RenderSelect(p => p.Add(x => x.Searchable, true));
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main").Click());
+
+        var searchInput = cut.Find(".sb-select-search__input");
+        searchInput.Input("I");
+        searchInput.Input("It");
+        searchInput.Input("Item");
+        searchInput.Input("Item 2");
+
+        Assert.Equal("Item 2", cut.Find(".sb-select-search__input").GetAttribute("value"));
+        Assert.Single(cut.FindAll(".sb-select-option"));
+    }
+
+    [Fact]
     public async Task ShowsNoResultsWhenSearchHasNoMatch()
     {
         // Arrange

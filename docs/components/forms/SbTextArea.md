@@ -2,7 +2,7 @@
 
 A multi-line text input component with support for labels, character counting, and resizable behavior.
 
-Text changes use Blazor's `oninput` bind pipeline, preventing delayed Interactive Server render batches from replacing newer browser input.
+Text changes use a local draft with Blazor's `oninput` bind pipeline. The component skips its own input parameter round-trip and only adopts genuine external `Value` changes, preventing delayed Interactive Server render batches from replacing newer browser input.
 
 ## Parameters
 

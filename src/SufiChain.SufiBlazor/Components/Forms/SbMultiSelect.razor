@@ -64,8 +64,9 @@
                     <input type="text"
                            class="sb-select-search__input"
                            placeholder="@(SearchPlaceholder ?? L["Search_Placeholder"])"
-                           value="@_searchText"
-                           @oninput="OnSearchInput"
+                           @bind:get="_searchText"
+                           @bind:set="OnSearchInputAsync"
+                           @bind:event="oninput"
                            @ref="_searchRef" />
                 </div>
             }
@@ -324,9 +325,9 @@
         }
     }
 
-    private async Task OnSearchInput(ChangeEventArgs e)
+    private async Task OnSearchInputAsync(string? value)
     {
-        _searchText = e.Value?.ToString() ?? "";
+        _searchText = value ?? string.Empty;
 
         if (SearchFunc == null)
         {

@@ -10,8 +10,9 @@
         <div class="sb-slug-editor__input-wrapper">
             <input type="text"
                    class="sb-slug-editor__input"
-                   value="@Value"
-                   @oninput="OnInput"
+                   @bind:get="_inputValue"
+                   @bind:set="OnInput"
+                   @bind:event="oninput"
                    @onblur="OnBlur"
                    placeholder="@(Placeholder ?? L["EnterSlug_Placeholder"])"
                    disabled="@Disabled"
@@ -44,6 +45,9 @@
 </div>
 
 @code {
+    private string? _inputValue;
+    private string? _lastParentValue;
+
     private string? _validationMessage;
     
     /// <summary>
@@ -147,22 +151,28 @@
     /// </summary>
     [Parameter]
     public string? Style { get; set; }
-    
-    private string? _previousSourceText;
-    
+
     protected override void OnParametersSet()
     {
+        if (!string.Equals(Value, _lastParentValue, StringComparison.Ordinal))
+        {
+            _lastParentValue = Value;
+            _inputValue = Value;
+        }
+
         if (AutoGenerate && SourceText != _previousSourceText && !string.IsNullOrEmpty(SourceText))
         {
             _previousSourceText = SourceText;
             _ = GenerateSlug();
         }
     }
+
+    private string? _previousSourceText;
     
-    private async Task OnInput(ChangeEventArgs e)
+    private async Task OnInput(string? value)
     {
-        var value = e.Value?.ToString() ?? "";
-        var slugified = Slugify(value);
+        var slugified = Slugify(value ?? "");
+        _inputValue = slugified;
         await ValueChanged.InvokeAsync(slugified);
     }
     
@@ -174,8 +184,9 @@
     private async Task GenerateSlug()
     {
         if (string.IsNullOrEmpty(SourceText)) return;
-        
+
         var slug = Slugify(SourceText);
+        _inputValue = slug;
         await ValueChanged.InvokeAsync(slug);
         await ValidateSlug();
     }

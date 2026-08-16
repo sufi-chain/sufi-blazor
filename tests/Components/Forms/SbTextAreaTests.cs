@@ -166,6 +166,56 @@ public class SbTextAreaTests : BunitContext
     }
 
     [Fact]
+    public void RapidInputSurvivesParentRerendersWithStaleValue()
+    {
+        var reportedValues = new List<string?>();
+        var cut = RenderTextArea(p => p
+            .Add(x => x.Value, string.Empty)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(
+                this,
+                value => reportedValues.Add(value))));
+
+        var textarea = cut.Find("textarea");
+        textarea.Input("a");
+        cut.Render(p => p.Add(x => x.Value, string.Empty));
+        textarea = cut.Find("textarea");
+        textarea.Input("ar");
+        cut.Render(p => p.Add(x => x.Value, string.Empty));
+        textarea = cut.Find("textarea");
+        textarea.Input("ari");
+        cut.Render(p => p.Add(x => x.Value, string.Empty));
+        textarea = cut.Find("textarea");
+        textarea.Input("aria");
+        cut.Render(p => p.Add(x => x.Value, string.Empty));
+
+        Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
+        Assert.Equal("aria", cut.Find("textarea").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void RapidInputSurvivesDelayedParentAcknowledgements()
+    {
+        var reportedValues = new List<string?>();
+        var cut = RenderTextArea(p => p
+            .Add(x => x.Value, string.Empty)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(
+                this,
+                value => reportedValues.Add(value))));
+
+        cut.Find("textarea").Input("a");
+        cut.Render(p => p.Add(x => x.Value, "a"));
+        cut.Find("textarea").Input("ar");
+        cut.Render(p => p.Add(x => x.Value, "a"));
+        cut.Find("textarea").Input("ari");
+        cut.Render(p => p.Add(x => x.Value, "ar"));
+        cut.Find("textarea").Input("aria");
+        cut.Render(p => p.Add(x => x.Value, "ari"));
+
+        Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
+        Assert.Equal("aria", cut.Find("textarea").GetAttribute("value"));
+    }
+
+    [Fact]
     public void RendersPlaceholder()
     {
         // Arrange & Act
@@ -371,20 +421,14 @@ public class SbTextAreaTests : BunitContext
     }
 
     [Fact]
-    public async Task InvokesValueChangedOnChange()
+    public void AdoptsExternalParentValueChange()
     {
-        // Arrange
-        string? received = null;
         var cut = RenderTextArea(p => p
-            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, v => received = v)));
+            .Add(x => x.Value, "Initial text"));
 
-        var textarea = cut.Find("textarea");
+        cut.Render(p => p.Add(x => x.Value, "Changed text"));
 
-        // Act
-        await cut.InvokeAsync(() => textarea!.Change("Changed text"));
-
-        // Assert
-        Assert.Equal("Changed text", received);
+        Assert.Equal("Changed text", cut.Find("textarea").GetAttribute("value"));
     }
 
     [Fact]

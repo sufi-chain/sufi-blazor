@@ -19,8 +19,9 @@
     <div class="sb-autocomplete__input-wrapper">
         <input type="text"
                class="sb-autocomplete__input"
-               value="@_searchText"
-               @oninput="OnSearchInput"
+               @bind:get="_searchText"
+               @bind:set="OnSearchInputAsync"
+               @bind:event="oninput"
                @onfocus="OnFocus"
                @onkeydown="OnKeyDown"
                placeholder="@(Placeholder ?? L["Search_Placeholder"])"
@@ -93,6 +94,8 @@
     private int _highlightedIndex = -1;
     private System.Timers.Timer? _debounceTimer;
     private bool _shouldFlip;
+    private bool _hasObservedValue;
+    private object? _lastValueKey;
     
     /// <summary>
     /// The selected value.
@@ -214,15 +217,19 @@
     
     protected override void OnParametersSet()
     {
-        if (Value != null)
+        var valueKey = Value == null ? null : ValueField(Value);
+        if (!_hasObservedValue || !Equals(valueKey, _lastValueKey))
         {
-            _searchText = TextField(Value);
+            _searchText = Value == null ? string.Empty : TextField(Value);
         }
+
+        _lastValueKey = valueKey;
+        _hasObservedValue = true;
     }
-    
-    private async Task OnSearchInput(ChangeEventArgs e)
+
+    private async Task OnSearchInputAsync(string? value)
     {
-        _searchText = e.Value?.ToString() ?? "";
+        _searchText = value ?? string.Empty;
         _highlightedIndex = -1;
         
         if (_searchText.Length < MinLength)

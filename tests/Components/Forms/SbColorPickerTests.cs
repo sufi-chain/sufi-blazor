@@ -294,6 +294,28 @@ public class SbColorPickerTests : BunitContext
     }
 
     [Fact]
+    public async Task RapidHexInputAppliesCompleteBrowserValue()
+    {
+        string? received = null;
+        var cut = RenderColorPicker(p => p.Add(
+            x => x.ValueChanged,
+            EventCallback.Factory.Create<string?>(this, value => received = value)));
+
+        await cut.InvokeAsync(() => cut.Find(".sb-colorpicker__trigger").Click());
+        var input = cut.Find(".sb-colorpicker__hex");
+        await cut.InvokeAsync(() => input.Input("1"));
+        await cut.InvokeAsync(() => input.Input("12"));
+        await cut.InvokeAsync(() => input.Input("123"));
+        await cut.InvokeAsync(() => input.Input("123456"));
+
+        var apply = cut.FindAll("button")
+            .Single(button => button.TextContent.Trim() == "Apply");
+        await cut.InvokeAsync(() => apply.Click());
+
+        Assert.Equal("#123456", received);
+    }
+
+    [Fact]
     public async Task CancelClosesDropdownWithoutInvokingValueChanged()
     {
         // Arrange

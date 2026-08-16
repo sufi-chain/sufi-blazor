@@ -2,6 +2,8 @@
 
 A dropdown select component for choosing a single value from a list of items. Supports search filtering, custom item templates, and keyboard navigation.
 
+The searchable input uses Blazor's `oninput` bind pipeline so local and remote result rerenders preserve the newest browser text.
+
 **Two variants:** **SbSelect** (data-driven: bind to `Items` with `TextField`/`ValueField`) and **SbSimpleSelect** (declarative: use **SbSelectOption** children). For clearable selection (clear button), use **SbSimpleSelect** with `Clearable="true"`.
 
 ## Parameters

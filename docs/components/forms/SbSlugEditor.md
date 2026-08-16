@@ -2,6 +2,8 @@
 
 A specialized input for editing URL slugs with auto-generation, validation, and preview capabilities.
 
+Text changes use Blazor's `oninput` bind pipeline, and the local draft is normalized immediately so delayed parent rerenders cannot restore older text.
+
 ## Parameters
 
 | Parameter | Type | Default | Description |

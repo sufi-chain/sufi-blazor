@@ -154,6 +154,30 @@ public class SbAutocompleteTests : BunitContext
     }
 
     [Fact]
+    public void RapidInputPreservesLocalSearchDuringRerenders()
+    {
+        var items = CreateItems(3);
+        var cut = Render<SbAutocomplete<AutocompleteTestItem>>(p => p
+            .Add(x => x.Items, items)
+            .Add(x => x.Value, items[0])
+            .Add(x => x.TextField, (Func<AutocompleteTestItem, string>)(item => item.Name))
+            .Add(x => x.ValueField, (Func<AutocompleteTestItem, object>)(item => item.Id))
+            .Add(x => x.DebounceMs, 0));
+
+        var input = cut.Find(".sb-autocomplete__input");
+        input.Input("I");
+        cut.Render(parameters => parameters.Add(x => x.Value, items[0]));
+        input.Input("It");
+        cut.Render(parameters => parameters.Add(x => x.Value, items[0]));
+        input.Input("Item");
+        cut.Render(parameters => parameters.Add(x => x.Value, items[0]));
+        input.Input("Item 2");
+        cut.Render(parameters => parameters.Add(x => x.Value, items[0]));
+
+        Assert.Equal("Item 2", cut.Find(".sb-autocomplete__input").GetAttribute("value"));
+    }
+
+    [Fact]
     public void AppliesCustomClass()
     {
         // Arrange & Act

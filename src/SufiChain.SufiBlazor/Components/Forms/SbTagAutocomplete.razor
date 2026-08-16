@@ -48,8 +48,9 @@
                    class="sb-tag-autocomplete__input"
                    id="@Id"
                    @ref="_inputRef"
-                   value="@_searchText"
-                   @oninput="OnSearchInput"
+                   @bind:get="_searchText"
+                   @bind:set="OnSearchInputAsync"
+                   @bind:event="oninput"
                    @onfocus="OnFocusAsync"
                    @onkeydown="OnKeyDownAsync"
                    placeholder="@GetInputPlaceholder()"
@@ -217,9 +218,9 @@
             : Placeholder ?? L["AddTag_Placeholder"];
     }
 
-    private async Task OnSearchInput(ChangeEventArgs e)
+    private async Task OnSearchInputAsync(string? value)
     {
-        _searchText = e.Value?.ToString() ?? string.Empty;
+        _searchText = value ?? string.Empty;
         _highlightedIndex = -1;
 
         if (_searchText.Length < MinLength)

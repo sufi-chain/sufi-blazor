@@ -323,6 +323,22 @@ public class SbMultiSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task RapidSearchInputPreservesCompleteBrowserValue()
+    {
+        var cut = RenderMultiSelect(p => p.Add(x => x.Searchable, true));
+        await cut.InvokeAsync(() => cut.Find(".sb-multi-select-trigger").Click());
+
+        var searchInput = cut.Find(".sb-select-search__input");
+        searchInput.Input("I");
+        searchInput.Input("It");
+        searchInput.Input("Item");
+        searchInput.Input("Item 2");
+
+        Assert.Equal("Item 2", cut.Find(".sb-select-search__input").GetAttribute("value"));
+        Assert.Single(cut.FindAll(".sb-select-option"));
+    }
+
+    [Fact]
     public async Task ShowsNoResultsWhenSearchHasNoMatch()
     {
         // Arrange

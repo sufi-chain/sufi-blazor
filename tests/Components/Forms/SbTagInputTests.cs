@@ -232,6 +232,24 @@ public class SbTagInputTests : BunitContext
     }
 
     [Fact]
+    public async Task RapidInputPreservesCompleteValueWhenTagAdded()
+    {
+        var tags = new List<string>();
+        var cut = Render<SbTagInput>(p => p.Add(x => x.Tags, tags));
+        var input = cut.Find(".sb-tag-input__input");
+
+        await cut.InvokeAsync(() => input.Input("a"));
+        await cut.InvokeAsync(() => input.Input("ar"));
+        await cut.InvokeAsync(() => input.Input("ari"));
+        await cut.InvokeAsync(() => input.Input("aria"));
+        await cut.InvokeAsync(() => input.TriggerEventAsync(
+            "onkeydown",
+            new KeyboardEventArgs { Key = "Enter" }));
+
+        Assert.Equal(["aria"], tags);
+    }
+
+    [Fact]
     public async Task InvokesTagsChangedWhenTagAddedViaComma()
     {
         // Arrange

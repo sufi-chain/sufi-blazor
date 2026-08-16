@@ -2,6 +2,8 @@
 
 A color picker component with preset colors, custom color input, and optional opacity control.
 
+The custom hex field uses Blazor's `oninput` bind pipeline so rapid typing remains ordered while the picker rerenders.
+
 ## Parameters
 
 | Parameter | Type | Default | Description |

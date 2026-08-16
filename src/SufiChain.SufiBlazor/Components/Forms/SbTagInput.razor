@@ -27,8 +27,9 @@
                    class="sb-tag-input__input"
                    id="@Id"
                    @ref="_inputRef"
-                   value="@_inputValue"
-                   @oninput="OnInput"
+                   @bind:get="_inputValue"
+                   @bind:set="OnInput"
+                   @bind:event="oninput"
                    @onkeydown="OnKeyDown"
                    @onblur="OnBlur"
                    placeholder="@(Tags.Any() ? "" : Placeholder)"
@@ -116,9 +117,9 @@
     [Parameter]
     public string? Style { get; set; }
     
-    private void OnInput(ChangeEventArgs e)
+    private void OnInput(string? input)
     {
-        var value = e.Value?.ToString() ?? "";
+        var value = input ?? "";
         
         // Check for comma delimiter in the value
         if (value.Contains(','))

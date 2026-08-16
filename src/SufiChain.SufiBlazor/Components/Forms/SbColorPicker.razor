@@ -60,8 +60,9 @@
                     </div>
                     <input type="text"
                            class="sb-colorpicker__hex"
-                           value="@_tempValue"
-                           @oninput="OnHexInput"
+                           @bind:get="_tempValue"
+                           @bind:set="OnHexInput"
+                           @bind:event="oninput"
                            placeholder="#000000"
                            maxlength="7" />
                 </div>
@@ -225,9 +226,9 @@
         _tempValue = e.Value?.ToString();
     }
     
-    private void OnHexInput(ChangeEventArgs e)
+    private void OnHexInput(string? input)
     {
-        var value = e.Value?.ToString() ?? "";
+        var value = input ?? "";
         if (!value.StartsWith("#"))
             value = "#" + value;
         _tempValue = value;

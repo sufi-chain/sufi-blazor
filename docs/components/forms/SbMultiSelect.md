@@ -2,6 +2,8 @@
 
 A dropdown component for selecting multiple values from a list. Selected items are displayed as removable chips.
 
+The searchable input uses Blazor's `oninput` bind pipeline so local and remote result rerenders preserve the newest browser text.
+
 ## Parameters
 
 | Parameter | Type | Default | Description |

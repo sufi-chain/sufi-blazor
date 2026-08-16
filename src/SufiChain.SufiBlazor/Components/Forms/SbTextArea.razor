@@ -12,7 +12,7 @@
         </label>
     }
     <textarea class="sb-textarea__input"
-              @bind:get="Value"
+              @bind:get="_draft"
               @bind:set="OnInputAsync"
               @bind:event="oninput"
               placeholder="@Placeholder"
@@ -37,7 +37,7 @@
     @if (ShowCharacterCount && MaxLength.HasValue)
     {
         <div class="sb-textarea__counter">
-            @(Value?.Length ?? 0) / @MaxLength
+            @(_draft?.Length ?? 0) / @MaxLength
         </div>
     }
     
@@ -48,6 +48,11 @@
 </div>
 
 @code {
+    private string? _draft;
+    private string? _lastParentValue;
+    private bool _hasObservedParentValue;
+    private bool _updatingFromInput;
+
     /// <summary>
     /// The current text value.
     /// </summary>
@@ -159,6 +164,29 @@
     private string EffectiveId => Id ?? _generatedId;
     private readonly string _generatedId = $"sb-textarea-{Guid.NewGuid():N}";
 
+    protected override void OnParametersSet()
+    {
+        // Ignore the parameter round-trip caused by this component's own input.
+        // Under Interactive Server latency, that round-trip can contain an older
+        // parent value than the draft already present in the browser.
+        if (_updatingFromInput)
+        {
+            _updatingFromInput = false;
+            return;
+        }
+
+        // Only adopt a value when the parent actually changes it. Unrelated parent
+        // rerenders can otherwise replay a stale parameter over newer browser input
+        // while an Interactive Server circuit is under latency.
+        if (!_hasObservedParentValue ||
+            !string.Equals(Value, _lastParentValue, StringComparison.Ordinal))
+        {
+            _lastParentValue = Value;
+            _draft = Value;
+            _hasObservedParentValue = true;
+        }
+    }
+
     private string? AriaDescribedBy
     {
         get
@@ -173,6 +201,8 @@
     
     private async Task OnInputAsync(string? value)
     {
+        _draft = value;
+        _updatingFromInput = true;
         await ValueChanged.InvokeAsync(value);
     }
 }

@@ -2,6 +2,8 @@
 
 A text input with dropdown suggestions, supporting both static item lists and async search functions.
 
+Search text uses Blazor's `oninput` bind pipeline. An unchanged selected value does not overwrite the active browser draft during async result rerenders.
+
 ## Parameters
 
 | Parameter | Type | Default | Description |

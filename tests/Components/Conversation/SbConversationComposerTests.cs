@@ -7,6 +7,13 @@ namespace SufiChain.SufiBlazor.Tests.Components.Conversation;
 
 public class SbConversationComposerTests : BunitContext
 {
+    public SbConversationComposerTests()
+    {
+        JSInterop.SetupVoid(
+            "SufiBlazor.conversationComposer.bindEnterToSend",
+            _ => true);
+    }
+
     [Fact]
     public void Renders_InField_Action_Clusters_Without_External_Toolbar()
     {
@@ -14,7 +21,7 @@ public class SbConversationComposerTests : BunitContext
             .Add(p => p.Placeholder, "Write a message")
             .Add(p => p.StartActions, (RenderFragment)(b => b.AddMarkupContent(0, "<span class=\"start-addon\">attach</span>")))
             .Add(p => p.OverflowActions, (RenderFragment)(b => b.AddMarkupContent(0, "<span class=\"overflow-addon\">ai</span>")))
-            .Add(p => p.EndActions, (RenderFragment)(b => b.AddMarkupContent(0, "<span class=\"end-addon\">mic</span>")));
+            .Add(p => p.EndActions, (RenderFragment)(b => b.AddMarkupContent(0, "<span class=\"end-addon\">mic</span>"))));
 
         Assert.Contains("sb-conversation-composer__shell", cut.Markup);
         Assert.Contains("sb-conversation-composer__actions", cut.Markup);

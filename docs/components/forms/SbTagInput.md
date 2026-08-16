@@ -2,6 +2,8 @@
 
 A text input that converts entered text into removable tags/chips. Supports keyboard delimiters and maximum tag limits.
 
+The pending tag draft uses Blazor's `oninput` bind pipeline so rapid typing remains intact before a delimiter creates the tag.
+
 ## Parameters
 
 | Parameter | Type | Default | Description |

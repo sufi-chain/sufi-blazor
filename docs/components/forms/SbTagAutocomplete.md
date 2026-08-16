@@ -2,6 +2,8 @@
 
 Multi-select autocomplete with chip display. Search remote or local lists, add multiple tags, and optionally create new tags from typed text.
 
+Search text uses Blazor's `oninput` bind pipeline so async search rerenders preserve the newest browser value.
+
 ## Parameters
 
 | Parameter | Type | Default | Description |

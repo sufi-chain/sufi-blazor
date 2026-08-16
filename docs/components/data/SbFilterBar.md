@@ -2,6 +2,8 @@
 
 A horizontal bar component for displaying filter controls with search and clear functionality.
 
+The search draft uses Blazor's `oninput` bind pipeline, so debounce and parent rerenders do not replace newer browser text on high-latency Interactive Server circuits.
+
 ## Parameters
 
 | Parameter | Type | Default | Description |

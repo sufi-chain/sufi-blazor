@@ -7,10 +7,11 @@
         <div class="sb-filter-bar__search">
             <input type="text"
                    class="sb-filter-bar__search-input"
-                   value="@SearchValue"
-                   @oninput="OnSearchInput"
+                   @bind:get="_searchText"
+                   @bind:set="OnSearchInput"
+                   @bind:event="oninput"
                    placeholder="@(SearchPlaceholder ?? L["Search_Placeholder"])" />
-            @if (!string.IsNullOrEmpty(SearchValue))
+            @if (!string.IsNullOrEmpty(_searchText))
             {
                 <button type="button" class="sb-filter-bar__search-clear" @onclick="ClearSearch">
                     ×
@@ -54,6 +55,9 @@
 
 @code {
     private System.Timers.Timer? _debounceTimer;
+    private string? _searchText;
+    private string? _lastParentSearchValue;
+    private long _searchInputVersion;
     
     /// <summary>
     /// Filter controls content.
@@ -120,11 +124,20 @@
     /// </summary>
     [Parameter]
     public string? Class { get; set; }
-    
-    private void OnSearchInput(ChangeEventArgs e)
+
+    protected override void OnParametersSet()
     {
-        var value = e.Value?.ToString();
-        
+        if (!string.Equals(SearchValue, _lastParentSearchValue, StringComparison.Ordinal))
+        {
+            _lastParentSearchValue = SearchValue;
+            _searchText = SearchValue;
+        }
+    }
+
+    private void OnSearchInput(string? value)
+    {
+        _searchText = value;
+        var inputVersion = ++_searchInputVersion;
         _debounceTimer?.Stop();
         _debounceTimer?.Dispose();
         
@@ -134,7 +147,12 @@
             _debounceTimer?.Stop();
             await InvokeAsync(async () =>
             {
-                await SearchValueChanged.InvokeAsync(value);
+                if (inputVersion != _searchInputVersion)
+                {
+                    return;
+                }
+
+                await SearchValueChanged.InvokeAsync(_searchText);
                 await OnApply.InvokeAsync();
             });
         };
@@ -143,6 +161,9 @@
     
     private async Task ClearSearch()
     {
+        _searchInputVersion++;
+        _debounceTimer?.Stop();
+        _searchText = null;
         await SearchValueChanged.InvokeAsync(null);
         await OnApply.InvokeAsync();
     }
@@ -156,7 +177,10 @@
     
     private async Task ClearAllFilters()
     {
+        _searchInputVersion++;
+        _debounceTimer?.Stop();
         ActiveFilters.Clear();
+        _searchText = null;
         await ActiveFiltersChanged.InvokeAsync(ActiveFilters);
         await SearchValueChanged.InvokeAsync(null);
         await OnApply.InvokeAsync();
