@@ -14,7 +14,7 @@ The Demo depends on **Sufi Platform UI** for menus (`IMenuContributor`, `Applica
 
 ## How the Sufi Platform host wires it
 
-In `.dev/hosts/SufiChane.SufiPlatform/`:
+In `hosts/SufiChane.SufiPlatform/`:
 
 1. Project-reference or package-reference to `SufiChain.SufiBlazor.Demo`
 2. `[DependsOn(typeof(SufiBlazorDemoModule))]` on the host module
@@ -31,7 +31,7 @@ Today there is no separate zero-dependency demo host. Options:
 
 - Use [Standalone adoption](standalone-adoption.md) and build a small test page in your own Blazor app
 - Use the component reference under `docs/components/`
-- Run the gallery via `.dev/hosts/SufiChane.SufiPlatform/` (full platform stack)
+- Run the gallery via `hosts/SufiChane.SufiPlatform/` (full platform stack)
 
 Removing Sufi Platform UI from the Demo would require replacing menu contribution, localization, and module bootstrap — out of scope for the core library.
 
