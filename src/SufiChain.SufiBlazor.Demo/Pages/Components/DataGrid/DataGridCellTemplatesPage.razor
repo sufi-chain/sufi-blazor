@@ -12,6 +12,27 @@
         <ExampleContent>
             <SbDataGrid TItem="Employee" Items="@_employees" KeySelector="@(e => e.Id.ToString())" PageSize="5">
                 <ChildContent>
+                    <SbColumn TItem="Employee" Title="@L["Demo:Actions"]" Align="SbColumnAlign.Center" Width="90px" Sortable="false">
+                        <CellTemplate Context="context">
+                            <SbStack Direction="SbStackDirection.Row" Gap="1" Justify="SbJustify.Center">
+                                <SbTooltip Text="@L["Edit"]">
+                                    <SbIconButton Size="SbSize.Sm"
+                                                  AriaLabel="@L["Edit"]"
+                                                  OnClick="@(() => EditEmployee(context.Item))">
+                                        <Icon><SbIcon Name="edit" Size="SbSize.Sm" /></Icon>
+                                    </SbIconButton>
+                                </SbTooltip>
+                                <SbTooltip Text="@L["Delete"]">
+                                    <SbIconButton Size="SbSize.Sm"
+                                                  Color="SbColor.Danger"
+                                                  AriaLabel="@L["Delete"]"
+                                                  OnClick="@(() => DeleteEmployee(context.Item))">
+                                        <Icon><SbIcon Name="trash" Size="SbSize.Sm" /></Icon>
+                                    </SbIconButton>
+                                </SbTooltip>
+                            </SbStack>
+                        </CellTemplate>
+                    </SbColumn>
                     <SbColumn TItem="Employee" Field="Name" Title="@L["Demo:DataGridEmployee"]">
                         <CellTemplate Context="context">
                             <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center">
@@ -35,14 +56,6 @@
                             <SbBadge Color="@(context.Item.IsActive ? SbColor.Success : SbColor.Danger)">
                                 @(context.Item.IsActive ? L["Demo:Active"] : L["Demo:Inactive"])
                             </SbBadge>
-                        </CellTemplate>
-                    </SbColumn>
-                    <SbColumn TItem="Employee" Title="@L["Demo:Actions"]" Align="SbColumnAlign.Center" Width="120px">
-                        <CellTemplate Context="context">
-                            <SbStack Direction="SbStackDirection.Row" Gap="1" Justify="SbJustify.Center">
-                                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" OnClick="@(() => EditEmployee(context.Item))">✏️</SbButton>
-                                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" Color="SbColor.Danger" OnClick="@(() => DeleteEmployee(context.Item))">🗑️</SbButton>
-                            </SbStack>
                         </CellTemplate>
                     </SbColumn>
                 </ChildContent>
@@ -140,6 +153,22 @@ private class Employee
 
     private const string cellTemplatesCode = @"<SbDataGrid TItem=""Employee"" Items=""@_employees"" KeySelector=""@(e => e.Id.ToString())"" PageSize=""5"">
     <ChildContent>
+        <SbColumn TItem=""Employee"" Title=""Actions"" Width=""90px"" Sortable=""false"">
+            <CellTemplate Context=""context"">
+                <SbStack Direction=""SbStackDirection.Row"" Gap=""1"">
+                    <SbTooltip Text=""@L[""Edit""]"">
+                        <SbIconButton Size=""SbSize.Sm"" AriaLabel=""@L[""Edit""]"" OnClick=""@(() => EditEmployee(context.Item))"">
+                            <Icon><SbIcon Name=""edit"" Size=""SbSize.Sm"" /></Icon>
+                        </SbIconButton>
+                    </SbTooltip>
+                    <SbTooltip Text=""@L[""Delete""]"">
+                        <SbIconButton Size=""SbSize.Sm"" Color=""SbColor.Danger"" AriaLabel=""@L[""Delete""]"" OnClick=""@(() => DeleteEmployee(context.Item))"">
+                            <Icon><SbIcon Name=""trash"" Size=""SbSize.Sm"" /></Icon>
+                        </SbIconButton>
+                    </SbTooltip>
+                </SbStack>
+            </CellTemplate>
+        </SbColumn>
         <SbColumn TItem=""Employee"" Field=""Name"" Title=""Employee"">
             <CellTemplate Context=""context"">
                 <SbStack Direction=""SbStackDirection.Row"" Gap=""2"" Align=""SbAlign.Center"">
@@ -163,14 +192,6 @@ private class Employee
                 <SbBadge Color=""@(context.Item.IsActive ? SbColor.Success : SbColor.Danger)"">
                     @(context.Item.IsActive ? ""Active"" : ""Inactive"")
                 </SbBadge>
-            </CellTemplate>
-        </SbColumn>
-        <SbColumn TItem=""Employee"" Title=""Actions"" Align=""SbColumnAlign.Center"">
-            <CellTemplate Context=""context"">
-                <SbStack Direction=""SbStackDirection.Row"" Gap=""1"" Justify=""SbJustify.Center"">
-                    <SbButton Size=""SbSize.Sm"" Variant=""SbButtonVariant.Ghost"" OnClick=""@(() => EditEmployee(context.Item))"">Edit</SbButton>
-                    <SbButton Size=""SbSize.Sm"" Variant=""SbButtonVariant.Ghost"" Color=""SbColor.Danger"" OnClick=""@(() => DeleteEmployee(context.Item))"">Delete</SbButton>
-                </SbStack>
             </CellTemplate>
         </SbColumn>
     </ChildContent>

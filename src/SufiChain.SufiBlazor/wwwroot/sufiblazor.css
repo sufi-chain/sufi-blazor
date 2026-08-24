@@ -2160,6 +2160,31 @@ samp,
     background-color: rgba(0, 0, 0, 0.08);
 }
 
+.sb-theme-dark .sb-alert--info {
+    color: var(--sb-color-info-hover);
+}
+
+.sb-theme-dark .sb-alert--success {
+    color: var(--sb-color-success-hover);
+}
+
+.sb-theme-dark .sb-alert--warning {
+    color: var(--sb-color-warning-hover);
+}
+
+.sb-theme-dark .sb-alert--danger {
+    color: var(--sb-color-danger-hover);
+}
+
+.sb-theme-dark .sb-alert__title,
+.sb-theme-dark .sb-alert__message {
+    color: var(--sb-color-text);
+}
+
+.sb-theme-dark .sb-alert__dismiss:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
 /* SbProgress */
 .sb-progress--linear {
     display: flex;
