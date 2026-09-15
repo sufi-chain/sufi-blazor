@@ -7,6 +7,7 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.JSInterop
 @using System.Globalization
+@using System.Threading
 @implements IAsyncDisposable
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<SufiBlazorResource> L
@@ -41,8 +42,8 @@
     @* Active Filters Bar *@
     @if (ShowFilterBar && _activeFilters.Any())
     {
-        <div class="sb-datagrid__filter-bar" role="region" aria-label="Active filters">
-            <span class="sb-datagrid__filter-bar-label">Filters:</span>
+        <div class="sb-datagrid__filter-bar" role="region" aria-label="@L["ActiveFilters"]">
+            <span class="sb-datagrid__filter-bar-label">@L["Filters"]:</span>
             @foreach (var filter in _activeFilters.Values)
             {
                 var column = _columns.FirstOrDefault(c => c.Field == filter.Field);
@@ -54,7 +55,7 @@
                                  Variant="SbButtonVariant.Ghost"
                                  Color="SbColor.Secondary"
                                  Class="sb-datagrid__filter-tag-remove"
-                                 AriaLabel="@($"Remove filter for {column?.Title ?? filter.Field}")"
+                                 AriaLabel="@L["RemoveFilterFor", column?.Title ?? filter.Field]"
                                  OnClick="@(() => RemoveFilterAsync(filter.Field))">
                         <Icon><SbIcon Name="x" Size="SbSize.Sm" /></Icon>
                     </SbIconButton>
@@ -65,12 +66,55 @@
                      Color="SbColor.Secondary"
                      Class="sb-datagrid__filter-bar-clear"
                      OnClick="ClearAllFiltersAsync">
-                Clear all
+                @L["ClearAll"]
             </SbButton>
+        </div>
+    }
+
+    @if (ShowGridToolbar)
+    {
+        <div class="sb-datagrid__toolbar">
+            @if (ToolbarTemplate != null)
+            {
+                @ToolbarTemplate
+            }
+            <div class="sb-datagrid__toolbar-actions">
+                @if (UseCardLayout && ShowMobileFilterSheet)
+                {
+                    <SbButton Size="SbSize.Sm"
+                              Variant="SbButtonVariant.Outline"
+                              Color="SbColor.Secondary"
+                              OnClick="OpenMobileFilters">
+                        <StartIcon><SbIcon Name="filter" Size="SbSize.Sm" /></StartIcon>
+                        <ChildContent>@L["Filters"]</ChildContent>
+                    </SbButton>
+                }
+                @if (ShowColumnChooser && !UseCardLayout)
+                {
+                    <SbPopover @bind-Open="_columnChooserOpen"
+                               Placement="SbPlacement.BottomEnd"
+                               CloseOnClickAway="true">
+                        <AnchorContent>
+                            <SbButton Size="SbSize.Sm"
+                                      Variant="SbButtonVariant.Outline"
+                                      Color="SbColor.Secondary"
+                                      OnClick="ToggleColumnChooser">
+                                <StartIcon><SbIcon Name="columns" Size="SbSize.Sm" /></StartIcon>
+                                <ChildContent>@L["Columns"]</ChildContent>
+                            </SbButton>
+                        </AnchorContent>
+                        <ChildContent>
+                            @RenderColumnChooserList()
+                        </ChildContent>
+                    </SbPopover>
+                }
+            </div>
         </div>
     }
     
     <div class="sb-datagrid__container" style="@GetContainerStyle()">
+        @if (!UseCardLayout)
+        {
         <table class="sb-datagrid__table" 
                style="@GetTableStyle()"
                role="grid"
@@ -109,7 +153,7 @@
                         </th>
                         colIndex++;
                     }
-                    @foreach (var column in _columns.Where(c => c.Visible))
+                    @foreach (var column in VisibleColumns)
                     {
                         var columnIndex = colIndex;
                         <th class="sb-datagrid__cell sb-datagrid__cell--header @column.Class @(column.Sortable ? "sb-datagrid__cell--sortable" : "") @(column.Filterable && ShowColumnFilters ? "sb-datagrid__cell--filterable" : "") @GetFrozenColumnClass(column)"
@@ -138,7 +182,7 @@
                                     </span>
                                 }
                                 
-                                @if (column.Filterable && ShowColumnFilters && !string.IsNullOrEmpty(column.Field))
+                                @if (column.Filterable && ShowColumnFilters && !ShowFilterRow && !string.IsNullOrEmpty(column.Field))
                                 {
                                     <SbColumnFilterMenu Field="@column.Field"
                                                         ColumnTitle="@column.Title"
@@ -167,10 +211,37 @@
                             role="columnheader"
                             scope="col"
                             aria-colindex="@colIndex">
-                            <span class="sb-datagrid__header-title">Actions</span>
+                            <span class="sb-datagrid__header-title">@L["Actions"]</span>
                         </th>
                     }
                 </tr>
+                @if (ShowFilterRow && !UseCardLayout && VisibleColumns.Any(c => c.Filterable && !string.IsNullOrEmpty(c.Field)))
+                {
+                    <tr class="sb-datagrid__filter-row" role="row">
+                        @if (DetailTemplate != null)
+                        {
+                            <th class="sb-datagrid__cell sb-datagrid__cell--filter"></th>
+                        }
+                        @if (SelectionMode != SbSelectionMode.None)
+                        {
+                            <th class="sb-datagrid__cell sb-datagrid__cell--filter"></th>
+                        }
+                        @foreach (var column in VisibleColumns)
+                        {
+                            <th class="sb-datagrid__cell sb-datagrid__cell--filter @GetFrozenColumnClass(column)"
+                                style="@GetColumnHeaderStyle(column, 0)">
+                                @if (column.Filterable && !string.IsNullOrEmpty(column.Field))
+                                {
+                                    @RenderFilterEditor(column, false)
+                                }
+                            </th>
+                        }
+                        @if (EditMode != SbEditMode.None && ShowEditActions)
+                        {
+                            <th class="sb-datagrid__cell sb-datagrid__cell--filter"></th>
+                        }
+                    </tr>
+                }
             </thead>
             <tbody class="sb-datagrid__body" role="rowgroup">
                 @if (VirtualizationEnabled && _virtualizedItems.Any())
@@ -217,7 +288,7 @@
                         {
                             <td class="sb-datagrid__cell"></td>
                         }
-                        @foreach (var column in _columns.Where(c => c.Visible))
+                        @foreach (var column in VisibleColumns)
                         {
                             <td class="sb-datagrid__cell sb-datagrid__cell--footer @column.Class"
                                 style="@GetColumnStyle(column)">
@@ -232,7 +303,53 @@
                 </tfoot>
             }
         </table>
+        }
+        else
+        {
+            <div class="sb-datagrid__cards" role="list">
+                @if (_displayItems.Any())
+                {
+                    var cardIndex = 0;
+                    @foreach (var item in _displayItems)
+                    {
+                        @RenderCard(item, cardIndex)
+                        cardIndex++;
+                    }
+                }
+                else
+                {
+                    <div class="sb-datagrid__cards-empty">
+                        @if (EmptyTemplate != null)
+                        {
+                            @EmptyTemplate
+                        }
+                        else
+                        {
+                            <span>@(EmptyText ?? L["NoDataAvailable"])</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
     </div>
+
+    <SbDrawer Open="@_mobileFiltersOpen"
+              OpenChanged="OnMobileFiltersOpenChanged"
+              Placement="SbDrawerPlacement.Bottom"
+              Title="@L["Filters"]"
+              Class="sb-datagrid__filters-sheet">
+        <ChildContent>
+            @RenderMobileFilterSheet()
+        </ChildContent>
+        <Footer>
+            <SbButton Variant="SbButtonVariant.Outline" Color="SbColor.Secondary" OnClick="ClearAllFiltersAsync">
+                @L["ClearAll"]
+            </SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="CloseMobileFilters">
+                @L["Apply"]
+            </SbButton>
+        </Footer>
+    </SbDrawer>
     
     @if (ShowPagination && TotalCount > 0 && !VirtualizationEnabled)
     {
@@ -300,7 +417,7 @@
                 </td>
                 cellColIndex++;
             }
-            @foreach (var column in _columns.Where(c => c.Visible))
+            @foreach (var column in VisibleColumns)
             {
                 var col = column;
                 var isCellEditing = isRowEditing && col.Editable && (EditMode == SbEditMode.Row || (EditMode == SbEditMode.Cell && (_editingColumnField == null || _editingColumnField == col.Field)));
@@ -427,6 +544,163 @@
                    @onchange="e => OnCellValueChangedFromInput(col, e)" />
         }
     </text>;
+
+    RenderFragment RenderCellContent(SbColumn<TItem> column, TItem item, int rowIndex) => @<text>
+        @{
+            var cellContext = new SbCellContext<TItem>(item, rowIndex, column);
+        }
+        @if (column.CellTemplate != null)
+        {
+            @column.CellTemplate(cellContext)
+        }
+        else
+        {
+            @column.GetDisplayValue(item)
+        }
+    </text>;
+
+    RenderFragment RenderCard(TItem item, int rowIndex) => @<text>
+        @{
+            var key = GetItemKey(item);
+            var isSelected = _selectedKeys.Contains(key);
+            var titleColumn = GetCardTitleColumn();
+            var dataColumns = GetCardDataColumns(titleColumn).ToList();
+            var actionColumns = GetActionColumns().ToList();
+        }
+        <article class="sb-datagrid__card @(isSelected ? "sb-datagrid__card--selected" : "")"
+                 role="listitem"
+                 data-row-key="@key">
+            <div class="sb-datagrid__card-header">
+                @if (SelectionMode != SbSelectionMode.None)
+                {
+                    <SbCheckbox Value="@isSelected"
+                                ValueChanged="() => ToggleSelection(key, item)"
+                                AriaLabel="@L["SelectRow", rowIndex + 1]" />
+                }
+                <div class="sb-datagrid__card-title">
+                    @if (CardTemplate != null)
+                    {
+                        @CardTemplate(item)
+                    }
+                    else if (titleColumn != null)
+                    {
+                        @RenderCellContent(titleColumn, item, rowIndex)
+                    }
+                </div>
+            </div>
+            @if (CardTemplate == null && dataColumns.Count > 0)
+            {
+                <dl class="sb-datagrid__card-fields">
+                    @foreach (var column in dataColumns)
+                    {
+                        <div class="sb-datagrid__card-field">
+                            <dt>@column.Title</dt>
+                            <dd>@RenderCellContent(column, item, rowIndex)</dd>
+                        </div>
+                    }
+                </dl>
+            }
+            @if (actionColumns.Count > 0)
+            {
+                <div class="sb-datagrid__card-actions">
+                    @foreach (var column in actionColumns)
+                    {
+                        @RenderCellContent(column, item, rowIndex)
+                    }
+                </div>
+            }
+        </article>
+    </text>;
+
+    RenderFragment RenderFilterEditor(SbColumn<TItem> column, bool compact) => @<text>
+        @{
+            var field = column.Field!;
+            var kind = GetEffectiveFilterKind(column);
+            var current = GetColumnFilter(field);
+            var currentText = GetFilterRowText(field, current);
+            var options = GetFilterOptions(column);
+            var inputId = $"sb-dg-filter-{field}";
+        }
+        @if (kind is SbColumnFilterKind.Select or SbColumnFilterKind.Boolean)
+        {
+            <select id="@inputId"
+                    class="sb-datagrid__filter-input sb-datagrid__filter-input--select"
+                    aria-label="@L["FilterBy", column.Title]"
+                    value="@currentText"
+                    @onchange="e => OnFilterRowSelectChangedAsync(field, e.Value?.ToString())">
+                <option value="">@L["Select_Placeholder"]</option>
+                @foreach (var option in options)
+                {
+                    <option value="@option.Value">@option.Text</option>
+                }
+            </select>
+        }
+        else
+        {
+            var inputType = GetFilterInputType(column);
+            <input id="@inputId"
+                   type="@inputType"
+                   class="sb-datagrid__filter-input"
+                   value="@currentText"
+                   placeholder="@L["Search_Placeholder"]"
+                   aria-label="@L["FilterBy", column.Title]"
+                   @oninput="e => OnFilterRowTextInputAsync(field, e.Value?.ToString(), column)" />
+        }
+    </text>;
+
+    RenderFragment RenderColumnChooserList() => @<text>
+        <div class="sb-datagrid__chooser" role="group" aria-label="@L["Columns"]">
+            @foreach (var column in _columns)
+            {
+                var chooserColumn = column;
+                var locked = IsColumnChooserLocked(chooserColumn);
+                var shown = IsColumnVisible(chooserColumn);
+                <label class="sb-datagrid__chooser-item @(locked ? "sb-datagrid__chooser-item--locked" : "")">
+                    <SbCheckbox Value="@shown"
+                                Disabled="@locked"
+                                ValueChanged="@(value => OnChooserVisibilityChanged(chooserColumn, value))"
+                                Label="@chooserColumn.Title"
+                                AriaLabel="@chooserColumn.Title" />
+                </label>
+            }
+        </div>
+    </text>;
+
+    RenderFragment RenderMobileFilterSheet() => @<text>
+        <div class="sb-datagrid__sheet">
+            @if (_columns.Any(c => c.Sortable && !string.IsNullOrEmpty(c.Field)))
+            {
+                <div class="sb-datagrid__sheet-field">
+                    <label class="sb-datagrid__sheet-label" for="sb-dg-sheet-sort">@L["Sort"]</label>
+                    <select id="sb-dg-sheet-sort"
+                            class="sb-datagrid__filter-input sb-datagrid__filter-input--select"
+                            value="@GetMobileSortSelectValue()"
+                            @onchange="OnMobileSortChangedAsync">
+                        <option value="">@L["Select_Placeholder"]</option>
+                        @foreach (var column in _columns.Where(c => c.Sortable && !string.IsNullOrEmpty(c.Field)))
+                        {
+                            <option value="@($"{column.Field}|asc")">@column.Title — @L["SortAscending"]</option>
+                            <option value="@($"{column.Field}|desc")">@column.Title — @L["SortDescending"]</option>
+                        }
+                    </select>
+                </div>
+            }
+            @foreach (var column in _columns.Where(c => c.Filterable && !string.IsNullOrEmpty(c.Field)))
+            {
+                <div class="sb-datagrid__sheet-field">
+                    <label class="sb-datagrid__sheet-label">@column.Title</label>
+                    @RenderFilterEditor(column, true)
+                </div>
+            }
+            @if (ShowColumnChooser)
+            {
+                <div class="sb-datagrid__sheet-field">
+                    <span class="sb-datagrid__sheet-label">@L["Columns"]</span>
+                    @RenderColumnChooserList()
+                </div>
+            }
+        </div>
+    </text>;
 }
 
 @code {
@@ -452,6 +726,13 @@
     
     // Filtering state
     private Dictionary<string, SbFilter> _activeFilters = new();
+    private readonly Dictionary<string, string> _filterRowDraft = new(StringComparer.Ordinal);
+    private CancellationTokenSource? _filterDebounceCts;
+    private readonly HashSet<string> _chooserHiddenFields = new(StringComparer.Ordinal);
+    private bool _columnChooserOpen;
+    private bool _mobileFiltersOpen;
+    private bool _isCompact;
+    private string _viewportWatchId = Guid.NewGuid().ToString();
     
     // Row details state
     private HashSet<string> _expandedRows = new();
@@ -634,6 +915,43 @@
     /// </summary>
     [Parameter]
     public bool ShowColumnFilters { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show an always-visible filter row under the header (hides kebab menus).
+    /// </summary>
+    [Parameter]
+    public bool ShowFilterRow { get; set; }
+
+    /// <summary>
+    /// Whether to show a column chooser (show/hide columns). Action columns stay locked visible.
+    /// </summary>
+    [Parameter]
+    public bool ShowColumnChooser { get; set; }
+
+    /// <summary>
+    /// How rows render on compact viewports. Default Auto: table on desktop, cards on phones.
+    /// </summary>
+    [Parameter]
+    public SbDataGridCardLayout CardLayout { get; set; } = SbDataGridCardLayout.Auto;
+
+    /// <summary>
+    /// Optional full override of auto-generated card body (selection and action footer still wrap it).
+    /// </summary>
+    [Parameter]
+    public RenderFragment<TItem>? CardTemplate { get; set; }
+
+    /// <summary>
+    /// Field used as the card title. When null, the first visible data column is used.
+    /// </summary>
+    [Parameter]
+    public string? CardTitleField { get; set; }
+
+    /// <summary>
+    /// Extra content on the left of the grid toolbar (chooser / mobile Filters stay on the right).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ToolbarTemplate { get; set; }
+
     
     // ============ Column Resize Parameters ============
     
@@ -788,6 +1106,23 @@
     
     private bool IsEditingCell(string key, string? field) => 
         _editingRowKey == key && _editingColumnField == field;
+
+    private IEnumerable<SbColumn<TItem>> VisibleColumns => _columns.Where(IsColumnVisible);
+
+    private bool UseCardLayout =>
+        CardLayout == SbDataGridCardLayout.Always
+        || (CardLayout == SbDataGridCardLayout.Auto && _isCompact);
+
+    private bool ShowMobileFilterSheet =>
+        ShowFilterRow
+        || ShowColumnChooser
+        || _columns.Any(c => c.Sortable && !string.IsNullOrEmpty(c.Field))
+        || _columns.Any(c => c.Filterable && !string.IsNullOrEmpty(c.Field));
+
+    private bool ShowGridToolbar =>
+        ToolbarTemplate != null
+        || ShowColumnChooser
+        || (UseCardLayout && ShowMobileFilterSheet);
     
     private string GetContainerStyle()
     {
@@ -799,14 +1134,14 @@
     
     private string GetTableStyle()
     {
-        if (VirtualizationEnabled || AllowColumnResize || _columns.Any(c => c.Visible && c.Freeze != SbColumnFreeze.None))
+        if (VirtualizationEnabled || AllowColumnResize || VisibleColumns.Any(c => c.Freeze != SbColumnFreeze.None))
             return "table-layout: fixed;";
         return "";
     }
     
     private int GetTotalColumnCount()
     {
-        var count = _columns.Count(c => c.Visible);
+        var count = VisibleColumns.Count();
         if (DetailTemplate != null) count++;
         if (SelectionMode != SbSelectionMode.None) count++;
         if (EditMode != SbEditMode.None && ShowEditActions) count++;
@@ -917,7 +1252,17 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
             _dotNetRef = DotNetObjectReference.Create(this);
+            try
+            {
+                _isCompact = await JSRuntime.InvokeAsync<bool>("SufiBlazor.viewport.watchCompact", _viewportWatchId, _dotNetRef, 640);
+            }
+            catch
+            {
+                _isCompact = false;
+            }
+        }
         // Load data after render when columns are registered
         if (_isFirstRender || _parametersChanged)
         {
@@ -931,8 +1276,29 @@
         }
     }
     
+    [JSInvokable]
+    public Task OnViewportCompactChanged(bool isCompact)
+    {
+        _isCompact = isCompact;
+        if (!isCompact)
+        {
+            _mobileFiltersOpen = false;
+        }
+        return InvokeAsync(StateHasChanged);
+    }
+    
     public async ValueTask DisposeAsync()
     {
+        _filterDebounceCts?.Cancel();
+        _filterDebounceCts?.Dispose();
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("SufiBlazor.viewport.unwatchCompact", _viewportWatchId);
+        }
+        catch
+        {
+            /* ignore */
+        }
         _dotNetRef?.Dispose();
         await ValueTask.CompletedTask;
     }
@@ -1064,8 +1430,8 @@
         {
             SbFilterOperator.IsNull => value == null,
             SbFilterOperator.IsNotNull => value != null,
-            SbFilterOperator.Equals => Equals(value, filter.Value),
-            SbFilterOperator.NotEquals => !Equals(value, filter.Value),
+            SbFilterOperator.Equals => ValuesEqual(value, filter.Value),
+            SbFilterOperator.NotEquals => !ValuesEqual(value, filter.Value),
             SbFilterOperator.Contains => ContainsString(value, filter.Value),
             SbFilterOperator.StartsWith => StartsWithString(value, filter.Value),
             SbFilterOperator.EndsWith => EndsWithString(value, filter.Value),
@@ -1706,7 +2072,7 @@
         _focusedColIndex = Math.Max(1, Math.Min(newIndex, maxCol));
         
         // Announce the column
-        var visibleColumns = _columns.Where(c => c.Visible).ToList();
+        var visibleColumns = VisibleColumns.ToList();
         var colOffset = SelectionMode != SbSelectionMode.None ? 1 : 0;
         var colIdx = _focusedColIndex - 1 - colOffset;
         
@@ -1786,6 +2152,276 @@
         if (string.IsNullOrEmpty(field)) return null;
         return _activeFilters.TryGetValue(field, out var filter) ? filter : null;
     }
+
+    private static bool ValuesEqual(object? value, object? filterValue)
+    {
+        if (Equals(value, filterValue))
+        {
+            return true;
+        }
+
+        if (value is null || filterValue is null)
+        {
+            return false;
+        }
+
+        var left = value.ToString();
+        var right = filterValue.ToString();
+        if (string.Equals(left, right, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        if (value is bool boolValue && bool.TryParse(right, out var parsedRight))
+        {
+            return boolValue == parsedRight;
+        }
+
+        if (filterValue is bool filterBool && bool.TryParse(left, out var parsedLeft))
+        {
+            return filterBool == parsedLeft;
+        }
+
+        return false;
+    }
+
+    private bool IsColumnChooserLocked(SbColumn<TItem> column) => string.IsNullOrEmpty(column.Field);
+
+    private string GetColumnChooserKey(SbColumn<TItem> column) =>
+        !string.IsNullOrEmpty(column.Field) ? column.Field! : column.Title;
+
+    private bool IsColumnVisible(SbColumn<TItem> column)
+    {
+        if (!column.Visible)
+        {
+            return false;
+        }
+
+        if (IsColumnChooserLocked(column))
+        {
+            return true;
+        }
+
+        return !_chooserHiddenFields.Contains(GetColumnChooserKey(column));
+    }
+
+    private bool IsActionColumn(SbColumn<TItem> column) => string.IsNullOrEmpty(column.Field);
+
+    private IEnumerable<SbColumn<TItem>> GetActionColumns() => VisibleColumns.Where(IsActionColumn);
+
+    private SbColumn<TItem>? GetCardTitleColumn()
+    {
+        if (!string.IsNullOrEmpty(CardTitleField))
+        {
+            var named = VisibleColumns.FirstOrDefault(c =>
+                string.Equals(c.Field, CardTitleField, StringComparison.Ordinal));
+            if (named != null)
+            {
+                return named;
+            }
+        }
+
+        return VisibleColumns.FirstOrDefault(c => !IsActionColumn(c));
+    }
+
+    private IEnumerable<SbColumn<TItem>> GetCardDataColumns(SbColumn<TItem>? titleColumn)
+    {
+        return VisibleColumns.Where(c => !IsActionColumn(c) && c != titleColumn);
+    }
+
+    private SbColumnFilterKind GetEffectiveFilterKind(SbColumn<TItem> column)
+    {
+        if (column.FilterKind != SbColumnFilterKind.Auto)
+        {
+            return column.FilterKind;
+        }
+
+        if (column.FilterItems is { Count: > 0 })
+        {
+            return SbColumnFilterKind.Select;
+        }
+
+        var fieldType = Nullable.GetUnderlyingType(column.GetFieldType()) ?? column.GetFieldType();
+        if (fieldType == typeof(bool))
+        {
+            return SbColumnFilterKind.Boolean;
+        }
+
+        if (fieldType.IsEnum)
+        {
+            return SbColumnFilterKind.Select;
+        }
+
+        return SbColumnFilterKind.Text;
+    }
+
+    private IReadOnlyList<SbFilterOption> GetFilterOptions(SbColumn<TItem> column)
+    {
+        if (column.FilterItems is { Count: > 0 })
+        {
+            return column.FilterItems;
+        }
+
+        var fieldType = Nullable.GetUnderlyingType(column.GetFieldType()) ?? column.GetFieldType();
+        if (fieldType == typeof(bool))
+        {
+            return new[]
+            {
+                new SbFilterOption("true", L["Yes"]),
+                new SbFilterOption("false", L["No"])
+            };
+        }
+
+        if (fieldType.IsEnum)
+        {
+            return Enum.GetNames(fieldType)
+                .Select(name => new SbFilterOption(name, name))
+                .ToList();
+        }
+
+        return Array.Empty<SbFilterOption>();
+    }
+
+    private string GetFilterInputType(SbColumn<TItem> column)
+    {
+        var fieldType = Nullable.GetUnderlyingType(column.GetFieldType()) ?? column.GetFieldType();
+        if (fieldType == typeof(DateTime) || fieldType == typeof(DateOnly))
+        {
+            return "date";
+        }
+
+        if (fieldType == typeof(int) || fieldType == typeof(long) || fieldType == typeof(decimal)
+            || fieldType == typeof(double) || fieldType == typeof(float) || fieldType == typeof(short)
+            || fieldType == typeof(byte))
+        {
+            return "number";
+        }
+
+        return "text";
+    }
+
+    private string GetFilterRowText(string field, SbFilter? filter)
+    {
+        if (_filterRowDraft.TryGetValue(field, out var draft))
+        {
+            return draft;
+        }
+
+        return filter?.Value?.ToString() ?? string.Empty;
+    }
+
+    private async Task OnFilterRowTextInputAsync(string field, string? value, SbColumn<TItem> column)
+    {
+        _filterRowDraft[field] = value ?? string.Empty;
+        _filterDebounceCts?.Cancel();
+        _filterDebounceCts?.Dispose();
+        _filterDebounceCts = new CancellationTokenSource();
+        var token = _filterDebounceCts.Token;
+
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            await OnColumnFilterChanged(field, null);
+            return;
+        }
+
+        try
+        {
+            await Task.Delay(300, token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        var op = GetFilterInputType(column) == "text" ? SbFilterOperator.Contains : SbFilterOperator.Equals;
+        await OnColumnFilterChanged(field, new SbFilter(field, op, value));
+    }
+
+    private async Task OnFilterRowSelectChangedAsync(string field, string? value)
+    {
+        _filterRowDraft[field] = value ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            await OnColumnFilterChanged(field, null);
+            return;
+        }
+
+        await OnColumnFilterChanged(field, new SbFilter(field, SbFilterOperator.Equals, value));
+    }
+
+    private void ToggleColumnChooser()
+    {
+        _columnChooserOpen = !_columnChooserOpen;
+    }
+
+    private void OnChooserVisibilityChanged(SbColumn<TItem> column, bool visible)
+    {
+        if (IsColumnChooserLocked(column))
+        {
+            return;
+        }
+
+        var key = GetColumnChooserKey(column);
+        if (visible)
+        {
+            _chooserHiddenFields.Remove(key);
+        }
+        else
+        {
+            _chooserHiddenFields.Add(key);
+        }
+    }
+
+    private void OpenMobileFilters()
+    {
+        _mobileFiltersOpen = true;
+    }
+
+    private void CloseMobileFilters()
+    {
+        _mobileFiltersOpen = false;
+    }
+
+    private Task OnMobileFiltersOpenChanged(bool open)
+    {
+        _mobileFiltersOpen = open;
+        return Task.CompletedTask;
+    }
+
+    private string GetMobileSortSelectValue()
+    {
+        if (_currentSort == null || string.IsNullOrEmpty(_currentSort.Field))
+        {
+            return string.Empty;
+        }
+
+        var dir = _currentSort.Direction == SbSortDirection.Descending ? "desc" : "asc";
+        return $"{_currentSort.Field}|{dir}";
+    }
+
+    private async Task OnMobileSortChangedAsync(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        if (string.IsNullOrWhiteSpace(raw) || !raw.Contains('|'))
+        {
+            _currentSort = null;
+        }
+        else
+        {
+            var parts = raw.Split('|', 2);
+            var field = parts[0];
+            var descending = parts.Length > 1 && string.Equals(parts[1], "desc", StringComparison.OrdinalIgnoreCase);
+            _currentSort = new SbSort(field, descending ? SbSortDirection.Descending : SbSortDirection.Ascending);
+        }
+
+        await OnSortChanged.InvokeAsync(_currentSort);
+        await RefreshDataAsync();
+    }
     
     private async Task OnColumnFilterChanged(string field, SbFilter? filter)
     {
@@ -1814,6 +2450,7 @@
     public async Task ClearAllFiltersAsync()
     {
         _activeFilters.Clear();
+        _filterRowDraft.Clear();
         SetLocalPageIndex(0);
         await PageIndexChanged.InvokeAsync(0);
         await OnFiltersChanged.InvokeAsync(ActiveFilters);
@@ -1869,8 +2506,8 @@
         {
             SbFilterOperator.IsNull => value == null,
             SbFilterOperator.IsNotNull => value != null,
-            SbFilterOperator.Equals => Equals(value, filter.Value),
-            SbFilterOperator.NotEquals => !Equals(value, filter.Value),
+            SbFilterOperator.Equals => ValuesEqual(value, filter.Value),
+            SbFilterOperator.NotEquals => !ValuesEqual(value, filter.Value),
             SbFilterOperator.Contains => ContainsString(value, filter.Value),
             SbFilterOperator.StartsWith => StartsWithString(value, filter.Value),
             SbFilterOperator.EndsWith => EndsWithString(value, filter.Value),
@@ -1910,7 +2547,8 @@
         if (Bordered) classes.Add("sb-datagrid--bordered");
         else classes.Add("sb-datagrid--borderless");
         if (VirtualizationEnabled) classes.Add("sb-datagrid--virtualized");
-        if (_columns.Any(c => c.Visible && c.Freeze != SbColumnFreeze.None)) classes.Add("sb-datagrid--frozen");
+        if (UseCardLayout) classes.Add("sb-datagrid--cards");
+        if (VisibleColumns.Any(c => c.Freeze != SbColumnFreeze.None)) classes.Add("sb-datagrid--frozen");
         if (AllowColumnResize) classes.Add("sb-datagrid--resizable");
         return string.Join(" ", classes);
     }
@@ -1938,7 +2576,7 @@
     public async Task ExportToCsvAsync(string filename = "export.csv")
     {
         var csv = new System.Text.StringBuilder();
-        var visibleColumns = _columns.Where(c => c.Visible).ToList();
+        var visibleColumns = VisibleColumns.ToList();
         
         // Header row
         csv.AppendLine(string.Join(",", visibleColumns.Select(c => EscapeCsvValue(c.Title))));
@@ -1984,7 +2622,7 @@
         }
         
         var csv = new System.Text.StringBuilder();
-        var visibleColumns = _columns.Where(c => c.Visible).ToList();
+        var visibleColumns = VisibleColumns.ToList();
         
         // Header row
         csv.AppendLine(string.Join(",", visibleColumns.Select(c => EscapeCsvValue(c.Title))));
@@ -2114,7 +2752,7 @@
     private int CalculateFrozenOffset(SbColumn<TItem> targetColumn, bool isStart)
     {
         var offset = 0;
-        var visibleColumns = _columns.Where(c => c.Visible).ToList();
+        var visibleColumns = VisibleColumns.ToList();
         
         if (isStart)
         {

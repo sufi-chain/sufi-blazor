@@ -1,6 +1,6 @@
 # Data Grid Overview
 
-**SbDataGrid** is the main component for tabular data: sorting, pagination, selection, virtualization, server-side data, and more.
+**SbDataGrid** is the main component for tabular data: sorting, pagination, selection, filtering, column chooser, mobile cards, virtualization, server-side data, and more.
 
 ## Demos
 
@@ -11,6 +11,7 @@
 | [Striped & Bordered](/demo/sufi-blazor/data-grid/styled) | Visual variants: striped rows, borders |
 | [Compact](/demo/sufi-blazor/data-grid/compact) | Density: compact, default, comfortable |
 | [Empty State](/demo/sufi-blazor/data-grid/empty) | Custom content when there are no items |
+| [Filter row](/demo/sufi-blazor/data-grid/filter-row) | Inline filter row, column chooser, selection, and mobile cards |
 
 ## API Reference
 

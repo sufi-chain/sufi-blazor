@@ -1,0 +1,84 @@
+@page "/demo/sufi-blazor/data-grid/filter-row"
+
+<PageTitle>@(L["Menu:Demo:DataGrid"] + " - " + L["Demo:DataGridFilterRow"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:DataGrid"] - @L["Demo:DataGridFilterRow"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:DataGridFilterRowDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:DataGridFilterRow"]" SourceCode="@filterRowCode" RelatedCode="@filterRowCodeBehind">
+        <ExampleContent>
+            <SbDataGrid TItem="Employee"
+                        Items="@_employees"
+                        KeySelector="@(e => e.Id.ToString())"
+                        PageSize="5"
+                        ShowFilterRow="true"
+                        ShowColumnChooser="true"
+                        SelectionMode="SbSelectionMode.MultipleRows"
+                        CardLayout="SbDataGridCardLayout.Auto">
+                <ChildContent>
+                    <SbColumn TItem="Employee" Title="@L["Demo:Actions"]" Width="80px">
+                        <CellTemplate>
+                            <SbIconButton Size="SbSize.Sm" AriaLabel="@L["Demo:Actions"]">
+                                <Icon><SbIcon Name="more-vertical" Size="SbSize.Sm" /></Icon>
+                            </SbIconButton>
+                        </CellTemplate>
+                    </SbColumn>
+                    <SbColumn TItem="Employee" Field="Name" Title="@L["Demo:Name"]" Sortable="true" Filterable="true" />
+                    <SbColumn TItem="Employee" Field="Department" Title="@L["Demo:DataGridDepartment"]" Sortable="true" Filterable="true" FilterKind="SbColumnFilterKind.Select" FilterItems="@_departments" />
+                    <SbColumn TItem="Employee" Field="IsActive" Title="@L["Demo:Status"]" Sortable="true" Filterable="true" FilterKind="SbColumnFilterKind.Boolean">
+                        <CellTemplate Context="cell">
+                            @(cell.Item.IsActive ? L["Demo:Yes"] : L["Demo:No"])
+                        </CellTemplate>
+                    </SbColumn>
+                </ChildContent>
+            </SbDataGrid>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbDataGrid" />
+</DemoLayout>
+
+@code {
+    private List<Employee> _employees = new();
+    private readonly IReadOnlyList<SbFilterOption> _departments = new[]
+    {
+        new SbFilterOption("Engineering", "Engineering"),
+        new SbFilterOption("Marketing", "Marketing"),
+        new SbFilterOption("Sales", "Sales")
+    };
+
+    protected override void OnInitialized()
+    {
+        _employees = Enumerable.Range(1, 12).Select(i => new Employee
+        {
+            Id = i,
+            Name = $"Employee {i}",
+            Department = i % 3 == 0 ? "Sales" : i % 2 == 0 ? "Marketing" : "Engineering",
+            IsActive = i % 4 != 0
+        }).ToList();
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public bool IsActive { get; set; }
+    }
+
+    private const string filterRowCodeBehind = @"ShowFilterRow=""true"" ShowColumnChooser=""true"" SelectionMode=""SbSelectionMode.MultipleRows""";
+
+    private const string filterRowCode = @"<SbDataGrid TItem=""Employee"" Items=""@_employees""
+            KeySelector=""@(e => e.Id.ToString())""
+            ShowFilterRow=""true""
+            ShowColumnChooser=""true""
+            SelectionMode=""SbSelectionMode.MultipleRows"">
+    <SbColumn TItem=""Employee"" Field=""Name"" Title=""Name"" Sortable=""true"" Filterable=""true"" />
+    <SbColumn TItem=""Employee"" Field=""Department"" Title=""Department"" Sortable=""true"" Filterable=""true"" FilterKind=""SbColumnFilterKind.Select"" FilterItems=""@_departments"" />
+</SbDataGrid>";
+}

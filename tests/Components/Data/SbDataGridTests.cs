@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Bunit;
+using Bunit.JSInterop;
 using SufiChain.SufiBlazor.Components.Data;
 using SufiChain.SufiBlazor.Contracts.Data;
 using SufiChain.SufiBlazor.Localization;
@@ -24,6 +25,12 @@ public class SbDataGridTests : BunitContext
 {
     public SbDataGridTests()
     {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        JSInterop.SetupVoid("SufiBlazor.clickAway.unregister", _ => true);
+        JSInterop.SetupVoid("SufiBlazor.clickAway.register", _ => true);
+        JSInterop.Setup<bool>("SufiBlazor.viewport.watchCompact", _ => true).SetResult(false);
+        JSInterop.SetupVoid("SufiBlazor.viewport.unwatchCompact", _ => true);
+        JSInterop.Setup<bool>("SufiBlazor.select.shouldFlipUp", _ => true).SetResult(false);
         Services.AddSingleton<IStringLocalizer<SufiBlazorResource>>(new StubStringLocalizer());
     }
 
@@ -889,10 +896,167 @@ public class SbDataGridTests : BunitContext
 
     #endregion
 
+    #region Filter row, chooser, cards
+
+    private static RenderFragment FilterRowColumnsTemplate => builder =>
+    {
+        builder.OpenComponent<SbColumn<TestItem>>(0);
+        builder.AddAttribute(1, "Field", "Name");
+        builder.AddAttribute(2, "Title", "Name");
+        builder.AddAttribute(3, "Sortable", true);
+        builder.AddAttribute(4, "Filterable", true);
+        builder.CloseComponent();
+        builder.OpenComponent<SbColumn<TestItem>>(5);
+        builder.AddAttribute(6, "Field", "Status");
+        builder.AddAttribute(7, "Title", "Status");
+        builder.AddAttribute(8, "Filterable", true);
+        builder.AddAttribute(9, "FilterKind", SbColumnFilterKind.Select);
+        builder.AddAttribute(10, "FilterItems", (IReadOnlyList<SbFilterOption>)new[]
+        {
+            new SbFilterOption("Open", "Open"),
+            new SbFilterOption("Closed", "Closed")
+        });
+        builder.CloseComponent();
+        builder.OpenComponent<SbColumn<TestItem>>(11);
+        builder.AddAttribute(12, "Title", "Actions");
+        builder.CloseComponent();
+    };
+
+    [Fact]
+    public void RendersFilterRowWhenShowFilterRowAndColumnFilterable()
+    {
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.Items, CreateTestItems(2))
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.ShowColumnFilters, false)
+            .Add(x => x.ShowFilterRow, true)
+            .Add(x => x.CardLayout, SbDataGridCardLayout.Never)
+            .AddChildContent(FilterRowColumnsTemplate));
+
+        Assert.NotNull(cut.Find(".sb-datagrid__filter-row"));
+        Assert.NotEmpty(cut.FindAll(".sb-datagrid__filter-input"));
+        Assert.Empty(cut.FindAll(".sb-filter-menu"));
+    }
+
+    [Fact]
+    public async Task FilterRowTextInputFiltersClientItems()
+    {
+        var items = new List<TestItem>
+        {
+            new() { Id = 1, Name = "Alpha", Status = "Open" },
+            new() { Id = 2, Name = "Beta", Status = "Closed" }
+        };
+
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.Items, items)
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.ShowFilterRow, true)
+            .Add(x => x.CardLayout, SbDataGridCardLayout.Never)
+            .AddChildContent(FilterRowColumnsTemplate));
+
+        var nameInput = cut.Find("input.sb-datagrid__filter-input");
+        await cut.InvokeAsync(() => nameInput.Input("Alp"));
+        await Task.Delay(400);
+        await cut.InvokeAsync(() => { });
+
+        cut.WaitForState(() =>
+            cut.FindAll("tbody .sb-datagrid__row:not(.sb-datagrid__row--empty)").Count == 1);
+
+        Assert.Contains("Alpha", cut.Markup);
+        Assert.DoesNotContain("Beta", cut.Markup);
+    }
+
+    [Fact]
+    public async Task FilterRowSelectFiltersClientItems()
+    {
+        var items = new List<TestItem>
+        {
+            new() { Id = 1, Name = "Alpha", Status = "Open" },
+            new() { Id = 2, Name = "Beta", Status = "Closed" }
+        };
+
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.Items, items)
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.ShowFilterRow, true)
+            .Add(x => x.CardLayout, SbDataGridCardLayout.Never)
+            .AddChildContent(FilterRowColumnsTemplate));
+
+        var select = cut.Find("select.sb-datagrid__filter-input");
+        await cut.InvokeAsync(() => select.Change("Closed"));
+
+        cut.WaitForState(() => cut.Markup.Contains("Beta") && !cut.Markup.Contains("Alpha"));
+        Assert.Contains("Beta", cut.Markup);
+        Assert.DoesNotContain("Alpha", cut.Markup);
+    }
+
+    [Fact]
+    public async Task ColumnChooserHidesDataColumnAndKeepsActions()
+    {
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.Items, CreateTestItems(1))
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.ShowColumnChooser, true)
+            .Add(x => x.CardLayout, SbDataGridCardLayout.Never)
+            .AddChildContent(FilterRowColumnsTemplate));
+
+        Assert.Contains("Name", cut.Find(".sb-datagrid__table").TextContent);
+
+        var columnsButton = cut.FindAll("button").First(b => b.TextContent.Contains("Columns"));
+        await cut.InvokeAsync(() => columnsButton.Click());
+
+        var chooserBoxes = cut.FindAll(".sb-datagrid__chooser input[type=checkbox]");
+        Assert.True(chooserBoxes.Count >= 3);
+        await cut.InvokeAsync(() => chooserBoxes[0].Change(false));
+
+        cut.WaitForState(() => !cut.Find(".sb-datagrid__header").TextContent.Contains("Name"));
+        Assert.Contains("Actions", cut.Find(".sb-datagrid__header").TextContent);
+    }
+
+    [Fact]
+    public void CardLayoutAlwaysRendersCardsInsteadOfTable()
+    {
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.Items, CreateTestItems(2))
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.CardLayout, SbDataGridCardLayout.Always)
+            .AddChildContent(FilterRowColumnsTemplate));
+
+        Assert.NotEmpty(cut.FindAll(".sb-datagrid__card"));
+        Assert.Empty(cut.FindAll(".sb-datagrid__table"));
+        Assert.Contains("sb-datagrid--cards", cut.Find(".sb-datagrid").ClassList);
+    }
+
+    [Fact]
+    public void CardTemplateOverridesAutoCardBody()
+    {
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.Items, CreateTestItems(1))
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.CardLayout, SbDataGridCardLayout.Always)
+            .Add(x => x.CardTemplate, (RenderFragment<TestItem>)(item => builder =>
+            {
+                builder.AddContent(0, "Custom card for " + item.Name);
+            }))
+            .AddChildContent(FilterRowColumnsTemplate));
+
+        Assert.Contains("Custom card for Item 1", cut.Markup);
+        Assert.DoesNotContain("sb-datagrid__card-fields", cut.Markup);
+    }
+
+    #endregion
+
     private class TestItem
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Value { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }

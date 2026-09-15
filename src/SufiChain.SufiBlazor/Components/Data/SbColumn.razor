@@ -1,5 +1,6 @@
 @namespace SufiChain.SufiBlazor.Components.Data
 @typeparam TItem
+@using SufiChain.SufiBlazor.Contracts.Data
 
 @code {
     /// <summary>
@@ -49,6 +50,18 @@
     /// </summary>
     [Parameter]
     public bool Filterable { get; set; }
+
+    /// <summary>
+    /// Inline filter-row editor kind. Default infers from field type and <see cref="FilterItems"/>.
+    /// </summary>
+    [Parameter]
+    public SbColumnFilterKind FilterKind { get; set; } = SbColumnFilterKind.Auto;
+
+    /// <summary>
+    /// Options for select filters (status, workspace, enum labels).
+    /// </summary>
+    [Parameter]
+    public IReadOnlyList<SbFilterOption>? FilterItems { get; set; }
     
     /// <summary>
     /// Custom template for the filter UI.

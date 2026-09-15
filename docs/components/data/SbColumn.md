@@ -14,7 +14,9 @@ Defines a column within an SbDataGrid, with support for custom templates, sortin
 | Align | SbColumnAlign | Start | Text alignment (Start, Center, End) |
 | Sortable | bool | false | Whether column is sortable |
 | Filterable | bool | false | Whether column is filterable |
-| Resizable | bool | false | Whether column is resizable |
+| FilterKind | SbColumnFilterKind | Auto | Auto, Text, Select, or Boolean filter editor |
+| FilterItems | IReadOnlyList\<SbFilterOption\>? | null | Options for select filters |
+| Resizable | bool | false | Whether the column is resizable |
 | Visible | bool | true | Whether column is visible |
 | Freeze | SbColumnFreeze | None | Freeze column at start or end (None, Start, End) |
 | Class | string? | null | Additional CSS classes |

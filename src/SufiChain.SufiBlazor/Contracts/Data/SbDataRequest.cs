@@ -49,4 +49,32 @@ public class SbDataRequest
         PageIndex = pageIndex;
         PageSize = pageSize;
     }
+
+    /// <summary>
+    /// Returns the first non-empty filter value for <paramref name="field"/>, or null.
+    /// </summary>
+    public string? GetFilterValue(string field)
+    {
+        var filter = Filters.FirstOrDefault(f =>
+            string.Equals(f.Field, field, StringComparison.OrdinalIgnoreCase));
+        var value = filter?.Value?.ToString();
+        return string.IsNullOrWhiteSpace(value) ? null : value;
+    }
+
+    /// <summary>
+    /// Returns the first non-empty filter value among <paramref name="fields"/>, or null.
+    /// </summary>
+    public string? GetFilterValue(params string[] fields)
+    {
+        foreach (var field in fields)
+        {
+            var value = GetFilterValue(field);
+            if (value is not null)
+            {
+                return value;
+            }
+        }
+
+        return null;
+    }
 }

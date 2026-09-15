@@ -31,7 +31,13 @@ A powerful data grid component for displaying tabular data with support for sort
 | Striped | bool | false | Whether to show striped rows |
 | Hoverable | bool | true | Whether rows highlight on hover |
 | Bordered | bool | true | Whether to show borders |
-| ShowColumnFilters | bool | true | Whether to show column filters |
+| ShowColumnFilters | bool | true | Whether to show kebab column filter menus (ignored when ShowFilterRow is true) |
+| ShowFilterRow | bool | false | Always-visible filter row under the header (text or select per Filterable column) |
+| ShowColumnChooser | bool | false | Toolbar to show/hide columns (Action columns without Field stay locked) |
+| CardLayout | SbDataGridCardLayout | Auto | Auto: table on desktop, cards below 640px; Never; Always |
+| CardTemplate | RenderFragment\<TItem\>? | null | Optional override for auto-generated card body |
+| CardTitleField | string? | null | Field used as the card title; defaults to the first data column |
+| ToolbarTemplate | RenderFragment? | null | Extra toolbar content beside chooser / mobile Filters |
 | AllowColumnResize | bool | false | Whether columns can be resized |
 | DetailTemplate | RenderFragment\<TItem\>? | null | Expandable detail row content |
 | ShowFilterBar | bool | true | Whether to show filter bar |
@@ -158,4 +164,4 @@ Use `KeySelector` to identify rows, then bind or handle `SelectedKeysChanged` an
 
 ### Server-Side Data
 
-Use `ItemsProvider` with `SbDataRequest` / `SbDataResponse` for server-side paging and sorting. Bind `PageIndex`, `PageSize`, `TotalCount`, and handle `PageIndexChanged` / `PageSizeChanged` when using server-side data with manual load.
+Use `ItemsProvider` with `SbDataRequest` / `SbDataResponse` for server-side paging, sorting, and filtering. Bind `PageIndex`, `PageSize`, `TotalCount`, and handle `PageIndexChanged` / `PageSizeChanged` when using server-side data with manual load. Map `request.Filters` onto existing list-input fields with `request.GetFilterValue("Field")` (or multiple field names); do not invent new backend filter APIs.
