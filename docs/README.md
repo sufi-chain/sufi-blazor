@@ -60,9 +60,10 @@ docs/
 ├── components/         # Component reference by category
 │   ├── actions/
 │   ├── builder/
+│   ├── common/         # SbIcon, SbDocumentViewer
 │   ├── conversation/   # SbConversationComposer, Timeline, Message
 │   ├── data/           # SbDataGrid, SbChart, …
-│   ├── forms/          # SbSelect, SbMarkEditor, SbTagAutocomplete, …
+│   ├── forms/          # SbSelect, SbRichTextEditor, SbCodeEditor, …
 │   ├── maps/
 │   └── …
 ├── builder.md          # Visual editor / page builder primitives
@@ -83,6 +84,7 @@ docs/
 - Open `docs/overview.md` when you want guidance on how the platform uses the library.
 - Open `docs/theming.md` and `docs/localization.md` when the product needs custom branding, RTL, or Persian-oriented behavior.
 - Open `docs/builder.md` when building visual editors, page builders, or property inspectors.
+- Open `docs/editors-and-bundling.md` for document editors, toolbar contributors, and the Vite emit path.
 - Open `docs/standalone-adoption.md` for plain Blazor without SufiTheme/ABP.
 - Open `docs/demo-host-integration.md` to understand how the platform demo gallery is wired.
 - Open `docs/architecture/decisions.md` for shell/bundling boundaries and `docs/architecture/package-map.md` for project dependencies.

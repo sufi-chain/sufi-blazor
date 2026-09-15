@@ -137,6 +137,16 @@
   <data name="Finish" xml:space="preserve"><value>إنهاء</value></data>
   <data name="Optional" xml:space="preserve"><value>اختياري</value></data>
   <data name="ClearAll" xml:space="preserve"><value>مسح الكل</value></data>
+  <data name="Filters" xml:space="preserve"><value>عوامل التصفية</value></data>
+  <data name="ActiveFilters" xml:space="preserve"><value>عوامل التصفية النشطة</value></data>
+  <data name="Columns" xml:space="preserve"><value>الأعمدة</value></data>
+  <data name="Actions" xml:space="preserve"><value>إجراءات</value></data>
+  <data name="Sort" xml:space="preserve"><value>فرز</value></data>
+  <data name="SortAscending" xml:space="preserve"><value>تصاعدي</value></data>
+  <data name="SortDescending" xml:space="preserve"><value>تنازلي</value></data>
+  <data name="NoDataAvailable" xml:space="preserve"><value>لا توجد بيانات</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>تحديد الصف {0}</value></data>
+  <data name="RemoveFilterFor" xml:space="preserve"><value>إزالة عامل التصفية لـ {0}</value></data>
   <data name="GenerateFromTitle" xml:space="preserve"><value>إنشاء من العنوان</value></data>
   <data name="Demo:TabExample" xml:space="preserve"><value>مثال</value></data>
   <data name="Demo:TabViewSource" xml:space="preserve"><value>عرض المصدر</value></data>
@@ -155,6 +165,42 @@
   <data name="Rte:AlignCenter" xml:space="preserve"><value>وسط</value></data>
   <data name="Rte:AlignRight" xml:space="preserve"><value>يمين</value></data>
   <data name="Rte:AlignJustify" xml:space="preserve"><value>موزون</value></data>
+  <data name="Editor:Undo" xml:space="preserve"><value>تراجع</value></data>
+  <data name="Editor:Redo" xml:space="preserve"><value>إعادة</value></data>
+  <data name="Editor:Heading" xml:space="preserve"><value>عنوان</value></data>
+  <data name="Editor:HeaderNormal" xml:space="preserve"><value>عادي</value></data>
+  <data name="Editor:Header1" xml:space="preserve"><value>عنوان 1</value></data>
+  <data name="Editor:Header2" xml:space="preserve"><value>عنوان 2</value></data>
+  <data name="Editor:Header3" xml:space="preserve"><value>عنوان 3</value></data>
+  <data name="Editor:Header4" xml:space="preserve"><value>عنوان 4</value></data>
+  <data name="Editor:Header5" xml:space="preserve"><value>عنوان 5</value></data>
+  <data name="Editor:Header6" xml:space="preserve"><value>عنوان 6</value></data>
+  <data name="Editor:Bold" xml:space="preserve"><value>عريض</value></data>
+  <data name="Editor:Italic" xml:space="preserve"><value>مائل</value></data>
+  <data name="Editor:Underline" xml:space="preserve"><value>تسطير</value></data>
+  <data name="Editor:Strike" xml:space="preserve"><value>يتوسطه خط</value></data>
+  <data name="Editor:OrderedList" xml:space="preserve"><value>قائمة مرقمة</value></data>
+  <data name="Editor:BulletList" xml:space="preserve"><value>قائمة نقطية</value></data>
+  <data name="Editor:AlignLeft" xml:space="preserve"><value>يسار</value></data>
+  <data name="Editor:AlignCenter" xml:space="preserve"><value>وسط</value></data>
+  <data name="Editor:AlignRight" xml:space="preserve"><value>يمين</value></data>
+  <data name="Editor:Link" xml:space="preserve"><value>إدراج رابط</value></data>
+  <data name="Editor:Image" xml:space="preserve"><value>إدراج صورة</value></data>
+  <data name="Editor:Quote" xml:space="preserve"><value>اقتباس</value></data>
+  <data name="Editor:CodeBlock" xml:space="preserve"><value>كتلة تعليمات برمجية</value></data>
+  <data name="Editor:ClearFormatting" xml:space="preserve"><value>مسح التنسيق</value></data>
+  <data name="Editor:InsertImageFromGallery" xml:space="preserve"><value>إدراج صورة من المعرض</value></data>
+  <data name="Editor:InsertFileFromGallery" xml:space="preserve"><value>إدراج ملف من المعرض</value></data>
+  <data name="Editor:TaskList" xml:space="preserve"><value>قائمة مهام</value></data>
+  <data name="Editor:Table" xml:space="preserve"><value>إدراج جدول</value></data>
+  <data name="Editor:Callout" xml:space="preserve"><value>إدراج تنبيه</value></data>
+  <data name="Editor:AskAi" xml:space="preserve"><value>اسأل الذكاء الاصطناعي</value></data>
+  <data name="Editor:Accept" xml:space="preserve"><value>قبول</value></data>
+  <data name="Editor:Reject" xml:space="preserve"><value>رفض</value></data>
+  <data name="Editor:Dismiss" xml:space="preserve"><value>تجاهل</value></data>
+  <data name="Editor:AcceptAll" xml:space="preserve"><value>قبول الكل</value></data>
+  <data name="Editor:RejectAll" xml:space="preserve"><value>رفض الكل</value></data>
+  <data name="Editor:SuggestionReview" xml:space="preserve"><value>مراجعة اقتراح الذكاء الاصطناعي</value></data>
   <data name="Map:OpenInOpenStreetMap" xml:space="preserve"><value>فتح في OpenStreetMap</value></data>
   <data name="Map:PickLocation" xml:space="preserve"><value>اختر الموقع</value></data>
   <data name="Map:ShareLocation" xml:space="preserve"><value>مشاركة الموقع</value></data>

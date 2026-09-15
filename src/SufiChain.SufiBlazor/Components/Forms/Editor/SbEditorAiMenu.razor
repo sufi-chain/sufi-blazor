@@ -1,0 +1,23 @@
+@namespace SufiChain.SufiBlazor.Components.Forms.Editor
+
+@if (Open)
+{
+    <div class="sb-editor-ai-menu" role="dialog" aria-label="@Title">
+        <SbStack Direction="SbStackDirection.Column" Gap="2">
+            <SbText Weight="SbFontWeight.Semibold">@Title</SbText>
+            @if (!string.IsNullOrWhiteSpace(StatusText))
+            {
+                <SbEditorAiStatusPill Text="@StatusText" />
+            }
+            <SbTextArea Value="@Prompt"
+                        ValueChanged="OnPromptChangedAsync"
+                        Rows="3"
+                        Placeholder="@Placeholder"
+                        Disabled="@Busy" />
+            <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End">
+                <SbButton Variant="SbButtonVariant.Outline" OnClick="OnCancel">@CancelText</SbButton>
+                <SbButton Color="SbColor.Primary" OnClick="OnSubmit" Disabled="@Busy">@SubmitText</SbButton>
+            </SbStack>
+        </SbStack>
+    </div>
+}

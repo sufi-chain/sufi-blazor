@@ -57,7 +57,7 @@
       
       <!-- Common -->
       <DocToCopy Include="$(DocsSourceComponents)\common\SbIcon.md" />
-      <DocToCopy Include="$(DocsSourceComponents)\common\SbMarkdownViewer.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\common\SbDocumentViewer.md" />
       
       <!-- Data -->
       <DocToCopy Include="$(DocsSourceComponents)\data\SbColumn.md" />
@@ -98,8 +98,8 @@
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbRadio.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbRadioGroup.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbRichTextEditor.md" />
-      <DocToCopy Include="$(DocsSourceComponents)\forms\SbMarkdownEditor.md" />
-      <DocToCopy Include="$(DocsSourceComponents)\forms\SbMarkEditor.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbCodeEditor.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbDocumentDiffEditor.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSelect.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSelectOption.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSimpleSelect.md" />

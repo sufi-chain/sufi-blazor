@@ -34,6 +34,8 @@ The solution contains:
 - `src/SufiChain.SufiBlazor.Demo/SufiChain.SufiBlazor.Demo.csproj`
 - `tests/SufiChain.SufiBlazor.Tests.csproj`
 
+Editor TypeScript lives in `frontend/` (Vite). `npm run check` there writes committed static assets into `src/SufiChain.SufiBlazor/wwwroot/_sufi/editors/` and `sufiblazor-editors.css`. Hosts that project-reference the library (including `hosts/SufiChane.SufiPlatform`) pick those files up as Razor static web assets; `dotnet build` does not run Node.
+
 ## Repository
 
 The canonical Git repository is `https://github.com/sufi-chain/sufi-blazor`.

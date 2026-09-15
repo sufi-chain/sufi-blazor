@@ -1,0 +1,12 @@
+@namespace SufiChain.SufiBlazor.Components.Forms.Editor
+
+<div class="sb-editor__footer" aria-live="polite">
+    @if (ShowWordCount)
+    {
+        <span>@string.Format(WordCountFormat, WordCount)</span>
+    }
+    @if (ShowCharacterCount)
+    {
+        <span>@string.Format(CharacterCountFormat, CharacterCount)</span>
+    }
+</div>

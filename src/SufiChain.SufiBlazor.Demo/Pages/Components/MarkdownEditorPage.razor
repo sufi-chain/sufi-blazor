@@ -14,11 +14,11 @@
         <ExampleContent>
             <SbStack Gap="3">
                 <SbText Color="SbColor.Muted">@L["Demo:MarkdownEditorToolbarHint"]</SbText>
-                <SbMarkdownEditor @bind-Value="_toolbarContent"
-                                  MinHeight="360px"
+                <SbRichTextEditor @bind-Value="_toolbarContent"
+                                  Mode="SbEditorMode.Wysiwyg"
+                                  ContentFormat="SbContentFormat.Markdown"
                                   UseToolbarContributors="true"
-                                  EnableMermaid="true"
-                                  EnableHighlight="true" />
+                                  MinHeight="360px" />
             </SbStack>
         </ExampleContent>
     </DemoSection>
@@ -27,11 +27,11 @@
         <ExampleContent>
             <SbStack Gap="3">
                 <SbText Color="SbColor.Muted">@L["Demo:MarkdownEditorMermaidHighlightHint"]</SbText>
-                <SbMarkdownEditor @bind-Value="_previewContent"
-                                  MinHeight="420px"
+                <SbRichTextEditor @bind-Value="_previewContent"
+                                  Mode="SbEditorMode.Wysiwyg"
+                                  ContentFormat="SbContentFormat.Markdown"
                                   UseToolbarContributors="true"
-                                  EnableMermaid="true"
-                                  EnableHighlight="true" />
+                                  MinHeight="420px" />
             </SbStack>
         </ExampleContent>
     </DemoSection>
@@ -40,11 +40,11 @@
         <ExampleContent>
             <SbStack Gap="3">
                 <SbText Color="SbColor.Muted">@L["Demo:MarkdownEditorSourceModeHint"]</SbText>
-                <SbMarkdownEditor @bind-Value="_sourceContent"
-                                  EditorMode="SbMarkdownEditorMode.Source"
-                                  EnablePreview="false"
-                                  MinHeight="240px"
-                                  UseToolbarContributors="true" />
+                <SbCodeEditor @bind-Value="_sourceContent"
+                              Language="SbCodeLanguage.Html"
+                              UseToolbarContributors="true"
+                              HideToolbar="false"
+                              MinHeight="240px" />
             </SbStack>
         </ExampleContent>
     </DemoSection>
@@ -53,34 +53,36 @@
         <ExampleContent>
             <SbStack Gap="3">
                 <SbText Color="SbColor.Muted">@L["Demo:MarkdownEditorDiffReviewHint"]</SbText>
-                <SbMarkdownEditor IsDiffReview="true"
-                                  OriginalValue="@_originalContent"
-                                  SuggestedValue="@_suggestedContent"
-                                  SuggestedValueChanged="@((string v) => _suggestedContent = v)"
-                                  MinHeight="280px" />
+                <SbDocumentDiffEditor OriginalValue="@_originalContent"
+                                      SuggestedValue="@_suggestedContent"
+                                      SuggestedValueChanged="@((string v) => _suggestedContent = v)"
+                                      Language="SbCodeLanguage.Markdown"
+                                      MinHeight="280px" />
             </SbStack>
         </ExampleContent>
     </DemoSection>
 
     <DemoSection Title="@L["Demo:MarkdownEditorNoToolbar"]" SourceCode="@noToolbarCode" RelatedCode="@noToolbarCodeBehind">
         <ExampleContent>
-            <SbMarkdownEditor @bind-Value="_plainContent"
+            <SbRichTextEditor @bind-Value="_plainContent"
+                              Mode="SbEditorMode.Wysiwyg"
+                              ContentFormat="SbContentFormat.Markdown"
                               HideToolbar="true"
-                              MinHeight="180px"
-                              EnablePreview="false" />
+                              MinHeight="180px" />
         </ExampleContent>
     </DemoSection>
 
     <DemoSection Title="JSON editor" SourceCode="@jsonCode" RelatedCode="@jsonCodeBehind">
         <ExampleContent>
             <SbStack Gap="3">
-                <SbText Color="SbColor.Muted">Syntax-highlighted JSON source editor with validation and format action.</SbText>
+                <SbText Color="SbColor.Muted">JSON source editor with validation.</SbText>
                 @if (!_jsonValid)
                 {
                     <SbAlert Color="SbColor.Danger">Invalid JSON syntax.</SbAlert>
                 }
-                <SbMarkEditor @bind-Value="_jsonContent"
-                              Mode="SbMarkEditorMode.Json"
+                <SbCodeEditor @bind-Value="_jsonContent"
+                              Language="SbCodeLanguage.Json"
+                              ValidateJson="true"
                               JsonValidChanged="@((valid) => _jsonValid = valid)"
                               MinHeight="240px" />
             </SbStack>
@@ -89,20 +91,18 @@
 
     <SbDivider />
 
-    <DocViewer DocName="SbMarkdownEditor" />
+    <DocViewer DocName="SbRichTextEditor" />
 </DemoLayout>
 
 @code {
     private string _toolbarContent = """
         # Toolbar demo
 
-        Use the toolbar for **bold**, _italic_, lists, links, and preview modes.
+        Use the toolbar for **bold**, _italic_, lists, links, and headings.
         """;
 
     private string _previewContent = """
-        # Mermaid & highlight.js
-
-        Toggle **Preview** or **Side by Side** in the toolbar to render diagrams and code blocks.
+        # Mermaid and highlight
 
         ## Syntax highlighting
 
@@ -116,12 +116,6 @@
         }
         ```
 
-        ```javascript
-        export function renderDiagram(source) {
-            return mermaid.render('diagram', source);
-        }
-        ```
-
         ## Mermaid flowchart
 
         ```mermaid
@@ -129,16 +123,6 @@
             Draft --> Review
             Review -->|Approve| Publish
             Review -->|Reject| Draft
-        ```
-
-        ## Alert callouts
-
-        ```note
-        Notes render as styled callouts in preview.
-        ```
-
-        ```tip
-        Use side-by-side mode while editing long documents.
         ```
         """;
 
@@ -151,7 +135,7 @@
     private string _originalContent = "Hello {{ user.name }},\nYour order is confirmed.";
     private string _suggestedContent = "Hello {{ user.name }},\nYour order **#{{ order.id }}** is confirmed.";
 
-    private string _plainContent = "Plain markdown textarea fallback with toolbar hidden.";
+    private string _plainContent = "Plain markdown with the toolbar hidden.";
     private bool _jsonValid = true;
     private string _jsonContent = """
         {
@@ -164,44 +148,43 @@
 
     private const string toolbarCodeBehind = @"private string _toolbarContent = ""# Toolbar demo"";";
 
-    private const string toolbarCode = @"<SbMarkdownEditor @bind-Value=""_toolbarContent""
-                  MinHeight=""360px""
+    private const string toolbarCode = @"<SbRichTextEditor @bind-Value=""_toolbarContent""
+                  Mode=""SbEditorMode.Wysiwyg""
+                  ContentFormat=""SbContentFormat.Markdown""
                   UseToolbarContributors=""true""
-                  EnableMermaid=""true""
-                  EnableHighlight=""true"" />";
+                  MinHeight=""360px"" />";
 
-    private const string previewCodeBehind = @"private string _previewContent = ""# Mermaid & highlight.js..."";";
+    private const string previewCodeBehind = @"private string _previewContent = ""# Mermaid and highlight..."";";
 
-    private const string previewCode = @"<SbMarkdownEditor @bind-Value=""_previewContent""
-                  MinHeight=""420px""
-                  UseToolbarContributors=""true""
-                  EnableMermaid=""true""
-                  EnableHighlight=""true"" />";
+    private const string previewCode = @"<SbRichTextEditor @bind-Value=""_previewContent""
+                  Mode=""SbEditorMode.Wysiwyg""
+                  ContentFormat=""SbContentFormat.Markdown""
+                  UseToolbarContributors=""true"" />";
 
     private const string sourceCodeBehind = @"private string _sourceContent = ""<div>...</div>"";";
 
-    private const string sourceCode = @"<SbMarkdownEditor @bind-Value=""_sourceContent""
-                  EditorMode=""SbMarkdownEditorMode.Source""
-                  EnablePreview=""false""
-                  UseToolbarContributors=""true"" />";
+    private const string sourceCode = @"<SbCodeEditor @bind-Value=""_sourceContent""
+              Language=""SbCodeLanguage.Html""
+              UseToolbarContributors=""true""
+              HideToolbar=""false"" />";
 
     private const string diffCodeBehind = @"private string _originalContent = ""..."";\nprivate string _suggestedContent = ""..."";";
 
-    private const string diffCode = @"<SbMarkdownEditor IsDiffReview=""true""
-                  OriginalValue=""@_originalContent""
-                  SuggestedValue=""@_suggestedContent""
-                  SuggestedValueChanged=""@((string v) => _suggestedContent = v)"" />";
+    private const string diffCode = @"<SbDocumentDiffEditor OriginalValue=""@_originalContent""
+                      SuggestedValue=""@_suggestedContent""
+                      SuggestedValueChanged=""@((string v) => _suggestedContent = v)""
+                      Language=""SbCodeLanguage.Markdown"" />";
 
     private const string noToolbarCodeBehind = @"private string _plainContent = ""Plain markdown"";";
 
-    private const string noToolbarCode = @"<SbMarkdownEditor @bind-Value=""_plainContent""
-                  HideToolbar=""true""
-                  EnablePreview=""false"" />";
+    private const string noToolbarCode = @"<SbRichTextEditor @bind-Value=""_plainContent""
+                  ContentFormat=""SbContentFormat.Markdown""
+                  HideToolbar=""true"" />";
 
     private const string jsonCodeBehind = @"private string _jsonContent = ""{ \""temperature\"": 0.7 }"";";
 
-    private const string jsonCode = @"<SbMarkEditor @bind-Value=""_jsonContent""
-                  Mode=""SbMarkEditorMode.Json""
-                  JsonValidChanged=""@((valid) => _jsonValid = valid)""
-                  MinHeight=""240px"" />";
+    private const string jsonCode = @"<SbCodeEditor @bind-Value=""_jsonContent""
+              Language=""SbCodeLanguage.Json""
+              ValidateJson=""true""
+              JsonValidChanged=""@((valid) => _jsonValid = valid)"" />";
 }

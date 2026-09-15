@@ -137,6 +137,16 @@
   <data name="Finish" xml:space="preserve"><value>پایان</value></data>
   <data name="Optional" xml:space="preserve"><value>اختیاری</value></data>
   <data name="ClearAll" xml:space="preserve"><value>پاک کردن همه</value></data>
+  <data name="Filters" xml:space="preserve"><value>فیلترها</value></data>
+  <data name="ActiveFilters" xml:space="preserve"><value>فیلترهای فعال</value></data>
+  <data name="Columns" xml:space="preserve"><value>ستون‌ها</value></data>
+  <data name="Actions" xml:space="preserve"><value>عملیات</value></data>
+  <data name="Sort" xml:space="preserve"><value>مرتب‌سازی</value></data>
+  <data name="SortAscending" xml:space="preserve"><value>صعودی</value></data>
+  <data name="SortDescending" xml:space="preserve"><value>نزولی</value></data>
+  <data name="NoDataAvailable" xml:space="preserve"><value>داده‌ای موجود نیست</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>انتخاب ردیف {0}</value></data>
+  <data name="RemoveFilterFor" xml:space="preserve"><value>حذف فیلتر {0}</value></data>
   <data name="GenerateFromTitle" xml:space="preserve"><value>تولید از عنوان</value></data>
   <data name="Demo:TabExample" xml:space="preserve"><value>نمونه</value></data>
   <data name="Demo:TabViewSource" xml:space="preserve"><value>مشاهده منبع</value></data>
@@ -155,6 +165,42 @@
   <data name="Rte:AlignCenter" xml:space="preserve"><value>وسط</value></data>
   <data name="Rte:AlignRight" xml:space="preserve"><value>راست</value></data>
   <data name="Rte:AlignJustify" xml:space="preserve"><value>یکسان</value></data>
+  <data name="Editor:Undo" xml:space="preserve"><value>بازگردانی</value></data>
+  <data name="Editor:Redo" xml:space="preserve"><value>انجام دوباره</value></data>
+  <data name="Editor:Heading" xml:space="preserve"><value>سربرگ</value></data>
+  <data name="Editor:HeaderNormal" xml:space="preserve"><value>متن</value></data>
+  <data name="Editor:Header1" xml:space="preserve"><value>سربرگ ۱</value></data>
+  <data name="Editor:Header2" xml:space="preserve"><value>سربرگ ۲</value></data>
+  <data name="Editor:Header3" xml:space="preserve"><value>سربرگ ۳</value></data>
+  <data name="Editor:Header4" xml:space="preserve"><value>سربرگ ۴</value></data>
+  <data name="Editor:Header5" xml:space="preserve"><value>سربرگ ۵</value></data>
+  <data name="Editor:Header6" xml:space="preserve"><value>سربرگ ۶</value></data>
+  <data name="Editor:Bold" xml:space="preserve"><value>ضخیم</value></data>
+  <data name="Editor:Italic" xml:space="preserve"><value>کج</value></data>
+  <data name="Editor:Underline" xml:space="preserve"><value>زیرخط</value></data>
+  <data name="Editor:Strike" xml:space="preserve"><value>خط‌خورده</value></data>
+  <data name="Editor:OrderedList" xml:space="preserve"><value>فهرست شماره‌دار</value></data>
+  <data name="Editor:BulletList" xml:space="preserve"><value>فهرست گلوله‌ای</value></data>
+  <data name="Editor:AlignLeft" xml:space="preserve"><value>چپ</value></data>
+  <data name="Editor:AlignCenter" xml:space="preserve"><value>وسط</value></data>
+  <data name="Editor:AlignRight" xml:space="preserve"><value>راست</value></data>
+  <data name="Editor:Link" xml:space="preserve"><value>درج پیوند</value></data>
+  <data name="Editor:Image" xml:space="preserve"><value>درج تصویر</value></data>
+  <data name="Editor:Quote" xml:space="preserve"><value>نقل‌قول</value></data>
+  <data name="Editor:CodeBlock" xml:space="preserve"><value>بلوک کد</value></data>
+  <data name="Editor:ClearFormatting" xml:space="preserve"><value>پاک‌کردن قالب</value></data>
+  <data name="Editor:InsertImageFromGallery" xml:space="preserve"><value>درج تصویر از گالری</value></data>
+  <data name="Editor:InsertFileFromGallery" xml:space="preserve"><value>درج پرونده از گالری</value></data>
+  <data name="Editor:TaskList" xml:space="preserve"><value>فهرست کار</value></data>
+  <data name="Editor:Table" xml:space="preserve"><value>درج جدول</value></data>
+  <data name="Editor:Callout" xml:space="preserve"><value>درج هشدار</value></data>
+  <data name="Editor:AskAi" xml:space="preserve"><value>پرسش از هوش مصنوعی</value></data>
+  <data name="Editor:Accept" xml:space="preserve"><value>پذیرش</value></data>
+  <data name="Editor:Reject" xml:space="preserve"><value>رد</value></data>
+  <data name="Editor:Dismiss" xml:space="preserve"><value>بستن</value></data>
+  <data name="Editor:AcceptAll" xml:space="preserve"><value>پذیرش همه</value></data>
+  <data name="Editor:RejectAll" xml:space="preserve"><value>رد همه</value></data>
+  <data name="Editor:SuggestionReview" xml:space="preserve"><value>بازبینی پیشنهاد هوش مصنوعی</value></data>
   <data name="Map:OpenInOpenStreetMap" xml:space="preserve"><value>باز کردن در OpenStreetMap</value></data>
   <data name="Map:PickLocation" xml:space="preserve"><value>انتخاب موقعیت</value></data>
   <data name="Map:ShareLocation" xml:space="preserve"><value>اشتراک‌گذاری موقعیت</value></data>

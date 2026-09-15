@@ -21,6 +21,8 @@ In `hosts/SufiChane.SufiPlatform/`:
 3. Demo routes under `/demo/sufi-blazor/*`
 4. Menu entries from `SufiBlazorDemoMenuContributor`
 
+Editor JavaScript is already in the `SufiChain.SufiBlazor` project reference. The host `dotnet` build does not run Node. To regenerate editor bundles, run `npm run check` in `independent-projects/sufi-blazor/frontend/`. See [Editors and bundling](editors-and-bundling.md).
+
 ## Docs mirror in Demo
 
 On build, MSBuild copies `docs/` → `wwwroot/docs/` in the Demo project (`CopyDocsToWwwroot` target in the Demo `.csproj`). The committed `wwwroot/docs/` copy is build output — prefer editing files under `docs/` at the repo root of sufi-blazor.

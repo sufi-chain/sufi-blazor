@@ -1,0 +1,14 @@
+.cm-editor {
+  height: 100%;
+  background: transparent;
+  color: inherit;
+  font-size: 0.875rem;
+}
+
+.cm-editor.cm-focused {
+  outline: none;
+}
+
+.cm-scroller {
+  font-family: var(--sb-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+}

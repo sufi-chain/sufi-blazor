@@ -32,7 +32,7 @@ In `Program.cs` (or your host startup), register SufiBlazor:
 builder.Services.AddSufiBlazor();
 ```
 
-This registers localization, rich-text toolbar services (`IRteToolbarService`), and markdown toolbar services (`IMdToolbarService`). Optional: pass `configureToolbar` or add contributors — see [Editors and bundling](editors-and-bundling.md).
+This registers localization and `IEditorToolbarService`. Add `AddEditorToolbarContributor<T>()` for toolbar buttons. Document editors load ES modules on demand; see [Editors and bundling](editors-and-bundling.md).
 
 For a minimal plain-Blazor checklist without SufiTheme/ABP, see [Standalone adoption](standalone-adoption.md).
 

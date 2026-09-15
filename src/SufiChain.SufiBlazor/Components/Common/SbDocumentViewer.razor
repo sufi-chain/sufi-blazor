@@ -1,0 +1,18 @@
+@namespace SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Contracts.Editors
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+<div class="@GetContainerClass()"
+     style="@Style"
+     dir="@(EffectiveRightToLeft ? "rtl" : "ltr")"
+     @attributes="AdditionalAttributes">
+    @if (_useFallback)
+    {
+        <pre class="sb-document-viewer__fallback">@Content</pre>
+    }
+    else
+    {
+        <div @ref="_container" class="sb-document-viewer__content"></div>
+    }
+</div>

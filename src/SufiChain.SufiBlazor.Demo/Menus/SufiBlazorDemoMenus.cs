@@ -63,6 +63,7 @@ public static class SufiBlazorDemoMenus
     public const string DataGridCellTemplates = DataGrid + ".CellTemplates";
     public const string DataGridVirtualization = DataGrid + ".Virtualization";
     public const string DataGridColumnFilter = DataGrid + ".ColumnFilter";
+    public const string DataGridFilterRow = DataGrid + ".FilterRow";
     public const string DataGridProgrammaticFilter = DataGrid + ".ProgrammaticFilter";
     public const string DataGridInlineEdit = DataGrid + ".InlineEdit";
     public const string DataGridExportCsv = DataGrid + ".ExportCsv";

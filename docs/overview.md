@@ -28,7 +28,7 @@ You can use SufiBlazor in:
 | Category | Typical use |
 | --- | --- |
 | Actions | Buttons, icon buttons, and links |
-| Forms | Inputs, selectors, date pickers, tag autocomplete, mark/markdown editors |
+| Forms | Inputs, selectors, date pickers, tag autocomplete, rich text, code, and document viewers |
 | Data | Tables, grids, pagination, metrics, SVG charts (`SbChart`), and status displays |
 | Maps | Leaflet-based map canvas, markers, pickers, geolocation, and place search |
 | Conversation | Composer, timeline, and message bubbles for chat-like UIs |
@@ -38,7 +38,7 @@ You can use SufiBlazor in:
 | Feedback | Alerts, badges, banners, chips, progress, and empty states |
 | Surfaces | Cards, surfaces, and papers |
 | Typography | Headings and text primitives |
-| Common | Icons and markdown rendering |
+| Common | Icons and document rendering (`SbDocumentViewer`) |
 | Builder | Drag/drop, split panes, property grids, and editor-oriented primitives |
 
 ## In Sufi Platform

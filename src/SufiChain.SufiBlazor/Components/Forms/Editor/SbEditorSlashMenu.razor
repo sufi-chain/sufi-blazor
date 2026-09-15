@@ -1,0 +1,21 @@
+@namespace SufiChain.SufiBlazor.Components.Forms.Editor
+@using SufiChain.SufiBlazor.Contracts.Editors
+
+@if (Open)
+{
+    <div class="sb-editor-slash-menu" role="menu" aria-label="@AriaLabel">
+        @foreach (var item in Items)
+        {
+            <button type="button"
+                    class="sb-editor-slash-menu__item"
+                    role="menuitem"
+                    @onclick="() => OnItemClick.InvokeAsync(item)">
+                @if (!string.IsNullOrEmpty(item.IconName))
+                {
+                    <SbIcon Name="@item.IconName" Size="SbSize.Sm" />
+                }
+                <span>@(item.Label ?? item.Tooltip ?? item.Id)</span>
+            </button>
+        }
+    </div>
+}

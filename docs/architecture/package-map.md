@@ -7,6 +7,7 @@ Projects in the SufiBlazor repository and their dependencies.
 | Project | Package ID | Role |
 |---------|------------|------|
 | `SufiChain.SufiBlazor` | `SufiChain.SufiBlazor` | Core `Sb*` component library |
+| `frontend/` | — (not a NuGet package) | Editor TypeScript + Vite. Emits into the RCL `wwwroot/_sufi/editors` |
 | `SufiChain.SufiBlazor.Demo` | `SufiChain.SufiBlazor.Demo` | Platform-hosted component gallery |
 | `SufiChain.SufiBlazor.Demo.Localization` | `SufiChain.SufiBlazor.Demo.Localization` | Demo menu strings (en/fa/ar) |
 | `SufiChain.SufiBlazor.Tests` | — (not published) | bUnit component tests |
@@ -34,7 +35,7 @@ SufiChain.SufiBlazor.Tests
 
 ## Core library boundary
 
-`SufiChain.SufiBlazor` depends on **Web + Localization only**. It has no ABP, SufiTheme, or Sufi Platform references. Demo and test projects sit outside that boundary.
+`SufiChain.SufiBlazor` depends on **Web + Localization only**. It has no ABP, SufiTheme, or Sufi Platform references. Demo and test projects sit outside that boundary. `frontend/` is Node tooling only; the Razor class library consumes the committed `wwwroot` emit.
 
 ## Related
 

@@ -16,8 +16,9 @@ Feature-oriented catalog. See **SufiChain.SufiBlazor.Demo** and component XML do
 - **SbTagAutocomplete** — Multi-select autocomplete with chips; search, create-on-type, max tags. See [SbTagAutocomplete](components/forms/SbTagAutocomplete.md).  
 - **SbCheckbox**, **SbRadio**, **SbSwitch** — Booleans.  
 - **SbDatePicker**, **SbTimePicker** — Date/time.  
-- **SbRichTextEditor**, **SbMarkdownEditor** — Rich text and markdown with on-demand vendor JS.  
-- **SbMarkEditor** — Unified markdown/markup/JSON editor over `SbMarkdownEditor`. See [SbMarkEditor](components/forms/SbMarkEditor.md).  
+- **SbRichTextEditor** — Tiptap WYSIWYG (Markdown or HTML). See [SbRichTextEditor](components/forms/SbRichTextEditor.md).  
+- **SbCodeEditor** — CodeMirror 6 source editor. See [SbCodeEditor](components/forms/SbCodeEditor.md).  
+- **SbDocumentDiffEditor** — Side-by-side compare. See [SbDocumentDiffEditor](components/forms/SbDocumentDiffEditor.md).  
 - **SbForm** / **SbFormField** — Form wrapper and labeled field with validation.
 
 ## Data
@@ -92,3 +93,8 @@ Visual editor and page-builder primitives. See [Builder Components](builder.md).
 - **SbCard** — Header, body, footer; optional clickable.  
 - **SbSurface**, **SbDivider**.  
 - **SbHeading** (levels 1–6), **SbText** (variants, alignment).
+
+## Common
+
+- **SbIcon** — Sufi Icons.  
+- **SbDocumentViewer** — Read-only Markdown/HTML/JSON. See [SbDocumentViewer](components/common/SbDocumentViewer.md).

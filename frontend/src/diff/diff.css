@@ -1,0 +1,11 @@
+.cm-mergeView {
+  height: 100%;
+}
+
+.cm-mergeViewEditors {
+  font-size: 0.875rem;
+}
+
+.cm-mergeView .cm-editor {
+  background: transparent;
+}

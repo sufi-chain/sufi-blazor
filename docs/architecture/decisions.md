@@ -36,20 +36,21 @@ Recorded decisions for SufiBlazor boundaries and asset loading.
 - **SideMenuLayout** — `SufiAppShell`, `SufiSidebar`, `SufiTopBar`
 - **TopMenuLayout** — `SufiTopBar`, **SbContainer** (only Sb layout component), `SbDrawer`, `SbNavMenu`, etc.
 
-## ADR-002: Editor and map vendors load on demand
+## ADR-002: Editor and map runtimes load on demand
 
 **Status:** Accepted
 
-**Context:** Rich text, markdown, and map components depend on third-party JavaScript (Quill, EasyMDE, Leaflet). Loading all vendors globally increases initial page weight for apps that never use editors or maps.
+**Context:** Document editors and maps ship large JavaScript. Loading them on every page increases initial weight for apps that never open an editor or map.
 
 **Decision:**
 
-- Ship vendor files under `_content/SufiChain.SufiBlazor/vendor/`.
-- **SufiTheme** registers on-demand bundles (`BlazorSufiThemeBundles.SufiBlazor.Quill`, `BlazorSufiThemeBundles.SufiBlazor.MarkdownEditor`) in Server and WASM modules. The global bundle includes only `sufiblazor.css` / `sufiblazor.js` and theme assets.
-- **Leaflet** loads when an `SbMap` (or map helper) is first used, with CDN fallback.
-- **Standalone apps** must include `sufiblazor.js` globally and load Quill/EasyMDE/Leaflet on pages that need them (or replicate SufiTheme bundling).
+- Editor TypeScript lives in repo-root `frontend/`. Vite emits ES modules into `src/SufiChain.SufiBlazor/wwwroot/_sufi/editors/{rich-text,code,diff,viewer}/`.
+- C# interop imports those modules on first use (`./_content/SufiChain.SufiBlazor/_sufi/editors/*/index.js`).
+- `sufiblazor.css` imports `sufiblazor-editors.css`. SufiTheme also registers that stylesheet on the global style bundle and on named bundles `SufiBlazor.RichText`, `SufiBlazor.Code`, `SufiBlazor.Diff`, and `SufiBlazor.Viewer`.
+- Host `dotnet build` does not run Node. Commit the `wwwroot` emit. Leaflet still loads when an `SbMap` (or map helper) is first used, with CDN fallback.
+- Standalone apps include `sufiblazor.css` and `sufiblazor.js`. Editor ES modules load from static web assets when a component mounts.
 
-See [Editors and bundling](../editors-and-bundling.md) and [SufiTheme configuration](../../sufi-theme/docs/configuration.md).
+See [Editors and bundling](../editors-and-bundling.md).
 
 ## Related
 

@@ -1,0 +1,30 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Contracts.Editors
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+<div class="@GetContainerClass()" style="@GetContainerStyle()" dir="@(EffectiveRightToLeft ? "rtl" : "ltr")">
+    @if (_useFallback)
+    {
+        <SbStack Direction="SbStackDirection.Row" Gap="3">
+            <SbTextArea Value="@OriginalValue" ReadOnly="true" Rows="16" Class="sb-diff-editor__fallback" />
+            <SbTextArea Value="@SuggestedValue"
+                        ValueChanged="OnFallbackSuggestedChangedAsync"
+                        ReadOnly="@ReadOnlySuggested"
+                        Rows="16"
+                        Class="sb-diff-editor__fallback" />
+        </SbStack>
+    }
+    else
+    {
+        <div @ref="_editorContainer" class="sb-diff-editor__content" role="group" aria-label="@AriaLabel"></div>
+    }
+
+    @if (ShowApplyDiscard)
+    {
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Justify="SbJustify.End" Class="sb-diff-editor__actions">
+            <SbButton Variant="SbButtonVariant.Outline" OnClick="OnDiscard">@DiscardText</SbButton>
+            <SbButton Color="SbColor.Primary" OnClick="OnApply">@ApplyText</SbButton>
+        </SbStack>
+    }
+</div>

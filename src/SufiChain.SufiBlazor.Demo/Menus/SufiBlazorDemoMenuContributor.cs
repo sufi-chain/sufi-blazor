@@ -91,9 +91,10 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
         dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridCellTemplates, l["Demo:DataGridCellTemplates"], "/demo/sufi-blazor/data-grid/cell-templates", order: 8));
         dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridVirtualization, l["Demo:DataGridVirtualization"], "/demo/sufi-blazor/data-grid/virtualization", order: 9));
         dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridColumnFilter, l["Demo:DataGridColumnFilter"], "/demo/sufi-blazor/data-grid/column-filter", order: 10));
-        dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridProgrammaticFilter, l["Demo:DataGridProgrammaticFilter"], "/demo/sufi-blazor/data-grid/programmatic-filter", order: 11));
-        dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridInlineEdit, l["Demo:DataGridInlineEdit"], "/demo/sufi-blazor/data-grid/inline-edit", order: 12));
-        dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridExportCsv, l["Demo:DataGridExportCsv"], "/demo/sufi-blazor/data-grid/export-csv", order: 13));
+        dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridFilterRow, l["Demo:DataGridFilterRow"], "/demo/sufi-blazor/data-grid/filter-row", order: 11));
+        dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridProgrammaticFilter, l["Demo:DataGridProgrammaticFilter"], "/demo/sufi-blazor/data-grid/programmatic-filter", order: 12));
+        dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridInlineEdit, l["Demo:DataGridInlineEdit"], "/demo/sufi-blazor/data-grid/inline-edit", order: 13));
+        dataGridParent.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DataGridExportCsv, l["Demo:DataGridExportCsv"], "/demo/sufi-blazor/data-grid/export-csv", order: 14));
         dataGroup.AddItem(dataGridParent);
         dataGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Table, l["Menu:Demo:Table"], "/demo/sufi-blazor/table", order: 2));
         dataGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Pagination, l["Menu:Demo:Pagination"], "/demo/sufi-blazor/pagination", order: 3));

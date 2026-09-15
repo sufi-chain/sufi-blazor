@@ -53,10 +53,10 @@ public class SbRichTextEditorTests : BunitContext
         var cut = RenderEditor();
 
         // Assert
-        var toolbar = cut.Find(".sb-editor__toolbar");
+        var toolbar = cut.Find(".sb-editor__toolbar--main");
         Assert.NotNull(toolbar);
         Assert.Equal("toolbar", toolbar.GetAttribute("role"));
-        Assert.NotNull(cut.FindAll(".sb-editor__toolbar-btn"));
+        Assert.NotNull(cut.FindAll(".sb-editor__toolbar--main .sb-editor__toolbar-btn"));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class SbRichTextEditorTests : BunitContext
         var cut = RenderEditor(p => p.Add(x => x.HideToolbar, true));
 
         // Assert
-        Assert.Empty(cut.FindAll(".sb-editor__toolbar"));
+        Assert.Empty(cut.FindAll(".sb-editor__toolbar--main"));
     }
 
     [Fact]
@@ -213,7 +213,7 @@ public class SbRichTextEditorTests : BunitContext
         var cut = RenderEditor(p => p.Add(x => x.ToolbarAriaLabel, "Format text"));
 
         // Assert
-        var toolbar = cut.Find(".sb-editor__toolbar");
+        var toolbar = cut.Find(".sb-editor__toolbar--main");
         Assert.Equal("Format text", toolbar.GetAttribute("aria-label"));
     }
 
@@ -240,6 +240,14 @@ public class SbRichTextEditorTests : BunitContext
     }
 
     [Fact]
+    public void RendersSlashTriggerByDefault()
+    {
+        var cut = RenderEditor();
+
+        Assert.NotNull(cut.Find(".sb-editor__slash-trigger"));
+    }
+
+    [Fact]
     public void UsesCustomToolbarItemsWhenProvided()
     {
         // Arrange
@@ -254,7 +262,7 @@ public class SbRichTextEditorTests : BunitContext
         var cut = RenderEditor(p => p.Add(x => x.ToolbarItems, customItems));
 
         // Assert - toolbar should have fewer buttons than default
-        var buttons = cut.FindAll(".sb-editor__toolbar-btn");
+        var buttons = cut.FindAll(".sb-editor__toolbar--main .sb-editor__toolbar-btn");
         Assert.Equal(2, buttons.Count); // Bold and Italic
     }
 

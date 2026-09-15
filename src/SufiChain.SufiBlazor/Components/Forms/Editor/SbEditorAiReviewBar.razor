@@ -1,0 +1,20 @@
+@namespace SufiChain.SufiBlazor.Components.Forms.Editor
+
+@if (Visible)
+{
+    <div class="sb-editor-ai-review"
+         role="toolbar"
+         aria-label="@AriaLabel"
+         style="@Style">
+        <SbStack Direction="SbStackDirection.Row" Gap="2" Wrap="true">
+            <SbButton Size="SbSize.Sm" Color="SbColor.Primary" OnClick="OnAccept">@AcceptText</SbButton>
+            <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="OnReject">@RejectText</SbButton>
+            <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" OnClick="OnDismiss">@DismissText</SbButton>
+            @if (ShowBatchActions)
+            {
+                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" OnClick="OnAcceptAll">@AcceptAllText</SbButton>
+                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Ghost" OnClick="OnRejectAll">@RejectAllText</SbButton>
+            }
+        </SbStack>
+    </div>
+}

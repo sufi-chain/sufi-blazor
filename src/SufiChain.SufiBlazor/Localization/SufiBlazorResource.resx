@@ -137,6 +137,16 @@
   <data name="Finish" xml:space="preserve"><value>Finish</value></data>
   <data name="Optional" xml:space="preserve"><value>Optional</value></data>
   <data name="ClearAll" xml:space="preserve"><value>Clear all</value></data>
+  <data name="Filters" xml:space="preserve"><value>Filters</value></data>
+  <data name="ActiveFilters" xml:space="preserve"><value>Active filters</value></data>
+  <data name="Columns" xml:space="preserve"><value>Columns</value></data>
+  <data name="Actions" xml:space="preserve"><value>Actions</value></data>
+  <data name="Sort" xml:space="preserve"><value>Sort</value></data>
+  <data name="SortAscending" xml:space="preserve"><value>Ascending</value></data>
+  <data name="SortDescending" xml:space="preserve"><value>Descending</value></data>
+  <data name="NoDataAvailable" xml:space="preserve"><value>No data available</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>Select row {0}</value></data>
+  <data name="RemoveFilterFor" xml:space="preserve"><value>Remove filter for {0}</value></data>
   <data name="GenerateFromTitle" xml:space="preserve"><value>Generate from title</value></data>
   <data name="Demo:TabExample" xml:space="preserve"><value>Example</value></data>
   <data name="Demo:TabViewSource" xml:space="preserve"><value>View source</value></data>
@@ -155,6 +165,42 @@
   <data name="Rte:AlignCenter" xml:space="preserve"><value>Center</value></data>
   <data name="Rte:AlignRight" xml:space="preserve"><value>Right</value></data>
   <data name="Rte:AlignJustify" xml:space="preserve"><value>Justify</value></data>
+  <data name="Editor:Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="Editor:Redo" xml:space="preserve"><value>Redo</value></data>
+  <data name="Editor:Heading" xml:space="preserve"><value>Heading</value></data>
+  <data name="Editor:HeaderNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="Editor:Header1" xml:space="preserve"><value>Heading 1</value></data>
+  <data name="Editor:Header2" xml:space="preserve"><value>Heading 2</value></data>
+  <data name="Editor:Header3" xml:space="preserve"><value>Heading 3</value></data>
+  <data name="Editor:Header4" xml:space="preserve"><value>Heading 4</value></data>
+  <data name="Editor:Header5" xml:space="preserve"><value>Heading 5</value></data>
+  <data name="Editor:Header6" xml:space="preserve"><value>Heading 6</value></data>
+  <data name="Editor:Bold" xml:space="preserve"><value>Bold</value></data>
+  <data name="Editor:Italic" xml:space="preserve"><value>Italic</value></data>
+  <data name="Editor:Underline" xml:space="preserve"><value>Underline</value></data>
+  <data name="Editor:Strike" xml:space="preserve"><value>Strikethrough</value></data>
+  <data name="Editor:OrderedList" xml:space="preserve"><value>Numbered list</value></data>
+  <data name="Editor:BulletList" xml:space="preserve"><value>Bullet list</value></data>
+  <data name="Editor:AlignLeft" xml:space="preserve"><value>Left</value></data>
+  <data name="Editor:AlignCenter" xml:space="preserve"><value>Center</value></data>
+  <data name="Editor:AlignRight" xml:space="preserve"><value>Right</value></data>
+  <data name="Editor:Link" xml:space="preserve"><value>Insert link</value></data>
+  <data name="Editor:Image" xml:space="preserve"><value>Insert image</value></data>
+  <data name="Editor:Quote" xml:space="preserve"><value>Quote</value></data>
+  <data name="Editor:CodeBlock" xml:space="preserve"><value>Code block</value></data>
+  <data name="Editor:ClearFormatting" xml:space="preserve"><value>Clear formatting</value></data>
+  <data name="Editor:InsertImageFromGallery" xml:space="preserve"><value>Insert image from gallery</value></data>
+  <data name="Editor:InsertFileFromGallery" xml:space="preserve"><value>Insert file from gallery</value></data>
+  <data name="Editor:TaskList" xml:space="preserve"><value>Task list</value></data>
+  <data name="Editor:Table" xml:space="preserve"><value>Insert table</value></data>
+  <data name="Editor:Callout" xml:space="preserve"><value>Insert callout</value></data>
+  <data name="Editor:AskAi" xml:space="preserve"><value>Ask AI</value></data>
+  <data name="Editor:Accept" xml:space="preserve"><value>Accept</value></data>
+  <data name="Editor:Reject" xml:space="preserve"><value>Reject</value></data>
+  <data name="Editor:Dismiss" xml:space="preserve"><value>Dismiss</value></data>
+  <data name="Editor:AcceptAll" xml:space="preserve"><value>Accept all</value></data>
+  <data name="Editor:RejectAll" xml:space="preserve"><value>Reject all</value></data>
+  <data name="Editor:SuggestionReview" xml:space="preserve"><value>AI suggestion review</value></data>
   <data name="Map:OpenInOpenStreetMap" xml:space="preserve"><value>Open in OpenStreetMap</value></data>
   <data name="Map:PickLocation" xml:space="preserve"><value>Pick location</value></data>
   <data name="Map:ShareLocation" xml:space="preserve"><value>Share location</value></data>

@@ -1,0 +1,87 @@
+@namespace SufiChain.SufiBlazor.Components.Forms.Editor
+@using SufiChain.SufiBlazor.Contracts.Editors
+@using SufiChain.SufiBlazor.Localization
+@using Microsoft.Extensions.Localization
+
+<div class="@GetToolbarClass()" role="toolbar" aria-label="@AriaLabel">
+    @foreach (var item in VisibleItems)
+    {
+        @if (item.IsSeparator)
+        {
+            <span class="sb-editor__toolbar-separator" role="separator" aria-orientation="vertical"></span>
+        }
+        else if (item.Type == SbEditorToolbarItemType.Select && item.Options != null)
+        {
+            <select class="sb-editor__toolbar-select"
+                    title="@ResolveTooltip(item)"
+                    disabled="@Disabled"
+                    @onchange="e => OnSelectChanged.InvokeAsync((item, e.Value?.ToString()))">
+                @foreach (var option in item.Options)
+                {
+                    <option value="@(option.Value?.ToString() ?? "")">@ResolveOptionLabel(option)</option>
+                }
+            </select>
+        }
+        else
+        {
+            <button type="button"
+                    class="sb-editor__toolbar-btn @(IsActive(item) ? "sb-editor__toolbar-btn--active" : "")"
+                    title="@ResolveTooltip(item)"
+                    disabled="@(Disabled || !IsEnabled(item))"
+                    aria-pressed="@(IsActive(item) ? "true" : "false")"
+                    @onclick="() => OnItemClick.InvokeAsync(item)">
+                @if (!string.IsNullOrEmpty(item.IconName))
+                {
+                    <SbIcon Name="@item.IconName" Size="SbSize.Sm" Class="sb-editor__toolbar-icon" />
+                }
+                else if (!string.IsNullOrEmpty(item.Icon))
+                {
+                    <span class="sb-editor__toolbar-icon">@item.Icon</span>
+                }
+            </button>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<EditorToolbarItem> Items { get; set; } = Array.Empty<EditorToolbarItem>();
+    [Parameter] public EditorState? State { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string AriaLabel { get; set; } = "Editor toolbar";
+    [Parameter] public IStringLocalizer<SufiBlazorResource>? Localizer { get; set; }
+    [Parameter] public EventCallback<EditorToolbarItem> OnItemClick { get; set; }
+    [Parameter] public EventCallback<(EditorToolbarItem Item, string? Value)> OnSelectChanged { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    private string GetToolbarClass() =>
+        string.IsNullOrWhiteSpace(Class) ? "sb-editor__toolbar" : $"sb-editor__toolbar {Class}";
+
+    private IEnumerable<EditorToolbarItem> VisibleItems =>
+        Items.Where(item => item.IsSeparator || (item.IsVisible?.Invoke(State ?? new EditorState()) ?? true));
+
+    private bool IsActive(EditorToolbarItem item) =>
+        item.IsActive?.Invoke(State ?? new EditorState()) ?? false;
+
+    private bool IsEnabled(EditorToolbarItem item) =>
+        item.IsEnabled?.Invoke(State ?? new EditorState()) ?? true;
+
+    private string? ResolveTooltip(EditorToolbarItem item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.LabelKey) && Localizer != null)
+        {
+            return Localizer[item.LabelKey];
+        }
+
+        return item.Tooltip ?? item.Label;
+    }
+
+    private string ResolveOptionLabel(SbEditorToolbarOption option)
+    {
+        if (!string.IsNullOrWhiteSpace(option.LabelKey) && Localizer != null)
+        {
+            return Localizer[option.LabelKey];
+        }
+
+        return option.Label;
+    }
+}

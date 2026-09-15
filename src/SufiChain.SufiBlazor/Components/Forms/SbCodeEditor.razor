@@ -1,0 +1,41 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Forms.Editor
+@using SufiChain.SufiBlazor.Contracts.Editors
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+@inject IServiceProvider ServiceProvider
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="@GetContainerClass()" style="@GetContainerStyle()" dir="@(EffectiveRightToLeft ? "rtl" : "ltr")">
+    @if (!HideToolbar)
+    {
+        <SbEditorToolbar Items="_toolbarItems"
+                         State="_state"
+                         Disabled="@(Disabled || ReadOnly)"
+                         AriaLabel="@ToolbarAriaLabel"
+                         Class="sb-editor__toolbar--code"
+                         Localizer="L"
+                         OnItemClick="OnToolbarItemClickAsync" />
+    }
+
+    @if (_useFallback)
+    {
+        <SbTextArea Value="@Value"
+                    ValueChanged="OnFallbackValueChangedAsync"
+                    Rows="12"
+                    Placeholder="@Placeholder"
+                    Disabled="@Disabled"
+                    ReadOnly="@ReadOnly"
+                    Class="sb-code-editor__fallback" />
+    }
+    else
+    {
+        <div @ref="_editorContainer"
+             class="sb-code-editor__content"
+             role="textbox"
+             aria-multiline="true"
+             aria-label="@(Placeholder ?? EditorAriaLabel)"
+             aria-readonly="@(ReadOnly ? "true" : "false")"
+             aria-disabled="@(Disabled ? "true" : "false")"></div>
+    }
+</div>
