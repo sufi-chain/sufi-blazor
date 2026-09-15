@@ -54,26 +54,8 @@
                     }
                     else
                     {
-                        <div class="sb-conversation-message sb-conversation-message--start sb-conversation-message--thinking">
-                            @if (!string.IsNullOrWhiteSpace(WaitingSenderLabel))
-                            {
-                                <div class="sb-conversation-message__meta">
-                                    <span class="sb-conversation-message__sender">@WaitingSenderLabel</span>
-                                </div>
-                            }
-                            <div class="sb-conversation-message__bubble sb-conversation-message__bubble--start sb-conversation-message__bubble--thinking">
-                                <div class="sb-conversation-timeline__thinking" role="status" aria-live="polite">
-                                    <span class="sb-conversation-timeline__thinking-dots" aria-hidden="true">
-                                        <span class="sb-conversation-timeline__thinking-dot"></span>
-                                        <span class="sb-conversation-timeline__thinking-dot"></span>
-                                        <span class="sb-conversation-timeline__thinking-dot"></span>
-                                    </span>
-                                    <span class="sb-conversation-timeline__thinking-text">
-                                        @(WaitingText ?? "Thinking…")
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                        <SbConversationThinkingBubble Text="@WaitingText"
+                                                      SenderLabel="@WaitingSenderLabel" />
                     }
                 </div>
             }

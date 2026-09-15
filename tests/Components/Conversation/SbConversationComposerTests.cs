@@ -93,4 +93,29 @@ public class SbConversationComposerTests : BunitContext
         Assert.Contains("Thinking…", cut.Markup);
         Assert.Contains("Copilot", cut.Markup);
     }
+
+    [Fact]
+    public void Thinking_Bubble_Renders_Dots_And_Text()
+    {
+        var cut = Render<SbConversationThinkingBubble>(parameters => parameters
+            .Add(p => p.Text, "Searching knowledge base…")
+            .Add(p => p.SenderLabel, "Assistant"));
+
+        Assert.Contains("sb-conversation-message--thinking", cut.Markup);
+        Assert.Contains("sb-conversation-timeline__thinking-dots", cut.Markup);
+        Assert.Contains("Searching knowledge base…", cut.Markup);
+        Assert.Contains("Assistant", cut.Markup);
+    }
+
+    [Fact]
+    public void Thinking_Bubble_Renders_Live_Progress_Child_Content()
+    {
+        var cut = Render<SbConversationThinkingBubble>(parameters => parameters
+            .Add(p => p.Text, "Thinking…")
+            .Add(p => p.ChildContent, (RenderFragment)(builder =>
+                builder.AddMarkupContent(0, "<ul class=\"progress-rows\"><li>searching_kb</li></ul>"))));
+
+        Assert.Contains("sb-conversation-message__bubble--thinking-detail", cut.Markup);
+        Assert.Contains("searching_kb", cut.Markup);
+    }
 }

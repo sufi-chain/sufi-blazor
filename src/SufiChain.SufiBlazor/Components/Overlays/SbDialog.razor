@@ -17,21 +17,27 @@
         @if (ShowHeader)
         {
             <header class="sb-dialog__header">
-                @if (Header != null)
-                {
-                    @Header
-                }
-                else if (Title != null)
-                {
-                    <h2 id="@_titleId" class="sb-dialog__title">@Title</h2>
-                }
+                <div class="sb-dialog__heading">
+                    @if (Header != null)
+                    {
+                        @Header
+                    }
+                    else if (Title != null)
+                    {
+                        <h2 id="@_titleId" class="sb-dialog__title">@Title</h2>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(Description) && Header == null)
+                    {
+                        <p class="sb-dialog__description">@Description</p>
+                    }
+                </div>
                 @if (ShowCloseButton)
                 {
                     <button type="button"
                             class="sb-dialog__close-btn"
                             @onclick="HandleCloseButtonClick"
                             aria-label="@L["Close"]">
-                        <span aria-hidden="true">×</span>
+                        <SbIcon Name="x" Size="SbSize.Sm" />
                     </button>
                 }
             </header>
@@ -73,6 +79,12 @@
     /// </summary>
     [Parameter]
     public string? Title { get; set; }
+
+    /// <summary>
+    /// Optional subtitle under the title. Ignored when <see cref="Header"/> is set.
+    /// </summary>
+    [Parameter]
+    public string? Description { get; set; }
 
     /// <summary>
     /// Custom header content (replaces Title).
@@ -178,7 +190,7 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    private bool ShowHeader => Header != null || Title != null || ShowCloseButton;
+    private bool ShowHeader => Header != null || Title != null || !string.IsNullOrWhiteSpace(Description) || ShowCloseButton;
 
     private static string? GetDimensionValue(string? parameterValue, Dictionary<string, object>? attrs, params string[] keys)
     {
@@ -278,6 +290,14 @@
         if (_pendingOpenSync)
         {
             await SyncNativeOpenStateAsync();
+            return;
+        }
+
+        // Blazor diffs can drop the native [open] attribute even when Open stays true
+        // (for example after a checkbox inside the dialog re-renders). Re-assert modality.
+        if (_isOpen)
+        {
+            await ShowAsync();
         }
     }
 
@@ -352,6 +372,13 @@
         if (_suppressNextNativeClose)
         {
             _suppressNextNativeClose = false;
+            return;
+        }
+
+        // A re-render can strip [open] and fire close while the caller still wants the dialog open.
+        if (Open)
+        {
+            await ShowAsync();
             return;
         }
 

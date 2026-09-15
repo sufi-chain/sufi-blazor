@@ -8,6 +8,7 @@ A modal dialog component built on the native HTML `<dialog>` element with header
 |-----------|------|---------|-------------|
 | Open | bool | false | Whether the dialog is open |
 | Title | string? | null | Dialog title displayed in header |
+| Description | string? | null | Optional subtitle under the title. Ignored when Header is set. |
 | Size | SbDialogSize | Md | Dialog size preset |
 | Width | string? | null | Override width; value applied as-is to CSS (e.g. "800px", "80%") |
 | MaxWidth | string? | null | Override max-width; value applied as-is to CSS (e.g. "800px", "80%") |
@@ -63,21 +64,24 @@ public enum SbDialogCloseReason
 
 ## CSS Classes
 
-- `sb-dialog` - Base class
+- `sb-dialog` - Base class (`overflow: hidden`). Open dialogs use `display: flex` only with `[open]`; closed dialogs stay `display: none`. After each render while `Open` is true, `showModal()` is re-asserted so a Blazor diff cannot leave the dialog blank by dropping `[open]`.
 - `sb-dialog--sm|md|lg|xl|fullscreen` - Size variants
-- `sb-dialog__container` - Inner container
-- `sb-dialog__header` - Header section
+- `sb-dialog__container` - Inner container (fills remaining height)
+- `sb-dialog__header` - Header section (`flex: 0 0 auto`)
+- `sb-dialog__heading` - Title/description group (flex 1)
 - `sb-dialog__title` - Title text
-- `sb-dialog__close-btn` - Close button
-- `sb-dialog__body` - Body content
-- `sb-dialog__footer` - Footer section
+- `sb-dialog__description` - Optional subtitle under the title
+- `sb-dialog__close-btn` - Close button (44px hit area, SVG icon)
+- `sb-dialog__body` - Body content (scrolls)
+- `sb-dialog__footer` - Footer section (`flex: 0 0 auto`)
 
 ## Accessibility
 
 - Uses native `<dialog>` element
 - `aria-labelledby` links to title
 - `aria-modal="true"` indicates modal
-- Close button has `aria-label="Close"`
+- Close button has `aria-label="Close"` and an SVG close icon
+- Close button shows a visible `:focus-visible` ring
 
 ## Examples
 

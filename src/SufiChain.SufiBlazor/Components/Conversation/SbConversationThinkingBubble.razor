@@ -1,0 +1,52 @@
+@namespace SufiChain.SufiBlazor.Components.Conversation
+
+<div class="sb-conversation-message sb-conversation-message--start sb-conversation-message--thinking">
+    @if (!string.IsNullOrWhiteSpace(SenderLabel))
+    {
+        <div class="sb-conversation-message__meta">
+            <span class="sb-conversation-message__sender">@SenderLabel</span>
+        </div>
+    }
+    <div class="sb-conversation-message__bubble sb-conversation-message__bubble--start sb-conversation-message__bubble--thinking @(ChildContent == null ? string.Empty : "sb-conversation-message__bubble--thinking-detail")">
+        <div class="sb-conversation-timeline__thinking-stack">
+            <div class="sb-conversation-timeline__thinking" role="status" aria-live="polite" aria-busy="true" aria-label="@EffectiveAriaLabel">
+                <span class="sb-conversation-timeline__thinking-dots" aria-hidden="true">
+                    <span class="sb-conversation-timeline__thinking-dot"></span>
+                    <span class="sb-conversation-timeline__thinking-dot"></span>
+                    <span class="sb-conversation-timeline__thinking-dot"></span>
+                </span>
+                <span class="sb-conversation-timeline__thinking-text">
+                    @EffectiveText
+                </span>
+            </div>
+            @if (ChildContent != null)
+            {
+                <div class="sb-conversation-timeline__thinking-detail">
+                    @ChildContent
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Thinking-bubble copy. Defaults to "Thinking…".</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    /// <summary>Optional sender label above the bubble.</summary>
+    [Parameter]
+    public string? SenderLabel { get; set; }
+
+    /// <summary>Accessible name. Defaults to <see cref="Text"/>.</summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    /// <summary>Optional live status rows under the thinking copy (tool/RAG progress).</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private string EffectiveText => string.IsNullOrWhiteSpace(Text) ? "Thinking…" : Text;
+
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(AriaLabel) ? EffectiveText : AriaLabel;
+}

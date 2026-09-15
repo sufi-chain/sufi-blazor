@@ -58,9 +58,7 @@ public class SbMapPreviewTests : BunitContext
     public void BuildsOpenStreetMapUrl()
     {
         var url = SbGeoPosition.GetOpenStreetMapUrl(35.6892, 51.3890, 16);
-        Assert.Contains("mlat=35.6892", url);
-        Assert.Contains("mlon=51.3890", url);
-        Assert.Contains("#map=16/", url);
+        Assert.Equal("https://www.openstreetmap.org/?mlat=35.6892&mlon=51.389#map=16/35.6892/51.389", url);
     }
 }
 

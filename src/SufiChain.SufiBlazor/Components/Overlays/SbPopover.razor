@@ -205,7 +205,10 @@
             _flipUp = false;
             _constrainShiftX = 0;
             _constrainShiftY = 0;
-            await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+            if (!firstRender)
+            {
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
+            }
         }
     }
 

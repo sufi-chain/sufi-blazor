@@ -145,7 +145,7 @@ public class SbSelectTests : BunitContext
         var cut = RenderSelect(p => p.Add(x => x.Disabled, true));
 
         // Assert
-        var trigger = cut.Find(".sb-select-trigger");
+        var trigger = cut.Find(".sb-select-trigger__main");
         Assert.NotNull(trigger.GetAttribute("disabled"));
     }
 
@@ -156,7 +156,7 @@ public class SbSelectTests : BunitContext
         var cut = RenderSelect();
 
         // Act
-        var trigger = cut.Find(".sb-select-trigger");
+        var trigger = cut.Find(".sb-select-trigger__main");
         await cut.InvokeAsync(() => trigger!.Click());
 
         // Assert
@@ -172,7 +172,7 @@ public class SbSelectTests : BunitContext
         var cut = RenderSelect();
 
         // Act
-        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger")!.Click());
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main")!.Click());
 
         // Assert
         var options = cut.FindAll(".sb-select-option");
@@ -193,7 +193,7 @@ public class SbSelectTests : BunitContext
             .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, v => received = v)));
 
         // Act
-        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger")!.Click());
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main")!.Click());
         var option = cut.FindAll(".sb-select-option").First(o => o.TextContent.Contains("B"));
         await cut.InvokeAsync(() => option!.Click());
 
@@ -206,7 +206,7 @@ public class SbSelectTests : BunitContext
     {
         // Arrange & Act
         var cut = RenderSelect(p => p.Add(x => x.Searchable, true));
-        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger")!.Click());
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main")!.Click());
 
         // Assert
         var searchInput = cut.Find(".sb-select-search__input");
@@ -219,7 +219,7 @@ public class SbSelectTests : BunitContext
     {
         // Arrange
         var cut = RenderSelect(p => p.Add(x => x.Searchable, true));
-        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger")!.Click());
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main")!.Click());
 
         // Act
         var searchInput = cut.Find(".sb-select-search__input");
@@ -252,7 +252,7 @@ public class SbSelectTests : BunitContext
     {
         // Arrange
         var cut = RenderSelect(p => p.Add(x => x.Searchable, true));
-        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger")!.Click());
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main")!.Click());
 
         // Act
         var searchInput = cut.Find(".sb-select-search__input");
@@ -271,7 +271,7 @@ public class SbSelectTests : BunitContext
         var cut = RenderSelect(p => p.Add(x => x.Value, 2));
 
         // Act
-        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger")!.Click());
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main")!.Click());
 
         // Assert
         var options = cut.FindAll(".sb-select-option");
@@ -308,7 +308,7 @@ public class SbSelectTests : BunitContext
         var cut = RenderSelect(p => p.Add(x => x.Id, "select-id"));
 
         // Assert
-        var trigger = cut.Find(".sb-select-trigger");
+        var trigger = cut.Find(".sb-select-trigger__main");
         Assert.Equal("listbox", trigger.GetAttribute("aria-haspopup"));
         Assert.Equal("select-id", trigger.GetAttribute("aria-labelledby"));
     }

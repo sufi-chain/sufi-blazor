@@ -44,19 +44,18 @@
             </div>
         }
 
-        <textarea @ref="_textAreaRef"
-                  class="sb-conversation-composer__textarea"
-                  rows="@Rows"
-                  placeholder="@Placeholder"
-                  disabled="@IsDisabled"
-                  @bind:get="_draft"
-                  @bind:set="HandleDraftInputAsync"
-                  @bind:event="oninput"></textarea>
-
-        <div class="sb-conversation-composer__actions">
+        <div class="sb-conversation-composer__body sb-conversation-composer__actions">
             <div class="sb-conversation-composer__actions-start">
                 @StartActions
             </div>
+            <textarea @ref="_textAreaRef"
+                      class="sb-conversation-composer__textarea"
+                      rows="@Rows"
+                      placeholder="@Placeholder"
+                      disabled="@IsDisabled"
+                      @bind:get="_draft"
+                      @bind:set="HandleDraftInputAsync"
+                      @bind:event="oninput"></textarea>
             <div class="sb-conversation-composer__actions-end">
                 @OverflowActions
                 @EndActions
@@ -64,11 +63,12 @@
                 {
                     <SbIconButton Class="sb-conversation-composer__send"
                                   Color="SbColor.Primary"
+                                  Size="SbSize.Sm"
                                   Disabled="@(IsDisabled || !EffectiveCanSend)"
                                   OnClick="SendAsync"
                                   Title="@SendLabel"
                                   AriaLabel="@SendLabel">
-                        <Icon><SbIcon Name="arrow-up" /></Icon>
+                        <Icon><SbIcon Name="arrow-up" Size="SbSize.Sm" /></Icon>
                     </SbIconButton>
                 }
             </div>

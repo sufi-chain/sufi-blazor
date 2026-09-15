@@ -12,12 +12,12 @@
     </div>
 </CascadingValue>
 
-<div class="sb-select-anchor @Class" @ref="_anchorRef">
+<div class="sb-select-anchor @Class" style="@Style" @ref="_anchorRef">
     @if (!string.IsNullOrEmpty(Label))
     {
         <label class="sb-select-label">@Label</label>
     }
-    <div class="sb-select-trigger" style="@Style">
+    <div class="sb-select-trigger">
         <button type="button"
                 class="sb-select-trigger__main"
                 @onclick="Toggle"
@@ -204,7 +204,7 @@
     public string? Class { get; set; }
 
     /// <summary>
-    /// Inline styles.
+    /// Inline styles for the wrapper element.
     /// </summary>
     [Parameter]
     public string? Style { get; set; }

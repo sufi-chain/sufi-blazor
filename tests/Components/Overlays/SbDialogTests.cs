@@ -59,6 +59,31 @@ public class SbDialogTests : BunitContext
         var title = cut.Find(".sb-dialog__title");
         Assert.NotNull(title);
         Assert.Equal("My Dialog", title.TextContent.Trim());
+        Assert.NotNull(cut.Find(".sb-dialog__heading"));
+    }
+
+    [Fact]
+    public void RendersDescriptionWhenProvided()
+    {
+        var cut = RenderDialog(p => p
+            .Add(x => x.Title, "My Dialog")
+            .Add(x => x.Description, "Optional subtitle")
+            .Add(x => x.ChildContent, (RenderFragment)(b => b.AddMarkupContent(0, "Content"))));
+
+        var description = cut.Find(".sb-dialog__description");
+        Assert.Equal("Optional subtitle", description.TextContent.Trim());
+    }
+
+    [Fact]
+    public void DoesNotRenderDescriptionWhenHeaderIsSet()
+    {
+        var cut = RenderDialog(p => p
+            .Add(x => x.Header, (RenderFragment)(b => b.AddMarkupContent(0, "<h1>Custom Header</h1>")))
+            .Add(x => x.Description, "Hidden subtitle")
+            .Add(x => x.ChildContent, (RenderFragment)(b => b.AddMarkupContent(0, "Body"))));
+
+        Assert.Empty(cut.FindAll(".sb-dialog__description"));
+        Assert.Contains("Custom Header", cut.Markup);
     }
 
     [Fact]
@@ -112,6 +137,8 @@ public class SbDialogTests : BunitContext
         var closeBtn = cut.Find(".sb-dialog__close-btn");
         Assert.NotNull(closeBtn);
         Assert.Equal("Close", closeBtn.GetAttribute("aria-label"));
+        Assert.NotNull(closeBtn.QuerySelector(".sb-icon"));
+        Assert.Contains("<svg", closeBtn.InnerHtml, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
