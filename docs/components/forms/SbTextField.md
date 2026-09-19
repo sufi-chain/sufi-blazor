@@ -4,6 +4,8 @@ A text input component with support for labels, placeholders, adornments, passwo
 
 Text changes use Blazor's `oninput` bind pipeline, preventing delayed Interactive Server render batches from replacing newer browser input.
 
+`SbTextField` inherits `InputBase<TValue>`. Always use `@bind-Value` (or pass `ValueExpression`). Setting `Value` and `ValueChanged` alone throws at runtime: `requires a value for the 'ValueExpression' parameter`. Bind a real property, not a list indexer.
+
 ## Parameters
 
 | Parameter | Type | Default | Description |

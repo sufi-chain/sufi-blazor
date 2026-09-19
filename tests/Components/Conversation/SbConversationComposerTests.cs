@@ -9,9 +9,47 @@ public class SbConversationComposerTests : BunitContext
 {
     public SbConversationComposerTests()
     {
+        JSInterop.SetupVoid("SufiBlazor.conversationComposer.setValue", _ => true);
         JSInterop.SetupVoid(
             "SufiBlazor.conversationComposer.bindEnterToSend",
             _ => true);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("Existing draft")]
+    public async Task Transcript_Remains_For_Review_And_Is_Sent_Only_On_The_Next_Click(string initialDraft)
+    {
+        var bodies = new List<string>();
+        var values = new List<string>();
+        var transcript = string.IsNullOrEmpty(initialDraft)
+            ? "متن ضبط شده"
+            : initialDraft + Environment.NewLine + "متن ضبط شده";
+        var cut = Render<SbConversationComposer>(parameters => parameters
+            .Add(p => p.Value, initialDraft)
+            .Add(p => p.CanSend, true)
+            .Add(p => p.ValueChanged, EventCallback.Factory.Create<string>(this, value => values.Add(value)))
+            .Add(p => p.OnSend, EventCallback.Factory.Create<SbConversationSendRequest>(this, async request =>
+            {
+                bodies.Add(request.Body);
+                if (bodies.Count == 1)
+                {
+                    await Task.Yield();
+                    request.DraftAfterSend = transcript;
+                }
+            })));
+
+        await cut.Find(".sb-conversation-composer__send").ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+
+        Assert.Single(bodies);
+        Assert.Equal(transcript, Assert.Single(values));
+        Assert.Equal(transcript, cut.Find("textarea").GetAttribute("value"));
+
+        await cut.Find(".sb-conversation-composer__send").ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+
+        Assert.Equal(transcript, bodies[1]);
+        Assert.Equal(string.Empty, values[1]);
+        Assert.Equal(string.Empty, cut.Find("textarea").GetAttribute("value"));
     }
 
     [Fact]
@@ -25,10 +63,38 @@ public class SbConversationComposerTests : BunitContext
 
         Assert.Contains("sb-conversation-composer__shell", cut.Markup);
         Assert.Contains("sb-conversation-composer__actions", cut.Markup);
+        Assert.Contains("sb-conversation-composer__field", cut.Markup);
         Assert.Contains("start-addon", cut.Markup);
         Assert.Contains("overflow-addon", cut.Markup);
         Assert.Contains("end-addon", cut.Markup);
         Assert.DoesNotContain("sb-conversation-composer__toolbar", cut.Markup);
+
+        var start = cut.Find(".sb-conversation-composer__actions-start");
+        var end = cut.Find(".sb-conversation-composer__actions-end");
+        Assert.Contains("start-addon", start.InnerHtml);
+        Assert.Contains("overflow-addon", start.InnerHtml);
+        Assert.DoesNotContain("end-addon", start.InnerHtml);
+        Assert.Contains("end-addon", end.InnerHtml);
+        Assert.Contains("sb-conversation-composer__send", end.InnerHtml);
+        Assert.DoesNotContain("overflow-addon", end.InnerHtml);
+    }
+
+    [Fact]
+    public async Task Sending_Shows_Busy_Button_And_Blocks_Enter_Submission()
+    {
+        var sends = 0;
+        var cut = Render<SbConversationComposer>(parameters => parameters
+            .Add(p => p.Value, "Pending message")
+            .Add(p => p.IsSending, true)
+            .Add(p => p.OnSend, EventCallback.Factory.Create<SbConversationSendRequest>(
+                this, _ => sends++)));
+
+        var button = cut.Find(".sb-conversation-composer__send");
+        Assert.True(button.HasAttribute("disabled"));
+        Assert.Equal("true", button.GetAttribute("aria-busy"));
+        Assert.Single(button.QuerySelectorAll(".sb-icon-button__spinner"));
+        await cut.InvokeAsync(() => cut.Instance.OnEnterSendAsync());
+        Assert.Equal(0, sends);
     }
 
     [Fact]

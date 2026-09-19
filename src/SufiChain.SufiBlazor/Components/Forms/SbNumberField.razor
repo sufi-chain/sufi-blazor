@@ -6,7 +6,7 @@
 <div class="@CssClass" style="@Style">
     @if (!string.IsNullOrEmpty(Label))
     {
-        <label class="sb-number-field__label" for="@Id">
+        <label class="sb-number-field__label" for="@EffectiveId">
             @Label
             @if (Required)
             {
@@ -17,7 +17,10 @@
     <div class="sb-number-field__input-group">
         <input type="number"
                class="sb-number-field__input"
-               id="@Id"
+               id="@EffectiveId"
+               aria-required="@(Required || FormFieldContext?.Required == true ? "true" : null)"
+               aria-describedby="@InputDescription"
+               aria-invalid="@(FormFieldContext?.HasError == true ? "true" : null)"
                value="@CurrentValueAsString"
                @oninput="HandleInput"
                @onchange="HandleChange"
@@ -34,7 +37,7 @@
                 <button type="button"
                         class="sb-number-field__spinner"
                         @onclick="Increment"
-                        disabled="@(Disabled || IsAtMax)"
+                        disabled="@(Disabled || ReadOnly || IsAtMax)"
                         tabindex="-1"
                         aria-label="@IncreaseAriaLabel">
                     <SbIcon Name="chevron-up" Size="SbSize.Sm" />
@@ -42,7 +45,7 @@
                 <button type="button"
                         class="sb-number-field__spinner"
                         @onclick="Decrement"
-                        disabled="@(Disabled || IsAtMin)"
+                        disabled="@(Disabled || ReadOnly || IsAtMin)"
                         tabindex="-1"
                         aria-label="@DecreaseAriaLabel">
                     <SbIcon Name="chevron-down" Size="SbSize.Sm" />
@@ -52,7 +55,7 @@
     </div>
     @if (!string.IsNullOrEmpty(HelperText))
     {
-        <div class="sb-number-field__helper">@HelperText</div>
+        <div id="@($"{EffectiveId}-helper")" class="sb-number-field__helper">@HelperText</div>
     }
 </div>
 

@@ -32,7 +32,7 @@
                disabled="@Disabled"
                readonly="@ReadOnly"
                aria-invalid="@(HasError ? "true" : null)"
-               aria-required="@(Required ? "true" : null)"
+               aria-required="@(Required || FormFieldContext?.Required == true ? "true" : null)"
                aria-describedby="@EffectiveAriaDescribedBy"
                inputmode="@InputMode"
                autocomplete="@EffectiveAutoComplete"
@@ -40,12 +40,11 @@
                @bind:event="oninput"
                @attributes="AdditionalAttributes" />
 
-        @if (Clearable && !string.IsNullOrEmpty(CurrentValueAsString))
+        @if (Clearable && !Disabled && !ReadOnly && !string.IsNullOrEmpty(CurrentValueAsString))
         {
             <button type="button"
                     class="sb-text-field__clear"
                     aria-label="@(ClearAriaLabel ?? L["Clear"])"
-                    tabindex="-1"
                     @onclick="HandleClear">
                 <SbIcon Name="x" Size="SbSize.Md" />
             </button>
@@ -55,8 +54,9 @@
         {
             <button type="button"
                     class="sb-text-field__toggle-password"
+                    disabled="@Disabled"
+                    aria-controls="@EffectiveId"
                     aria-label="@(_showPassword ? (HidePasswordAriaLabel ?? L["HidePassword"]) : (ShowPasswordAriaLabel ?? L["ShowPassword"]))"
-                    tabindex="-1"
                     @onclick="TogglePassword">
                 <SbIcon Name="@(_showPassword ? "eye-off" : "eye")" Size="SbSize.Md" />
             </button>
@@ -207,13 +207,15 @@
     [Parameter]
     public string? Style { get; set; }
 
-    private string EffectiveId => Id ?? _generatedId;
+    private string EffectiveId => Id ?? FormFieldContext?.InputId ?? _generatedId;
 
     private string? EffectiveAriaDescribedBy
     {
         get
         {
             var parts = new List<string>();
+            if (!string.IsNullOrEmpty(FormFieldContext?.DescriptionId))
+                parts.Add(FormFieldContext.DescriptionId);
             if (!string.IsNullOrEmpty(AriaDescribedBy))
                 parts.Add(AriaDescribedBy);
             if (!string.IsNullOrEmpty(HelperText) && !HasError)
@@ -236,7 +238,7 @@
 
     private string InputType => Type == "password" && _showPassword ? "text" : Type;
 
-    private bool HasError => EditContext?.GetValidationMessages(FieldIdentifier).Any() == true;
+    private bool HasError => FormFieldContext?.HasError == true || EditContext?.GetValidationMessages(FieldIdentifier).Any() == true;
 
     private string WrapperCssClass
     {
@@ -305,12 +307,14 @@
 
     private async Task HandleClear()
     {
+        if (Disabled || ReadOnly) return;
         CurrentValueAsString = string.Empty;
         await OnClear.InvokeAsync();
     }
 
     private void TogglePassword()
     {
+        if (Disabled) return;
         _showPassword = !_showPassword;
     }
 }

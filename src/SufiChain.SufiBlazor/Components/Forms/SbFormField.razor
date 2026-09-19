@@ -3,7 +3,7 @@
 <div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">
     @if (!string.IsNullOrEmpty(Label))
     {
-        <label class="sb-form-field__label" for="@InputId">
+        <label class="sb-form-field__label" for="@EffectiveInputId" id="@($"{EffectiveInputId}-field-label")">
             @Label
             @if (Required)
             {
@@ -13,7 +13,9 @@
     }
 
     <div class="sb-form-field__input">
-        @ChildContent
+        <CascadingValue Value="FieldContext">
+            @ChildContent
+        </CascadingValue>
     </div>
 
     @if (!string.IsNullOrEmpty(HelperText) && string.IsNullOrEmpty(ErrorText))
@@ -88,8 +90,8 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    private string HelperId => $"{InputId}-helper";
-    private string ErrorId => $"{InputId}-error";
+    private string HelperId => $"{InputId ?? _descriptionId}-helper";
+    private string ErrorId => $"{InputId ?? _descriptionId}-error";
 
     private string CssClass
     {

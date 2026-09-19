@@ -47,23 +47,26 @@
         <div class="sb-conversation-composer__body sb-conversation-composer__actions">
             <div class="sb-conversation-composer__actions-start">
                 @StartActions
-            </div>
-            <textarea @ref="_textAreaRef"
-                      class="sb-conversation-composer__textarea"
-                      rows="@Rows"
-                      placeholder="@Placeholder"
-                      disabled="@IsDisabled"
-                      @bind:get="_draft"
-                      @bind:set="HandleDraftInputAsync"
-                      @bind:event="oninput"></textarea>
-            <div class="sb-conversation-composer__actions-end">
                 @OverflowActions
+            </div>
+            <div class="sb-conversation-composer__field" @onclick="FocusTextAreaAsync">
+                <textarea @ref="_textAreaRef"
+                          class="sb-conversation-composer__textarea"
+                          rows="@Rows"
+                          placeholder="@Placeholder"
+                          disabled="@(IsDisabled || IsSending)"
+                          @bind:get="_draft"
+                          @bind:set="HandleDraftInputAsync"
+                          @bind:event="oninput"></textarea>
+            </div>
+            <div class="sb-conversation-composer__actions-end">
                 @EndActions
                 @if (ShowDefaultSend)
                 {
                     <SbIconButton Class="sb-conversation-composer__send"
                                   Color="SbColor.Primary"
                                   Size="SbSize.Sm"
+                                  Loading="@IsSending"
                                   Disabled="@(IsDisabled || !EffectiveCanSend)"
                                   OnClick="SendAsync"
                                   Title="@SendLabel"
@@ -112,6 +115,10 @@
     [Parameter]
     public bool IsDisabled { get; set; }
 
+    /// <summary>Shows a spinner on send and prevents submission while a request is pending.</summary>
+    [Parameter]
+    public bool IsSending { get; set; }
+
     /// <summary>Host override for whether send is allowed. When null, derived from draft/pending.</summary>
     [Parameter]
     public bool? CanSend { get; set; }
@@ -136,15 +143,15 @@
     [Parameter]
     public RenderFragment? PendingContent { get; set; }
 
-    /// <summary>In-field start cluster (emoji, attach, …).</summary>
+    /// <summary>Leading tool cluster (emoji, attach, voice, …).</summary>
     [Parameter]
     public RenderFragment? StartActions { get; set; }
 
-    /// <summary>In-field end cluster (mic, custom, …) before send.</summary>
+    /// <summary>Trailing cluster before send (shortcut popover, …).</summary>
     [Parameter]
     public RenderFragment? EndActions { get; set; }
 
-    /// <summary>In-field overflow / AI addon cluster (still inside the field).</summary>
+    /// <summary>Leading overflow / AI addon cluster (model selector, context, …).</summary>
     [Parameter]
     public RenderFragment? OverflowActions { get; set; }
 
@@ -232,6 +239,25 @@
        }
    }
 
+   private async Task FocusTextAreaAsync()
+   {
+       if (IsDisabled || IsSending)
+       {
+           return;
+       }
+
+       try
+       {
+           await _textAreaRef.FocusAsync();
+       }
+       catch (JSDisconnectedException)
+       {
+       }
+       catch (InvalidOperationException)
+       {
+       }
+   }
+
    private async Task HandleDraftInputAsync(string? value)
    {
        _draft = value ?? string.Empty;
@@ -248,7 +274,7 @@
 
     private async Task SendAsync()
     {
-        if (IsDisabled || !EffectiveCanSend || !OnSend.HasDelegate)
+        if (IsDisabled || IsSending || !EffectiveCanSend || !OnSend.HasDelegate)
         {
             return;
         }
@@ -264,12 +290,15 @@
 
         try
         {
-            await OnSend.InvokeAsync(new SbConversationSendRequest
+            var request = new SbConversationSendRequest
             {
                 Body = body
-            });
+            };
+            await OnSend.InvokeAsync(request);
 
-            await ValueChanged.InvokeAsync(string.Empty);
+            _draft = request.DraftAfterSend ?? string.Empty;
+            await SyncTextAreaDomAsync(_draft);
+            await ValueChanged.InvokeAsync(_draft);
         }
         catch
         {

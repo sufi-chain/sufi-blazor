@@ -15,18 +15,23 @@
 <div class="sb-select-anchor @Class" style="@Style" @ref="_anchorRef">
     @if (!string.IsNullOrEmpty(Label))
     {
-        <label class="sb-select-label">@Label</label>
+        <label class="sb-select-label" id="@($"{EffectiveId}-label")" for="@EffectiveId">@Label</label>
     }
     <div class="sb-select-trigger">
         <button type="button"
                 class="sb-select-trigger__main"
+                id="@EffectiveId"
+                @ref="_triggerRef"
                 @onclick="Toggle"
                 @onkeydown="HandleKeyDown"
                 disabled="@Disabled"
                 aria-haspopup="listbox"
-                aria-expanded="@_isOpen"
-                aria-labelledby="@Id">
-            <span class="@(HasValue ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
+                aria-describedby="@FormFieldContext?.DescriptionId"
+                aria-invalid="@(FormFieldContext?.HasError == true ? "true" : null)"
+                aria-expanded="@(_isOpen ? "true" : "false")"
+                aria-labelledby="@LabelledBy"
+                aria-controls="@(_isOpen ? $"{EffectiveId}-options" : null)">
+            <span id="@($"{EffectiveId}-value")" class="@(HasValue ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
                 @if (!HasValue)
                 {
                     @(Placeholder ?? L["Select_Placeholder"])
@@ -50,7 +55,6 @@
             <button type="button"
                     class="sb-select-trigger__clear"
                     aria-label="@(L["Clear"])"
-                    tabindex="-1"
                     @onclick="HandleClear">
                 <SbIcon Name="x" Size="SbSize.Sm" />
             </button>
@@ -60,19 +64,21 @@
 
     @if (_isOpen)
     {
-        <div class="@DropdownClass" role="listbox">
+        <div class="@DropdownClass">
             @if (Searchable)
             {
                 <div class="sb-select-search">
                     <input type="text"
                            class="sb-select-search__input"
+                           aria-label="@(SearchPlaceholder ?? L["Search_Placeholder"])"
                            placeholder="@(SearchPlaceholder ?? L["Search_Placeholder"])"
                            @bind="_searchText"
                            @bind:event="oninput"
                            @ref="_searchRef" />
                 </div>
             }
-            <div class="sb-select-options">
+            <div class="sb-select-options" id="@($"{EffectiveId}-options")" role="listbox" aria-labelledby="@LabelledBy"
+                 aria-required="@(FormFieldContext?.Required == true ? "true" : null)">
                 @if (FilteredOptions.Any())
                 {
                     @foreach (var option in FilteredOptions)
@@ -368,7 +374,7 @@
 
         if (_isOpen)
         {
-            _dotNetRef = DotNetObjectReference.Create(this);
+            _dotNetRef ??= DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.register", _anchorRef, _dotNetRef, "OnClickAway");
 
             // Check if dropdown should flip up
@@ -388,6 +394,7 @@
 
         await ValueChanged.InvokeAsync(option.Value);
         _isOpen = false;
+        _restoreTriggerFocus = true;
         _searchText = "";
         await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
     }
@@ -406,7 +413,7 @@
             _isOpen = false;
             await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
         }
-        else if (args.Key is "Enter" or " " or "ArrowDown" && !_isOpen)
+        else if (args.Key == "ArrowDown" && !_isOpen)
         {
             await Toggle();
         }

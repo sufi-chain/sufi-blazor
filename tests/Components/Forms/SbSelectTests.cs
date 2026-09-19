@@ -310,7 +310,9 @@ public class SbSelectTests : BunitContext
         // Assert
         var trigger = cut.Find(".sb-select-trigger__main");
         Assert.Equal("listbox", trigger.GetAttribute("aria-haspopup"));
-        Assert.Equal("select-id", trigger.GetAttribute("aria-labelledby"));
+        Assert.Equal("select-id", trigger.Id);
+        Assert.Equal("select-id-value", trigger.GetAttribute("aria-labelledby"));
+        Assert.NotNull(cut.Find("#select-id-value"));
     }
 
     private class SelectTestItem

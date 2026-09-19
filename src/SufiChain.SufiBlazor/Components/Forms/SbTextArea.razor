@@ -20,7 +20,8 @@
               readonly="@ReadOnly"
               rows="@Rows"
               maxlength="@MaxLength"
-              aria-invalid="@(Error ? "true" : null)"
+              aria-invalid="@(Error || FormFieldContext?.HasError == true ? "true" : null)"
+              aria-required="@(Required || FormFieldContext?.Required == true ? "true" : null)"
               aria-describedby="@AriaDescribedBy"
               id="@EffectiveId"
               @attributes="AdditionalAttributes"></textarea>
@@ -161,7 +162,7 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    private string EffectiveId => Id ?? _generatedId;
+    private string EffectiveId => Id ?? FormFieldContext?.InputId ?? _generatedId;
     private readonly string _generatedId = $"sb-textarea-{Guid.NewGuid():N}";
 
     protected override void OnParametersSet()
@@ -192,10 +193,10 @@
         get
         {
             if (Error && !string.IsNullOrEmpty(ErrorMessage))
-                return $"{EffectiveId}-error";
+                return $"{FormFieldContext?.DescriptionId} {EffectiveId}-error".Trim();
             if (!string.IsNullOrEmpty(HelperText) && !Error)
-                return $"{EffectiveId}-helper";
-            return null;
+                return $"{FormFieldContext?.DescriptionId} {EffectiveId}-helper".Trim();
+            return FormFieldContext?.DescriptionId;
         }
     }
     

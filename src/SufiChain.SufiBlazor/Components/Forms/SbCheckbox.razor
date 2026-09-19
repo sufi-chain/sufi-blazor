@@ -3,7 +3,8 @@
 <label class="@CssClass" style="@Style">
     <input type="checkbox"
            class="sb-checkbox__input"
-           id="@Id"
+           id="@EffectiveId"
+               aria-describedby="@FormFieldContext?.DescriptionId"
            checked="@Value"
            disabled="@Disabled"
            aria-checked="@GetAriaChecked()"

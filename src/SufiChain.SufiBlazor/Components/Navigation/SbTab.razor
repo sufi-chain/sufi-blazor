@@ -5,6 +5,7 @@
 {
     <div class="sb-tab-panel sb-tabs__panel @(_parent.IsTabActive(this) ? "sb-tab-panel--active" : "")"
          role="tabpanel"
+         aria-labelledby="@($"{PanelId}-tab")"
          id="@PanelId"
          hidden="@(!_parent.IsTabActive(this))">
         @ChildContent

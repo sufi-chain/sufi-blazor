@@ -39,8 +39,13 @@
                                   AriaLabel="@L["Demo:ConversationEmoji"]">
                         <Icon><SbIcon Name="message-circle" Size="SbSize.Sm" /></Icon>
                     </SbIconButton>
+                    <SbIconButton Size="SbSize.Sm"
+                                  Variant="SbButtonVariant.Ghost"
+                                  AriaLabel="@L["Demo:ConversationVoice"]">
+                        <Icon><SbIcon Name="microphone" Size="SbSize.Sm" /></Icon>
+                    </SbIconButton>
                 </StartActions>
-                <OverflowActions>
+                <EndActions>
                     <SbIconButton Size="SbSize.Sm"
                                   Variant="SbButtonVariant.Ghost"
                                   Color="SbColor.Primary"
@@ -48,15 +53,11 @@
                                   OnClick="InjectAiDraft">
                         <Icon><SbIcon Name="sparkles" Size="SbSize.Sm" /></Icon>
                     </SbIconButton>
-                </OverflowActions>
-                <EndActions>
-                    <SbIconButton Size="SbSize.Sm"
-                                  Variant="SbButtonVariant.Ghost"
-                                  AriaLabel="@L["Demo:ConversationVoice"]">
-                        <Icon><SbIcon Name="microphone" Size="SbSize.Sm" /></Icon>
-                    </SbIconButton>
                 </EndActions>
             </SbConversationComposer>
+            <SbConversationComposer IsSending="true"
+                                    Placeholder="@L["Demo:ConversationPlaceholder"]"
+                                    style="max-width: 36rem;" />
         </ExampleContent>
     </DemoSection>
 
@@ -136,6 +137,8 @@
         });
         _pending.Clear();
         _draft = string.Empty;
+        // A transcription/review handler can return prepared text here instead.
+        request.DraftAfterSend = _draft;
         return Task.CompletedTask;
     }
 
@@ -143,7 +146,6 @@
 
     private string composerSource = @"<SbConversationComposer Value=""_draft"" OnSend=""OnSend"">
   <StartActions>...</StartActions>
-  <OverflowActions>...</OverflowActions>
   <EndActions>...</EndActions>
 </SbConversationComposer>";
 }

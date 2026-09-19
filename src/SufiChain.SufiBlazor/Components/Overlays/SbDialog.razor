@@ -10,7 +10,8 @@
         @oncancel="HandleCancel"
         @oncancel:preventDefault="true"
         @onclose="HandleNativeClose"
-        aria-labelledby="@(Title != null ? _titleId : null)"
+        aria-labelledby="@(Header != null || Title != null ? _titleId : null)"
+        aria-describedby="@(!string.IsNullOrWhiteSpace(Description) && Header == null ? $"{_titleId}-description" : null)"
         aria-modal="true"
         @attributes="FilteredAttributes">
     <div class="sb-dialog__container" @onclick:stopPropagation="true">
@@ -20,7 +21,7 @@
                 <div class="sb-dialog__heading">
                     @if (Header != null)
                     {
-                        @Header
+                        <div id="@_titleId">@Header</div>
                     }
                     else if (Title != null)
                     {
@@ -28,7 +29,7 @@
                     }
                     @if (!string.IsNullOrWhiteSpace(Description) && Header == null)
                     {
-                        <p class="sb-dialog__description">@Description</p>
+                        <p id="@($"{_titleId}-description")" class="sb-dialog__description">@Description</p>
                     }
                 </div>
                 @if (ShowCloseButton)

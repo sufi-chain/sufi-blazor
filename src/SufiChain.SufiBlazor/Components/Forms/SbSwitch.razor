@@ -4,7 +4,8 @@
     <span class="sb-switch__input-wrapper">
         <input type="checkbox"
                class="sb-switch__input"
-               id="@Id"
+               id="@EffectiveId"
+               aria-describedby="@FormFieldContext?.DescriptionId"
                checked="@Value"
                disabled="@Disabled"
                role="switch"

@@ -1,13 +1,14 @@
 @namespace SufiChain.SufiBlazor.Components.Navigation
 
 <div class="@CssClass">
-    <div class="sb-tabs__list" role="tablist">
+    <div class="sb-tabs__list" role="tablist" aria-orientation="@(Vertical ? "vertical" : "horizontal")">
         @foreach (var tab in _tabs)
         {
             var isActive = tab == _activeTab;
             <button type="button"
                     class="sb-tabs__tab @(isActive ? "sb-tabs__tab--active" : "") @(tab.Disabled ? "sb-tabs__tab--disabled" : "")"
                     role="tab"
+                    id="@($"{tab.PanelId}-tab")"
                     aria-selected="@isActive"
                     aria-controls="@tab.PanelId"
                     disabled="@tab.Disabled"
