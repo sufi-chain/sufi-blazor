@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
-    <AspNetCoreVersion>10.0.7</AspNetCoreVersion>
-    <MicrosoftAspNetCoreComponentsWebVersion>10.0.7</MicrosoftAspNetCoreComponentsWebVersion>
-    <MicrosoftExtensionsLocalizationVersion>10.0.7</MicrosoftExtensionsLocalizationVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedVersion>10.0.7</MicrosoftExtensionsFileProvidersEmbeddedVersion>
+    <AbpVersion>10.6.1</AbpVersion>
+    <AspNetCoreVersion>10.0.9</AspNetCoreVersion>
+    <MicrosoftAspNetCoreComponentsWebVersion>10.0.9</MicrosoftAspNetCoreComponentsWebVersion>
+    <MicrosoftExtensionsLocalizationVersion>10.0.9</MicrosoftExtensionsLocalizationVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedVersion>10.0.9</MicrosoftExtensionsFileProvidersEmbeddedVersion>
   </PropertyGroup>
 
 </Project>
