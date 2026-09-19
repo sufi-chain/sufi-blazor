@@ -1,0 +1,4 @@
+# Linux CI fails on CRLF in GitHub Actions YAML and scripts.
+*.sh text eol=lf
+**/.github/workflows/*.yml text eol=lf
+**/.github/workflows/*.yaml text eol=lf
