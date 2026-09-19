@@ -31,7 +31,7 @@ Public HTML for Knowledge Base, CMS, chat, and email uses `SufiChain.SufiPlatfor
 | SufiForms dynamic fields | Compact `SbRichTextEditor` for RichText/Html/Markdown; `SbCodeEditor` for Code |
 | SufiCMS page-builder leaf `html` / `source` | Compact `SbRichTextEditor` |
 | File Manager demos | `SbRichTextEditor` |
-| SufiAI copilot diff review | `SbDocumentDiffEditor` (`CopilotTimelineDiffReviewMessage`) |
+| SufiAI hooshvare diff review | `SbDocumentDiffEditor` (`HooshvareTimelineDiffReviewMessage`) |
 
 ## Register services
 
@@ -45,7 +45,7 @@ builder.Services.AddScoped<ISbEditorAiAssistant, MyEditorAiAssistant>();
 
 Set `UseToolbarContributors="true"` and a `ToolbarScope` on the editor when the contributor is scoped (for example `kb-article` or `communication-template`).
 
-Platform copilots register `ICopilotEditorAssistant` in the owning Blazor module. `CopilotSbEditorAiBridge` implements `ISbEditorAiAssistant`. Pass `AiCopilotKey` on `SbRichTextEditor` so Ask AI routes to the matching copilot.
+Platform hooshvares register `IHooshvareEditorAssistant` in the owning Blazor module. `HooshvareSbEditorAiBridge` implements `ISbEditorAiAssistant`. Pass `AiHooshvareKey` on `SbRichTextEditor` so Ask AI routes to the matching hooshvare.
 
 ## Static assets
 

@@ -9,7 +9,7 @@ All addon actions live **inside** the rounded text surface. The field is a full-
 - `.sb-conversation-composer__field` — full-width typing hit target wrapping the textarea (`order: -1`, `flex: 1 0 100%`)
 - textarea — one line at rest, grows while typing
 - `StartActions` — input tools (emoji, attach, voice, location) on the leading side of the tool row
-- `OverflowActions` — leading addons that appear from host/copilot config (model selector, context)
+- `OverflowActions` — leading addons that appear from host/hooshvare config (model selector, context)
 - `EndActions` — send-adjacent controls (shortcut popover)
 - default send — trailing icon on the tool row
 
