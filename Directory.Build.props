@@ -6,6 +6,7 @@
     <Company>Sufi Chain Intelligent Solutions</Company>
     <Authors>Sufi Chain Team</Authors>
     <Product>SufiBlazor</Product>
+    <Version>$(SufiBlazorVersion)</Version>
     <Copyright>Copyright © Sufi Chain Intelligent Solutions $([System.DateTime]::Now.Year)</Copyright>
     <PackageProjectUrl>https://github.com/sufi-chain/sufi-blazor</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sufi-chain/sufi-blazor.git</RepositoryUrl>
