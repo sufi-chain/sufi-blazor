@@ -4,8 +4,8 @@ const MENTION_PATTERN = /(?:^|\s)@([A-Za-z0-9_.-]{1,64})\s$/;
 const MENTION_MARKDOWN = /^@\[([^\]]+)\]\(([^)\s]+)\)/;
 
 export function mentionLabel(label: string | null | undefined, id: string | null | undefined): string {
-  const text = (label ?? id ?? "").trim();
-  return text.length === 0 ? "" : text;
+  const text = (label ?? "").trim();
+  return text.length > 0 ? text : (id ?? "").trim();
 }
 
 /** Inline mention atom. Registered when SbEditorFeatures.Mentions is set. */

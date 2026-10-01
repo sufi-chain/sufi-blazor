@@ -157,9 +157,9 @@ public class SbSimpleSelectTests : BunitContext
         await cut.InvokeAsync(() => trigger!.Click());
 
         // Assert
-        var dropdown = cut.Find(".sb-select-dropdown");
-        Assert.NotNull(dropdown);
-        Assert.Equal("listbox", dropdown.GetAttribute("role"));
+        Assert.NotNull(cut.Find(".sb-select-dropdown"));
+        var options = cut.Find(".sb-select-options");
+        Assert.Equal("listbox", options.GetAttribute("role"));
     }
 
     [Fact]

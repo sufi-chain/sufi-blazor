@@ -9,7 +9,8 @@ public class SbConversationComposerTests : BunitContext
 {
     public SbConversationComposerTests()
     {
-        JSInterop.SetupVoid("SufiBlazor.conversationComposer.setValue", _ => true);
+        // The composer clears the textarea through this call before raising OnSend.
+        JSInterop.SetupVoid("SufiBlazor.conversationComposer.setValue", _ => true).SetVoidResult();
         JSInterop.SetupVoid(
             "SufiBlazor.conversationComposer.bindEnterToSend",
             _ => true);
@@ -24,7 +25,7 @@ public class SbConversationComposerTests : BunitContext
         var values = new List<string>();
         var transcript = string.IsNullOrEmpty(initialDraft)
             ? "متن ضبط شده"
-            : initialDraft + Environment.NewLine + "متن ضبط شده";
+            : initialDraft + "\n" + "متن ضبط شده";
         var cut = Render<SbConversationComposer>(parameters => parameters
             .Add(p => p.Value, initialDraft)
             .Add(p => p.CanSend, true)

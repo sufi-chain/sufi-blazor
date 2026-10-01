@@ -283,9 +283,9 @@ public class SbDialogTests : BunitContext
     }
 
     [Fact]
-    public async Task NativeCloseEventInvokesOpenChangedToFalse()
+    public async Task NativeCloseWhileStillOpenReshowsWithoutClosing()
     {
-        // Arrange
+        // Arrange - a re-render can strip [open] and fire a native close the caller did not ask for
         var openChangedValue = true;
         SbDialogCloseReason? closeReason = null;
         var cut = RenderDialog(p => p
@@ -293,14 +293,17 @@ public class SbDialogTests : BunitContext
             .Add(x => x.Title, "Dialog")
             .Add(x => x.OpenChanged, EventCallback.Factory.Create<bool>(this, v => openChangedValue = v))
             .Add(x => x.OnClose, EventCallback.Factory.Create<SbDialogCloseReason>(this, r => closeReason = r)));
+        var showCallsBefore = JSInterop.Invocations["SufiBlazor.dialog.showModal"].Count;
 
         // Act
         var dialog = cut.Find("dialog.sb-dialog");
         await cut.InvokeAsync(() => dialog.TriggerEventAsync("onclose", EventArgs.Empty));
 
         // Assert
-        Assert.False(openChangedValue);
-        Assert.Equal(SbDialogCloseReason.CloseButton, closeReason);
+        Assert.True(openChangedValue);
+        Assert.Null(closeReason);
+        Assert.True(JSInterop.Invocations["SufiBlazor.dialog.showModal"].Count > showCallsBefore);
+        Assert.Empty(JSInterop.Invocations["SufiBlazor.dialog.close"]);
     }
 
     [Fact]
