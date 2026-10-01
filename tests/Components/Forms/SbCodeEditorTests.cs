@@ -51,10 +51,11 @@ public class SbCodeEditorTests : BunitContext
     }
 
     [Fact]
-    public void SetsRtlDirection()
+    public void StaysLeftToRightWhenPageIsRightToLeft()
     {
         var cut = Render<SbCodeEditor>(p => p.Add(x => x.RightToLeft, true));
 
-        Assert.Equal("rtl", cut.Find(".sb-code-editor").GetAttribute("dir"));
+        Assert.Equal("ltr", cut.Find(".sb-code-editor").GetAttribute("dir"));
+        Assert.Equal("ltr", cut.Find(".sb-code-editor__content").GetAttribute("dir"));
     }
 }

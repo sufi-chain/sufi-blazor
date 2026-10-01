@@ -61,15 +61,16 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
         formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Autocomplete, l["Menu:Demo:Autocomplete"], "/demo/sufi-blazor/autocomplete", order: 6));
         formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Checkbox, l["Menu:Demo:Checkbox"], "/demo/sufi-blazor/checkbox", order: 7));
         formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Radio, l["Menu:Demo:Radio"], "/demo/sufi-blazor/radio", order: 8));
-        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Switch, l["Menu:Demo:Switch"], "/demo/sufi-blazor/switch", order: 9));
-        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DatePicker, l["Menu:Demo:DatePicker"], "/demo/sufi-blazor/date-picker", order: 10));
-        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.TimePicker, l["Menu:Demo:TimePicker"], "/demo/sufi-blazor/time-picker", order: 11));
-        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.ColorPicker, l["Menu:Demo:ColorPicker"], "/demo/sufi-blazor/color-picker", order: 12));
-        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Slider, l["Menu:Demo:Slider"], "/demo/sufi-blazor/slider", order: 13));
-        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.TagInput, l["Menu:Demo:TagInput"], "/demo/sufi-blazor/tag-input", order: 14));
-        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.FileUpload, l["Menu:Demo:FileUpload"], "/demo/sufi-blazor/file-upload", order: 15));
-        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.RichTextEditor, l["Menu:Demo:RichTextEditor"], "/demo/sufi-blazor/rich-text-editor", order: 16));
-        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.MarkdownEditor, l["Menu:Demo:MarkdownEditor"], "/demo/sufi-blazor/markdown-editor", order: 17));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.ToggleGroup, l["Menu:Demo:ToggleGroup"], "/demo/sufi-blazor/toggle-group", order: 9));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Switch, l["Menu:Demo:Switch"], "/demo/sufi-blazor/switch", order: 10));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.DatePicker, l["Menu:Demo:DatePicker"], "/demo/sufi-blazor/date-picker", order: 11));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.TimePicker, l["Menu:Demo:TimePicker"], "/demo/sufi-blazor/time-picker", order: 12));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.ColorPicker, l["Menu:Demo:ColorPicker"], "/demo/sufi-blazor/color-picker", order: 13));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Slider, l["Menu:Demo:Slider"], "/demo/sufi-blazor/slider", order: 14));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.TagInput, l["Menu:Demo:TagInput"], "/demo/sufi-blazor/tag-input", order: 15));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.FileUpload, l["Menu:Demo:FileUpload"], "/demo/sufi-blazor/file-upload", order: 16));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.RichTextEditor, l["Menu:Demo:RichTextEditor"], "/demo/sufi-blazor/rich-text-editor", order: 17));
+        formsGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.MarkdownEditor, l["Menu:Demo:MarkdownEditor"], "/demo/sufi-blazor/markdown-editor", order: 18));
         sufiBlazorDemo.AddItem(formsGroup);
 
         // Data - 3 levels: Data → Data Grid (with children) + Table, Pagination, Stat Card

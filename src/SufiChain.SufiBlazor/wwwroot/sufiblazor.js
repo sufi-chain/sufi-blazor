@@ -439,6 +439,27 @@ window.SufiBlazor = window.SufiBlazor || {};
     },
   };
 
+  function captureScroll(element) {
+    var saved = [{ node: window, top: window.scrollY, left: window.scrollX }];
+    var node = element && element.parentElement;
+    while (node) {
+      saved.push({ node: node, top: node.scrollTop, left: node.scrollLeft });
+      node = node.parentElement;
+    }
+    return saved;
+  }
+
+  function restoreScroll(saved) {
+    saved.forEach(function (item) {
+      if (item.node === window) {
+        window.scrollTo(item.left, item.top);
+      } else {
+        item.node.scrollTop = item.top;
+        item.node.scrollLeft = item.left;
+      }
+    });
+  }
+
   /**
    * Native dialog element operations
    * These are minimal - just calling native HTMLDialogElement methods
@@ -450,7 +471,11 @@ window.SufiBlazor = window.SufiBlazor || {};
      */
     showModal: function (element) {
       if (element && !element.open && typeof element.showModal === "function") {
+        // showModal focuses the dialog and Chrome scrolls every ancestor to reveal it.
+        var saved = captureScroll(element);
         element.showModal();
+        restoreScroll(saved);
+        requestAnimationFrame(function () { restoreScroll(saved); });
       }
     },
 

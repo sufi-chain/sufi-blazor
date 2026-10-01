@@ -9,6 +9,13 @@
   margin: 0 0 0.75rem;
 }
 
+.sb-editor__prose pre,
+.sb-editor__prose code {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
 .sb-editor__prose h1,
 .sb-editor__prose h2,
 .sb-editor__prose h3,
@@ -32,6 +39,41 @@
 .sb-callout--tip { border-inline-start-color: var(--sb-color-success); }
 .sb-callout--warn { border-inline-start-color: var(--sb-color-warning); }
 .sb-callout--alert { border-inline-start-color: var(--sb-color-danger); }
+
+.sb-editor-drag-host {
+  position: relative;
+}
+
+.sb-editor-drag-handle {
+  position: absolute;
+  inset-inline-start: 0.15rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--sb-color-muted, #a1a1aa);
+  cursor: grab;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+.sb-editor-drag-handle:active {
+  cursor: grabbing;
+}
+
+.sb-mention {
+  display: inline;
+  padding: 0 0.15rem;
+  border-radius: 0.25rem;
+  background: color-mix(in srgb, var(--sb-color-primary, #2563eb) 14%, transparent);
+  color: var(--sb-color-primary, #2563eb);
+}
 
 .sb-suggestion--insert {
   background: var(--sb-color-success-light);

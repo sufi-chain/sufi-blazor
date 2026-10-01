@@ -992,7 +992,7 @@ function At(n, e, t = {}) {
     highlightChanges: !0,
     gutter: !0
   });
-  return n.setAttribute("dir", t.direction ?? "ltr"), O.set(s, r), s;
+  return n.setAttribute("dir", "ltr"), O.set(s, r), s;
 }
 function kt(n) {
   O.get(n)?.destroy(), O.delete(n);

@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Contracts.Editors;
@@ -25,6 +24,9 @@ public partial class SbDocumentDiffEditor : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback<string> SuggestedValueChanged { get; set; }
     [Parameter] public SbCodeLanguage Language { get; set; } = SbCodeLanguage.Markdown;
     [Parameter] public bool ReadOnlySuggested { get; set; }
+    /// <summary>
+    /// Kept so existing call sites still compile. Diff editors always render left-to-right.
+    /// </summary>
     [Parameter] public bool? RightToLeft { get; set; }
     [Parameter] public bool ShowApplyDiscard { get; set; }
     [Parameter] public EventCallback OnApply { get; set; }
@@ -35,9 +37,6 @@ public partial class SbDocumentDiffEditor : ComponentBase, IAsyncDisposable
     [Parameter] public string? Class { get; set; }
     [Parameter] public string? Style { get; set; }
     [Parameter] public string AriaLabel { get; set; } = "Document diff editor";
-
-    protected bool EffectiveRightToLeft =>
-        RightToLeft ?? CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -67,7 +66,7 @@ public partial class SbDocumentDiffEditor : ComponentBase, IAsyncDisposable
                 Suggested = SuggestedValue,
                 Language = Language.ToString().ToLowerInvariant(),
                 ReadOnlySuggested = ReadOnlySuggested,
-                Direction = EffectiveRightToLeft ? "rtl" : "ltr"
+                Direction = "ltr"
             });
             _lastOriginal = OriginalValue;
             _lastSuggested = SuggestedValue;

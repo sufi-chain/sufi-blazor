@@ -60,6 +60,23 @@
   min-width: 0;
 }
 
+.sb-code-editor,
+.sb-diff-editor,
+.sb-code-editor__content,
+.sb-code-editor__fallback,
+.sb-diff-editor__content,
+.sb-diff-editor__fallback,
+.sb-code-editor .cm-editor,
+.sb-diff-editor .cm-editor,
+.sb-code-editor .cm-scroller,
+.sb-diff-editor .cm-scroller,
+.sb-code-editor .cm-content,
+.sb-diff-editor .cm-content {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
 .sb-code-editor__content,
 .sb-diff-editor__content {
   min-height: inherit;

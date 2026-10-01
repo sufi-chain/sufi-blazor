@@ -1319,7 +1319,7 @@ function Vt(i, e, t = {}) {
       extensions: n
     })
   });
-  return i.setAttribute("dir", t.direction ?? "ltr"), L.set(s, r), s;
+  return i.setAttribute("dir", "ltr"), L.set(s, r), s;
 }
 function jt(i) {
   L.get(i)?.destroy(), L.delete(i);

@@ -6,6 +6,15 @@
   font-size: 0.875rem;
 }
 
+.cm-mergeView,
+.cm-mergeView .cm-editor,
+.cm-mergeView .cm-scroller,
+.cm-mergeView .cm-content {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
 .cm-mergeView .cm-editor {
   background: transparent;
 }

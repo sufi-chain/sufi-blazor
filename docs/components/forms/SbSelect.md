@@ -37,6 +37,8 @@ The searchable input uses Blazor's `oninput` bind pipeline so local and remote r
 | ItemTemplate | RenderFragment\<TItem\> | Custom template for rendering each item in the dropdown |
 | SelectedValueTemplate | RenderFragment\<TItem\> | Optional template for the closed/selected value (falls back to ItemTemplate, then TextField) |
 | NoResultsTemplate | RenderFragment | Template shown when search returns no results |
+| MenuFooter | RenderFragment | Content pinned to the bottom of the open menu |
+| ItemDisabled | Func\<TItem, bool\> | When true, the row stays visible and cannot be selected |
 
 ### Template Usage Examples
 

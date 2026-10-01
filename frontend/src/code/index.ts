@@ -105,7 +105,7 @@ export function initEditor(element: HTMLElement, dotNetRef: DotNetRef, options: 
     }),
   });
 
-  element.setAttribute("dir", options.direction ?? "ltr");
+  element.setAttribute("dir", "ltr");
   editors.set(editorId, view);
   return editorId;
 }

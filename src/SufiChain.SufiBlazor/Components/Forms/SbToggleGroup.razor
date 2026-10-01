@@ -1,0 +1,21 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@attribute [CascadingTypeParameter(nameof(TValue))]
+@typeparam TValue
+
+<div class="@FieldClass">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <span id="@_labelId" class="sb-toggle-group__label">@Label</span>
+    }
+    <div class="@CssClass"
+         style="@Style"
+         role="group"
+         aria-label="@AccessibleName"
+         aria-labelledby="@LabelledBy"
+         aria-disabled="@(Disabled ? "true" : null)"
+         @attributes="AdditionalAttributes">
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+    </div>
+</div>

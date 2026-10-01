@@ -96,10 +96,13 @@
                     {
                         var itemValue = ValueField(item);
                         var isSelected = EqualityComparer<TValue>.Default.Equals(itemValue, Value);
+                        var itemDisabled = IsItemDisabled(item);
                         <button type="button"
-                                class="@GetOptionClass(isSelected)"
+                                class="@GetOptionClass(isSelected, itemDisabled)"
                                 role="option"
                                 aria-selected="@isSelected"
+                                aria-disabled="@(itemDisabled ? "true" : null)"
+                                disabled="@itemDisabled"
                                 @onclick="() => SelectItem(item)">
                             @if (ItemTemplate != null)
                             {
@@ -126,6 +129,12 @@
                     </div>
                 }
             </div>
+            @if (MenuFooter != null)
+            {
+                <div class="sb-select-menu-footer">
+                    @MenuFooter
+                </div>
+            }
         </div>
     }
 </div>
@@ -247,6 +256,18 @@
     public RenderFragment? NoResultsTemplate { get; set; }
 
     /// <summary>
+    /// Optional content pinned to the bottom of the open menu, such as a refresh action.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? MenuFooter { get; set; }
+
+    /// <summary>
+    /// When it returns true, the row stays visible and cannot be selected.
+    /// </summary>
+    [Parameter]
+    public Func<TItem, bool>? ItemDisabled { get; set; }
+
+    /// <summary>
     /// Element ID for form association.
     /// </summary>
     [Parameter]
@@ -278,7 +299,18 @@
 
     private string IconClass => $"sb-select-trigger__icon{(_isOpen ? " sb-select-trigger__icon--open" : "")}";
 
-    private string DropdownClass => _shouldFlip ? "sb-select-dropdown sb-select-dropdown--flip-up" : "sb-select-dropdown";
+    private string DropdownClass
+    {
+        get
+        {
+            var classes = _shouldFlip
+                ? "sb-select-dropdown sb-select-dropdown--flip-up"
+                : "sb-select-dropdown";
+            return MenuFooter == null ? classes : $"{classes} sb-select-dropdown--footer";
+        }
+    }
+
+    private bool IsItemDisabled(TItem item) => ItemDisabled?.Invoke(item) == true;
 
 
     private IEnumerable<TItem> FilteredItems
@@ -439,13 +471,19 @@
         }
     }
 
-    private string GetOptionClass(bool isSelected)
+    private string GetOptionClass(bool isSelected, bool itemDisabled)
     {
         var classes = new List<string> { "sb-select-option" };
         if (isSelected)
         {
             classes.Add("sb-select-option--selected");
         }
+
+        if (itemDisabled)
+        {
+            classes.Add("sb-select-option--disabled");
+        }
+
         return string.Join(" ", classes);
     }
 
@@ -481,6 +519,11 @@
 
     private async Task SelectItem(TItem item)
     {
+        if (IsItemDisabled(item))
+        {
+            return;
+        }
+
         _selectedItem = item;
         _hasSelectedItem = true;
         var value = ValueField(item);

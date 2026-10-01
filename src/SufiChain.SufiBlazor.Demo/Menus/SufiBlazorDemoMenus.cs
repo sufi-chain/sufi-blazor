@@ -41,6 +41,7 @@ public static class SufiBlazorDemoMenus
     public const string Autocomplete = Forms + ".Autocomplete";
     public const string Checkbox = Forms + ".Checkbox";
     public const string Radio = Forms + ".Radio";
+    public const string ToggleGroup = Forms + ".ToggleGroup";
     public const string Switch = Forms + ".Switch";
     public const string DatePicker = Forms + ".DatePicker";
     public const string TimePicker = Forms + ".TimePicker";

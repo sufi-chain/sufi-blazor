@@ -1,1 +1,1 @@
-.cm-editor{height:100%;background:transparent;color:inherit;font-size:.875rem}.cm-editor.cm-focused{outline:none}.cm-scroller{font-family:var(--sb-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace)}
+.cm-editor,.cm-scroller,.cm-content{direction:ltr;text-align:left;unicode-bidi:isolate}.cm-editor{height:100%;background:transparent;color:inherit;font-size:.875rem}.cm-editor.cm-focused{outline:none}.cm-scroller{font-family:var(--sb-font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace)}

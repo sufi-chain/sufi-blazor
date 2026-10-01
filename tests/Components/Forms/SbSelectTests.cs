@@ -302,6 +302,34 @@ public class SbSelectTests : BunitContext
     }
 
     [Fact]
+    public async Task MenuFooterRendersInsideTheOpenMenu()
+    {
+        var cut = Render<SbSelect<SelectTestItem, int>>(p => p
+            .Add(x => x.Items, CreateItems(1))
+            .Add(x => x.TextField, (Func<SelectTestItem, string>)(item => item.Name))
+            .Add(x => x.ValueField, (Func<SelectTestItem, int>)(item => item.Id))
+            .Add(x => x.MenuFooter, (RenderFragment)(builder => builder.AddContent(0, "Refresh models"))));
+
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main").Click());
+
+        Assert.Contains("Refresh models", cut.Find(".sb-select-menu-footer").TextContent);
+    }
+
+    [Fact]
+    public async Task DisabledItemCannotBeSelected()
+    {
+        var cut = RenderSelect(p => p
+            .Add(x => x.Value, 1)
+            .Add(x => x.ItemDisabled, (Func<SelectTestItem, bool>)(item => item.Id == 2)));
+
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main").Click());
+        var disabled = cut.FindAll(".sb-select-option--disabled").Single();
+
+        Assert.NotNull(disabled.GetAttribute("disabled"));
+        Assert.Contains("Item 1", cut.Find(".sb-select-trigger__value").TextContent);
+    }
+
+    [Fact]
     public void TriggerHasAriaAttributes()
     {
         // Arrange & Act

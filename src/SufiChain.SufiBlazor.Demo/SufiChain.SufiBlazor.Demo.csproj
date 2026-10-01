@@ -106,6 +106,8 @@
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSlider.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSlugEditor.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbSwitch.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbToggleGroup.md" />
+      <DocToCopy Include="$(DocsSourceComponents)\forms\SbToggleItem.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbTagInput.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbTagAutocomplete.md" />
       <DocToCopy Include="$(DocsSourceComponents)\forms\SbTextArea.md" />

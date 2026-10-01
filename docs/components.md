@@ -15,6 +15,7 @@ Feature-oriented catalog. See **SufiChain.SufiBlazor.Demo** and component XML do
 - **SbSelect** / **SbSelectOption** — Single or multiple; options from markup or collection.  
 - **SbTagAutocomplete** — Multi-select autocomplete with chips; search, create-on-type, max tags. See [SbTagAutocomplete](components/forms/SbTagAutocomplete.md).  
 - **SbCheckbox**, **SbRadio**, **SbSwitch** — Booleans.  
+- **SbToggleGroup** / **SbToggleItem** — Single, multi, and toggle selection, custom item content, and a custom selected style. See [SbToggleGroup](components/forms/SbToggleGroup.md).  
 - **SbDatePicker**, **SbTimePicker** — Date/time.  
 - **SbRichTextEditor** — Tiptap WYSIWYG (Markdown or HTML). See [SbRichTextEditor](components/forms/SbRichTextEditor.md).  
 - **SbCodeEditor** — CodeMirror 6 source editor. See [SbCodeEditor](components/forms/SbCodeEditor.md).  

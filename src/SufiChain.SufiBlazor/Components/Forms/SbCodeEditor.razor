@@ -6,7 +6,7 @@
 @inject IServiceProvider ServiceProvider
 @inject IStringLocalizer<SufiBlazorResource> L
 
-<div class="@GetContainerClass()" style="@GetContainerStyle()" dir="@(EffectiveRightToLeft ? "rtl" : "ltr")">
+<div class="@GetContainerClass()" style="@GetContainerStyle()" dir="ltr">
     @if (!HideToolbar)
     {
         <SbEditorToolbar Items="_toolbarItems"
@@ -32,6 +32,7 @@
     {
         <div @ref="_editorContainer"
              class="sb-code-editor__content"
+             dir="ltr"
              role="textbox"
              aria-multiline="true"
              aria-label="@(Placeholder ?? EditorAriaLabel)"

@@ -1,0 +1,199 @@
+@page "/demo/sufi-blazor/toggle-group"
+
+<PageTitle>@(L["Menu:Demo:ToggleGroup"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:ToggleGroup"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:ToggleGroupPageDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:ToggleSingleSelection"]" SourceCode="@singleCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                <SbToggleGroup TValue="string"
+                               CheckMark="true"
+                               @bind-Value="singleValue"
+                               Label="@L["Demo:ToggleSingleSelection"]">
+                    <SbToggleItem Value="@("left")" Text="@L["Demo:ToggleLeft"]" />
+                    <SbToggleItem Value="@("center")" Text="@L["Demo:ToggleCenter"]" />
+                    <SbToggleItem Value="@("right")" Text="@L["Demo:ToggleRight"]" Disabled="true" />
+                </SbToggleGroup>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">@L["Demo:ToggleValue"]: @singleValue</SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ToggleToggleSelection"]" SourceCode="@toggleCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                <SbToggleGroup TValue="string"
+                               SelectionMode="SbToggleSelectionMode.ToggleSelection"
+                               @bind-Value="toggleValue">
+                    <SbToggleItem Value="@("left")" Text="@L["Demo:ToggleLeft"]" />
+                    <SbToggleItem Value="@("center")" Text="@L["Demo:ToggleCenter"]" />
+                    <SbToggleItem Value="@("right")" Text="@L["Demo:ToggleRight"]" />
+                </SbToggleGroup>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                    @L["Demo:ToggleValue"]: @(toggleValue ?? L["Demo:ToggleNone"].Value)
+                </SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ToggleMultiSelection"]" SourceCode="@multiCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                <SbToggleGroup TValue="string"
+                               SelectionMode="SbToggleSelectionMode.MultiSelection"
+                               CheckMark="true"
+                               Color="SbColor.Secondary"
+                               @bind-Values="multiValues">
+                    <SbToggleItem Value="@("read")" Text="@L["Demo:ToggleRead"]" />
+                    <SbToggleItem Value="@("write")" Text="@L["Demo:ToggleWrite"]" />
+                    <SbToggleItem Value="@("admin")" Text="@L["Demo:ToggleAdmin"]" />
+                </SbToggleGroup>
+                <SbText Variant="SbTextVariant.Caption" Color="SbColor.Muted">
+                    @L["Demo:ToggleValues"]: @string.Join(", ", multiValues ?? Array.Empty<string?>())
+                </SbText>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ToggleCustomContent"]" SourceCode="@customContentCode">
+        <ExampleContent>
+            <SbToggleGroup TValue="string"
+                           FullWidth="true"
+                           SelectedClass="sb-toggle-selected-soft"
+                           Color="SbColor.Default"
+                           @bind-Value="plan">
+                <SbToggleItem Value="@("basic")">
+                    <ChildContent Context="selected">
+                        <SbStack Direction="SbStackDirection.Column" Gap="1" Align="SbAlign.Start" Style="width: 100%; text-align: start;">
+                            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Justify="SbJustify.SpaceBetween" Style="width: 100%;">
+                                <SbText Weight="SbFontWeight.Medium">@L["Demo:ToggleBasicEdition"]</SbText>
+                                <SbChip Size="SbSize.Sm"
+                                        Variant="@(selected ? SbChipVariant.Filled : SbChipVariant.Outlined)"
+                                        Color="@(selected ? SbColor.Success : SbColor.Primary)">
+                                    @(selected ? L["Demo:ToggleSelected"] : L["Demo:ToggleBasic"])
+                                </SbChip>
+                            </SbStack>
+                            <SbText Variant="SbTextVariant.Caption" Color="@(selected ? SbColor.Default : SbColor.Muted)">@L["Demo:ToggleBasicHint"]</SbText>
+                        </SbStack>
+                    </ChildContent>
+                </SbToggleItem>
+                <SbToggleItem Value="@("pro")">
+                    <ChildContent Context="selected">
+                        <SbStack Direction="SbStackDirection.Column" Gap="1" Align="SbAlign.Start" Style="width: 100%; text-align: start;">
+                            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Justify="SbJustify.SpaceBetween" Style="width: 100%;">
+                                <SbText Weight="SbFontWeight.Medium">@L["Demo:ToggleProEdition"]</SbText>
+                                <SbChip Size="SbSize.Sm"
+                                        Variant="@(selected ? SbChipVariant.Filled : SbChipVariant.Outlined)"
+                                        Color="@(selected ? SbColor.Success : SbColor.Primary)">
+                                    @(selected ? L["Demo:ToggleSelected"] : L["Demo:TogglePro"])
+                                </SbChip>
+                            </SbStack>
+                            <SbText Variant="SbTextVariant.Caption" Color="@(selected ? SbColor.Default : SbColor.Muted)">@L["Demo:ToggleProHint"]</SbText>
+                        </SbStack>
+                    </ChildContent>
+                </SbToggleItem>
+                <SbToggleItem Value="@("enterprise")">
+                    <ChildContent Context="selected">
+                        <SbStack Direction="SbStackDirection.Column" Gap="1" Align="SbAlign.Start" Style="width: 100%; text-align: start;">
+                            <SbStack Direction="SbStackDirection.Row" Gap="2" Align="SbAlign.Center" Justify="SbJustify.SpaceBetween" Style="width: 100%;">
+                                <SbText Weight="SbFontWeight.Medium">@L["Demo:ToggleEnterpriseEdition"]</SbText>
+                                <SbChip Size="SbSize.Sm"
+                                        Variant="@(selected ? SbChipVariant.Filled : SbChipVariant.Outlined)"
+                                        Color="@(selected ? SbColor.Success : SbColor.Primary)">
+                                    @(selected ? L["Demo:ToggleSelected"] : L["Demo:ToggleEnterprise"])
+                                </SbChip>
+                            </SbStack>
+                            <SbText Variant="SbTextVariant.Caption" Color="@(selected ? SbColor.Default : SbColor.Muted)">@L["Demo:ToggleEnterpriseHint"]</SbText>
+                        </SbStack>
+                    </ChildContent>
+                </SbToggleItem>
+            </SbToggleGroup>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:ToggleCustomSelectionStyle"]" SourceCode="@styleCode">
+        <ExampleContent>
+            <SbStack Direction="SbStackDirection.Column" Gap="3">
+                <SbToggleGroup TValue="string"
+                               Size="SbSize.Sm"
+                               Color="SbColor.Default"
+                               SelectedClass="sb-toggle-selected-soft"
+                               @bind-Value="styleName">
+                    <SbToggleItem Value="@("primary")" Text="@L["Demo:ToggleStylePrimary"]" />
+                    <SbToggleItem Value="@("soft")" Text="@L["Demo:ToggleStyleSoft"]" />
+                    <SbToggleItem Value="@("gradient")" Text="@L["Demo:ToggleStyleGradient"]" />
+                    <SbToggleItem Value="@("striped")" Text="@L["Demo:ToggleStyleStriped"]" />
+                </SbToggleGroup>
+                <SbToggleGroup TValue="string"
+                               FullWidth="true"
+                               Color="@StyleColor"
+                               SelectedClass="@StyleClass"
+                               @bind-Value="styledValue">
+                    <SbToggleItem Value="@("antimatter")" Text="@L["Demo:ToggleAntimatter"]" />
+                    <SbToggleItem Value="@("dark-matter")" Text="@L["Demo:ToggleDarkMatter"]" />
+                    <SbToggleItem Value="@("dark-energy")" Text="@L["Demo:ToggleDarkEnergy"]" />
+                </SbToggleGroup>
+            </SbStack>
+        </ExampleContent>
+    </DemoSection>
+
+    <SbDivider />
+
+    <DocViewer DocName="SbToggleGroup" />
+</DemoLayout>
+
+@code {
+    private string singleValue = "center";
+    private string? toggleValue = "left";
+    private IEnumerable<string?>? multiValues = new List<string?> { "read" };
+    private string plan = "pro";
+    private string styleName = "gradient";
+    private string styledValue = "dark-matter";
+
+    private SbColor StyleColor => styleName == "primary" ? SbColor.Primary : SbColor.Default;
+
+    private string? StyleClass => styleName switch
+    {
+        "soft" => "sb-toggle-selected-soft",
+        "gradient" => "sb-toggle-selected-gradient",
+        "striped" => "sb-toggle-selected-striped",
+        _ => null
+    };
+
+    private string singleCode = @"<SbToggleGroup TValue=""string"" CheckMark=""true"" @bind-Value=""singleValue"">
+    <SbToggleItem Value=""@(""left"")"" Text=""Left"" />
+    <SbToggleItem Value=""@(""center"")"" Text=""Center"" />
+    <SbToggleItem Value=""@(""right"")"" Text=""Right"" Disabled=""true"" />
+</SbToggleGroup>";
+
+    private string toggleCode = @"<SbToggleGroup TValue=""string"" SelectionMode=""SbToggleSelectionMode.ToggleSelection"" @bind-Value=""toggleValue"">
+    <SbToggleItem Value=""@(""left"")"" Text=""Left"" />
+    <SbToggleItem Value=""@(""center"")"" Text=""Center"" />
+    <SbToggleItem Value=""@(""right"")"" Text=""Right"" />
+</SbToggleGroup>";
+
+    private string multiCode = @"<SbToggleGroup TValue=""string"" SelectionMode=""SbToggleSelectionMode.MultiSelection"" @bind-Values=""multiValues"">
+    <SbToggleItem Value=""@(""read"")"" Text=""Read"" />
+    <SbToggleItem Value=""@(""write"")"" Text=""Write"" />
+    <SbToggleItem Value=""@(""admin"")"" Text=""Admin"" />
+</SbToggleGroup>";
+
+    private string customContentCode = @"<SbToggleGroup TValue=""string"" FullWidth=""true"" SelectedClass=""sb-toggle-selected-soft"" @bind-Value=""plan"">
+    <SbToggleItem Value=""@(""basic"")"">
+        <ChildContent Context=""selected"">
+            <span>@(selected ? ""Selected"" : ""Basic"")</span>
+        </ChildContent>
+    </SbToggleItem>
+</SbToggleGroup>";
+
+    private string styleCode = @"<SbToggleGroup TValue=""string"" SelectedClass=""@StyleClass"" Color=""@StyleColor"" @bind-Value=""styledValue"">
+    <SbToggleItem Value=""@(""antimatter"")"" Text=""Antimatter"" />
+    <SbToggleItem Value=""@(""dark-matter"")"" Text=""Dark Matter"" />
+    <SbToggleItem Value=""@(""dark-energy"")"" Text=""Dark Energy"" />
+</SbToggleGroup>";
+}

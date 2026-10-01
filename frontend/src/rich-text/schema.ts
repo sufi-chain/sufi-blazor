@@ -11,7 +11,10 @@ import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import { Markdown } from "@tiptap/markdown";
 import { SufiCallout } from "./extensions/callout";
+import { SufiDragHandle } from "./extensions/drag-handle";
+import { SufiEmoji } from "./extensions/emoji";
 import { SufiLink } from "./extensions/link";
+import { SufiMention } from "./extensions/mention";
 import { EditorFeature, hasFeature } from "./features";
 
 export interface DocumentExtensionOptions {
@@ -56,6 +59,18 @@ export function createDocumentExtensions(options: DocumentExtensionOptions = {})
 
   if (hasFeature(features, EditorFeature.Callouts)) {
     extensions.push(SufiCallout);
+  }
+
+  if (hasFeature(features, EditorFeature.DragHandle)) {
+    extensions.push(SufiDragHandle);
+  }
+
+  if (hasFeature(features, EditorFeature.Emoji)) {
+    extensions.push(SufiEmoji);
+  }
+
+  if (hasFeature(features, EditorFeature.Mentions)) {
+    extensions.push(SufiMention);
   }
 
   return extensions;

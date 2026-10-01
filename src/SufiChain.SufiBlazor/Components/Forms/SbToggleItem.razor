@@ -1,0 +1,36 @@
+@namespace SufiChain.SufiBlazor.Components.Forms
+@typeparam TValue
+
+<div class="@CssClass"
+     style="@Style"
+     role="button"
+     tabindex="@(IsDisabled ? -1 : 0)"
+     aria-pressed="@IsSelected.ToString().ToLowerInvariant()"
+     aria-disabled="@(IsDisabled ? "true" : null)"
+     @onclick="HandleClickAsync"
+     @onkeydown="HandleKeyDownAsync"
+     @attributes="AdditionalAttributes">
+    @if (ShowMark)
+    {
+        <span class="@MarkClass" aria-hidden="true">
+            @if (IsSelected)
+            {
+                <SbIcon Name="@SelectedMark" Size="SbSize.Sm" />
+            }
+            else if (!string.IsNullOrEmpty(UnselectedIcon))
+            {
+                <SbIcon Name="@UnselectedIcon" Size="SbSize.Sm" />
+            }
+        </span>
+    }
+    <span class="sb-toggle-item__content">
+        @if (ChildContent is not null)
+        {
+            @ChildContent(IsSelected)
+        }
+        else
+        {
+            @(Text ?? Value?.ToString())
+        }
+    </span>
+</div>

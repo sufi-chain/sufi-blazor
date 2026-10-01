@@ -54,7 +54,7 @@
                           class="sb-conversation-composer__textarea"
                           rows="@Rows"
                           placeholder="@Placeholder"
-                          disabled="@(IsDisabled || IsSending)"
+                          disabled="@(IsDisabled || ShowSendingState)"
                           @bind:get="_draft"
                           @bind:set="HandleDraftInputAsync"
                           @bind:event="oninput"></textarea>
@@ -66,7 +66,7 @@
                     <SbIconButton Class="sb-conversation-composer__send"
                                   Color="SbColor.Primary"
                                   Size="SbSize.Sm"
-                                  Loading="@IsSending"
+                                  Loading="@ShowSendingState"
                                   Disabled="@(IsDisabled || !EffectiveCanSend)"
                                   OnClick="SendAsync"
                                   Title="@SendLabel"
@@ -93,6 +93,7 @@
    private string _lastParentValue = string.Empty;
    private bool _updatingFromInput;
    private bool _enterBound;
+   private bool _submitting;
    private DotNetObjectReference<SbConversationComposer>? _dotNetRef;
 
    /// <summary>Draft text value.</summary>
@@ -118,6 +119,12 @@
     /// <summary>Shows a spinner on send and prevents submission while a request is pending.</summary>
     [Parameter]
     public bool IsSending { get; set; }
+
+    /// <summary>
+    /// Keeps the draft visible while send is in flight. The host clears it later by setting <see cref="Value"/> to empty.
+    /// </summary>
+    [Parameter]
+    public bool RetainDraftWhileSending { get; set; }
 
     /// <summary>Host override for whether send is allowed. When null, derived from draft/pending.</summary>
     [Parameter]
@@ -189,7 +196,18 @@
     /// <summary>Textarea element reference for host JS helpers.</summary>
     public ElementReference TextAreaRef => _textAreaRef;
 
-    private string CssClass => $"sb-conversation-composer {Class}".Trim();
+    private bool ShowSendingState => IsSending || _submitting;
+
+    private string CssClass
+    {
+        get
+        {
+            var css = ShowSendingState
+                ? "sb-conversation-composer sb-conversation-composer--awaiting"
+                : "sb-conversation-composer";
+            return string.IsNullOrWhiteSpace(Class) ? css : $"{css} {Class}";
+        }
+    }
 
     private bool EffectiveCanSend =>
         CanSend ?? (!string.IsNullOrWhiteSpace(_draft) || (PendingItems?.Count > 0));
@@ -241,7 +259,7 @@
 
    private async Task FocusTextAreaAsync()
    {
-       if (IsDisabled || IsSending)
+       if (IsDisabled || ShowSendingState)
        {
            return;
        }
@@ -274,20 +292,24 @@
 
     private async Task SendAsync()
     {
-        if (IsDisabled || IsSending || !EffectiveCanSend || !OnSend.HasDelegate)
+        if (IsDisabled || ShowSendingState || !EffectiveCanSend || !OnSend.HasDelegate)
         {
             return;
         }
 
         var body = _draft;
+        var retainDraft = RetainDraftWhileSending;
 
-        // Clear the visible draft before awaiting OnSend so long host sends and
-        // Enter cannot leave/resurrect the text. Do NOT raise ValueChanged yet —
-        // many hosts still read their bound Value/Prompt inside OnSend.
-        _draft = string.Empty;
-        _lastParentValue = string.Empty;
-        await SyncTextAreaDomAsync(string.Empty);
+        // Human chats clear before the host runs so Enter cannot resurrect the text.
+        // Assistant chats keep the request visible until the host clears Value.
+        if (!retainDraft)
+        {
+            _draft = string.Empty;
+            _lastParentValue = string.Empty;
+            await SyncTextAreaDomAsync(string.Empty);
+        }
 
+        _submitting = true;
         try
         {
             var request = new SbConversationSendRequest
@@ -296,17 +318,38 @@
             };
             await OnSend.InvokeAsync(request);
 
-            _draft = request.DraftAfterSend ?? string.Empty;
-            await SyncTextAreaDomAsync(_draft);
-            await ValueChanged.InvokeAsync(_draft);
+            if (request.DraftAfterSend != null)
+            {
+                _draft = request.DraftAfterSend;
+                _lastParentValue = _draft;
+                await SyncTextAreaDomAsync(_draft);
+                await ValueChanged.InvokeAsync(_draft);
+            }
+            else if (!retainDraft)
+            {
+                _draft = string.Empty;
+                _lastParentValue = string.Empty;
+                await SyncTextAreaDomAsync(string.Empty);
+                await ValueChanged.InvokeAsync(string.Empty);
+            }
         }
         catch
         {
-            // Restore draft if the host rejects the send (e.g. validation / API failure).
-            _draft = body;
-            _lastParentValue = string.Empty;
-            await SyncTextAreaDomAsync(body);
+            if (!retainDraft)
+            {
+                _draft = body;
+                _lastParentValue = string.Empty;
+                await SyncTextAreaDomAsync(body);
+            }
+
             throw;
+        }
+        finally
+        {
+            _submitting = false;
+            // The host often re-renders while this callback is still inside OnSend,
+            // so that frame still sees _submitting. Queue another frame once the latch drops.
+            StateHasChanged();
         }
     }
 

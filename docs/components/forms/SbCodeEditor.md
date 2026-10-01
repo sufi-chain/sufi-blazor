@@ -15,7 +15,7 @@ Asset loading: [Editors and bundling](../../editors-and-bundling.md).
 | Language | SbCodeLanguage | PlainText | Syntax mode |
 | ReadOnly | bool | false | Read-only |
 | Disabled | bool | false | Disabled |
-| RightToLeft | bool? | culture | Override direction |
+| RightToLeft | bool? | — | Ignored. The editor is always left-to-right |
 | LineNumbers | bool | true | Gutter line numbers |
 | WordWrap | bool | false | Soft wrap |
 | Placeholder | string? | null | Empty-state text |

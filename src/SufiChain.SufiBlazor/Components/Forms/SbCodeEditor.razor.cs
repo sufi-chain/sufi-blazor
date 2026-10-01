@@ -1,4 +1,3 @@
-using System.Globalization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -28,6 +27,9 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
     [Parameter] public SbCodeLanguage Language { get; set; } = SbCodeLanguage.PlainText;
     [Parameter] public bool ReadOnly { get; set; }
     [Parameter] public bool Disabled { get; set; }
+    /// <summary>
+    /// Kept so existing call sites still compile. Source editors always render left-to-right.
+    /// </summary>
     [Parameter] public bool? RightToLeft { get; set; }
     [Parameter] public bool LineNumbers { get; set; } = true;
     [Parameter] public bool WordWrap { get; set; }
@@ -46,9 +48,6 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
     [Parameter] public string EditorAriaLabel { get; set; } = "Code editor";
 
     public bool IsJsonValid => _jsonValid;
-
-    protected bool EffectiveRightToLeft =>
-        RightToLeft ?? CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
 
     private SbContentFormat ContentFormat => Language == SbCodeLanguage.Markdown
         ? SbContentFormat.Markdown
@@ -95,7 +94,7 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
                 Language = Language.ToString().ToLowerInvariant(),
                 ReadOnly = ReadOnly,
                 Disabled = Disabled,
-                Direction = EffectiveRightToLeft ? "rtl" : "ltr",
+                Direction = "ltr",
                 LineNumbers = LineNumbers,
                 WordWrap = WordWrap,
                 Placeholder = Placeholder,

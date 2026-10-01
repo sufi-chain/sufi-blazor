@@ -45,6 +45,15 @@ public class SbDocumentDiffEditorTests : BunitContext
     }
 
     [Fact]
+    public void StaysLeftToRightWhenPageIsRightToLeft()
+    {
+        var cut = Render<SbDocumentDiffEditor>(p => p.Add(x => x.RightToLeft, true));
+
+        Assert.Equal("ltr", cut.Find(".sb-diff-editor").GetAttribute("dir"));
+        Assert.Equal("ltr", cut.Find(".sb-diff-editor__content").GetAttribute("dir"));
+    }
+
+    [Fact]
     public void ShowsApplyDiscardWhenEnabled()
     {
         var cut = Render<SbDocumentDiffEditor>(p => p.Add(x => x.ShowApplyDiscard, true));
