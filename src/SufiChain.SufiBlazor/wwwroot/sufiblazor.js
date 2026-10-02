@@ -473,6 +473,20 @@ window.SufiBlazor = window.SufiBlazor || {};
       if (element && !element.open && typeof element.showModal === "function") {
         // showModal focuses the dialog and Chrome scrolls every ancestor to reveal it.
         var saved = captureScroll(element);
+        var trigger = document.activeElement;
+        if (trigger && trigger !== document.body && !element.contains(trigger)) {
+          element._sbFocusReturn = trigger;
+        }
+        if (!element._sbCloseBound) {
+          element.addEventListener("close", function () {
+            var returnTarget = element._sbFocusReturn;
+            element._sbFocusReturn = null;
+            if (returnTarget && typeof returnTarget.focus === "function") {
+              returnTarget.focus();
+            }
+          });
+          element._sbCloseBound = true;
+        }
         element.showModal();
         restoreScroll(saved);
         requestAnimationFrame(function () { restoreScroll(saved); });

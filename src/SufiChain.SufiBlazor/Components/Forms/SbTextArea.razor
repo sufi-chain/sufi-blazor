@@ -59,6 +59,11 @@
     /// </summary>
     [Parameter]
     public string? Value { get; set; }
+
+    /// <summary>
+    /// Text held by the control, including input that has not yet round-tripped to the parent.
+    /// </summary>
+    public string? CurrentText => _draft;
     
     /// <summary>
     /// Callback when value changes.

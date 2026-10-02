@@ -40,8 +40,14 @@ const editors = new Map<string, Editor>();
 const editorFormats = new Map<string, string>();
 let nextId = 1;
 
+function safeInvoke(dotNetRef: DotNetRef, method: string, ...args: unknown[]): void {
+  void dotNetRef.invokeMethodAsync(method, ...args).catch(() => {
+    // Editor was disposed while Tiptap still had pending callbacks.
+  });
+}
+
 function notifyState(dotNetRef: DotNetRef, editor: Editor, editorId: string, format: string): void {
-  void dotNetRef.invokeMethodAsync("OnEditorStateChanged", JSON.stringify(createEditorSnapshot(editor, editorId, format)));
+  safeInvoke(dotNetRef, "OnEditorStateChanged", JSON.stringify(createEditorSnapshot(editor, editorId, format)));
 }
 
 export function initEditor(
@@ -86,7 +92,8 @@ export function initEditor(
       },
     },
     onUpdate: ({ editor: current }) => {
-      void dotNetRef.invokeMethodAsync(
+      safeInvoke(
+        dotNetRef,
         "OnEditorContentChanged",
         serializeContent(current, format),
         current.getHTML(),
@@ -103,7 +110,7 @@ export function initEditor(
   });
 
   editor.on("sufiShortcut" as never, (payload: { name: string }) => {
-    void dotNetRef.invokeMethodAsync("OnEditorShortcut", payload.name);
+    safeInvoke(dotNetRef, "OnEditorShortcut", payload.name);
   });
 
   editors.set(editorId, editor);
