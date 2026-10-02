@@ -112,11 +112,23 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
 
         if (_editorId != null && _interop != null && Value != _lastValue)
         {
-            await _interop.SetContentAsync(_editorId, Value ?? "", EffectiveFormat);
-            _lastValue = Value;
+            try
+            {
+                await _interop.SetContentAsync(_editorId, Value ?? "", EffectiveFormat);
+                _lastValue = Value;
+            }
+            catch (Exception ex) when (IsEditorLifetimeException(ex))
+            {
+            }
         }
 
-        await ApplyDirectionAsync();
+        try
+        {
+            await ApplyDirectionAsync();
+        }
+        catch (Exception ex) when (IsEditorLifetimeException(ex))
+        {
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -515,8 +527,14 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
         }
 
         _lastValue = value;
-        await ValueChanged.InvokeAsync(value);
-        await OnChange.InvokeAsync();
+        try
+        {
+            await ValueChanged.InvokeAsync(value);
+            await OnChange.InvokeAsync();
+        }
+        catch (Exception ex) when (IsEditorLifetimeException(ex))
+        {
+        }
     }
 
     [JSInvokable]
@@ -542,25 +560,27 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
         {
             return InvokeAsync(StateHasChanged);
         }
-        catch (ObjectDisposedException)
-        {
-            return Task.CompletedTask;
-        }
-        catch (InvalidOperationException)
+        catch (Exception ex) when (IsEditorLifetimeException(ex))
         {
             return Task.CompletedTask;
         }
     }
 
     [JSInvokable]
-    public Task OnEditorShortcut(string name)
+    public async Task OnEditorShortcut(string name)
     {
         if (_disposed)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        return OnShortcut.InvokeAsync(name);
+        try
+        {
+            await OnShortcut.InvokeAsync(name);
+        }
+        catch (Exception ex) when (IsEditorLifetimeException(ex))
+        {
+        }
     }
 
     public async Task<string> GetDocumentAsync(SbContentFormat format)
@@ -735,10 +755,7 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
             {
                 await _interop.DestroyAsync(_editorId);
             }
-            catch (JSDisconnectedException)
-            {
-            }
-            catch (ObjectDisposedException)
+            catch (Exception ex) when (IsEditorLifetimeException(ex))
             {
             }
         }
@@ -747,7 +764,7 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
         {
             _dotNetRef?.Dispose();
         }
-        catch (ObjectDisposedException)
+        catch (Exception ex) when (IsEditorLifetimeException(ex))
         {
         }
 
@@ -759,12 +776,16 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
             {
                 await _interop.DisposeAsync();
             }
-            catch (JSDisconnectedException)
-            {
-            }
-            catch (ObjectDisposedException)
+            catch (Exception ex) when (IsEditorLifetimeException(ex))
             {
             }
         }
+    }
+
+    private static bool IsEditorLifetimeException(Exception exception)
+    {
+        return exception is ObjectDisposedException or JSDisconnectedException or JSException
+            || (exception is InvalidOperationException invalid &&
+                invalid.Message.Contains("disposed", StringComparison.OrdinalIgnoreCase));
     }
 }

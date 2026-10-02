@@ -865,6 +865,18 @@
     public EventCallback<TItem> OnRowClicked { get; set; }
     
     /// <summary>
+    /// Field applied as the grid sort before the first header click.
+    /// </summary>
+    [Parameter]
+    public string? InitialSortField { get; set; }
+
+    /// <summary>
+    /// Direction for <see cref="InitialSortField"/>. Defaults to ascending.
+    /// </summary>
+    [Parameter]
+    public SbSortDirection InitialSortDirection { get; set; } = SbSortDirection.Ascending;
+
+    /// <summary>
     /// Callback when sort changes.
     /// </summary>
     [Parameter]
@@ -1172,6 +1184,11 @@
         if (SelectedKeys != null)
         {
             _selectedKeys = new HashSet<string>(SelectedKeys);
+        }
+
+        if (!string.IsNullOrWhiteSpace(InitialSortField))
+        {
+            _currentSort = new SbSort(InitialSortField, InitialSortDirection);
         }
     }
     
@@ -1622,6 +1639,7 @@
         }
         
         await OnSortChanged.InvokeAsync(_currentSort);
+        StateHasChanged();
         await RefreshDataAsync();
     }
     

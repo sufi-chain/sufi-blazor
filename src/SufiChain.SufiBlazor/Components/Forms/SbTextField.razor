@@ -56,6 +56,7 @@
                     class="sb-text-field__toggle-password"
                     disabled="@Disabled"
                     aria-controls="@EffectiveId"
+                    aria-pressed="@_showPassword"
                     aria-label="@(_showPassword ? (HidePasswordAriaLabel ?? L["HidePassword"]) : (ShowPasswordAriaLabel ?? L["ShowPassword"]))"
                     @onclick="TogglePassword">
                 <SbIcon Name="@(_showPassword ? "eye-off" : "eye")" Size="SbSize.Md" />

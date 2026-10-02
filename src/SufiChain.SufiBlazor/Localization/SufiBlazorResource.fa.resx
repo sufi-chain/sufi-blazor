@@ -75,8 +75,8 @@
   <data name="SelectTime_Placeholder" xml:space="preserve"><value>انتخاب زمان...</value></data>
   <data name="SelectColor_Placeholder" xml:space="preserve"><value>انتخاب رنگ...</value></data>
   <data name="EnterValue_Placeholder" xml:space="preserve"><value>مقدار را وارد کنید...</value></data>
-  <data name="ShowPassword" xml:space="preserve"><value>نمایش رمز</value></data>
-  <data name="HidePassword" xml:space="preserve"><value>مخفی کردن رمز</value></data>
+  <data name="ShowPassword" xml:space="preserve"><value>نمایش رمز عبور</value></data>
+  <data name="HidePassword" xml:space="preserve"><value>پنهان کردن رمز عبور</value></data>
   <data name="ClearTime" xml:space="preserve"><value>پاک کردن زمان</value></data>
   <data name="ClearColor" xml:space="preserve"><value>پاک کردن رنگ</value></data>
   <data name="ClearDate" xml:space="preserve"><value>پاک کردن تاریخ</value></data>
