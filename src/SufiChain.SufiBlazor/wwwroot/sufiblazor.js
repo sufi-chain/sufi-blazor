@@ -703,4 +703,112 @@ window.SufiBlazor = window.SufiBlazor || {};
       sb.splitPane.active = null;
     },
   };
+
+  /**
+   * Settings layout: compact breakpoint, document direction, unload guard, and focus.
+   */
+  sb.settingsLayout = {
+    watches: {},
+    unloadFlags: {},
+    keyGuardBound: false,
+
+    ensureKeyGuard: function () {
+      if (sb.settingsLayout.keyGuardBound) return;
+      sb.settingsLayout.keyGuardBound = true;
+      document.addEventListener("keydown", function (event) {
+        var key = event.key;
+        if (event.target && event.target.closest) {
+          if (event.target.closest(".sb-settings-rail") && (key === "ArrowUp" || key === "ArrowDown")) {
+            event.preventDefault();
+          }
+          if (event.target.closest(".sb-settings-strip") && (key === "ArrowLeft" || key === "ArrowRight")) {
+            event.preventDefault();
+          }
+        }
+      });
+    },
+
+    watchCompact: function (id, dotNetRef) {
+      sb.settingsLayout.ensureKeyGuard();
+      var query = window.matchMedia("(max-width: 768px)");
+      var notify = function () {
+        dotNetRef.invokeMethodAsync("OnCompactChanged", query.matches);
+      };
+      notify();
+      query.addEventListener("change", notify);
+      sb.settingsLayout.watches[id] = sb.settingsLayout.watches[id] || {};
+      sb.settingsLayout.watches[id].compact = function () {
+        query.removeEventListener("change", notify);
+      };
+    },
+
+    watchDirection: function (id, dotNetRef) {
+      var root = document.documentElement;
+      var notify = function () {
+        var dir = root.getAttribute("dir");
+        if (!dir && document.body) {
+          dir = document.body.getAttribute("dir");
+        }
+        dir = (dir || "ltr").toLowerCase();
+        dotNetRef.invokeMethodAsync("OnDirectionChanged", dir === "rtl");
+      };
+      notify();
+      var observer = new MutationObserver(notify);
+      observer.observe(root, { attributes: true, attributeFilter: ["dir"] });
+      sb.settingsLayout.watches[id] = sb.settingsLayout.watches[id] || {};
+      sb.settingsLayout.watches[id].direction = function () {
+        observer.disconnect();
+      };
+    },
+
+    unwatch: function (id) {
+      var watch = sb.settingsLayout.watches[id];
+      if (!watch) return;
+      if (watch.compact) watch.compact();
+      if (watch.direction) watch.direction();
+      delete sb.settingsLayout.watches[id];
+    },
+
+    setBeforeUnload: function (id, enabled) {
+      if (!sb.settingsLayout._beforeUnload) {
+        sb.settingsLayout._beforeUnload = function (event) {
+          var armed = false;
+          var flags = sb.settingsLayout.unloadFlags;
+          for (var key in flags) {
+            if (Object.prototype.hasOwnProperty.call(flags, key) && flags[key]) {
+              armed = true;
+              break;
+            }
+          }
+          if (!armed) return;
+          event.preventDefault();
+          event.returnValue = "";
+        };
+        window.addEventListener("beforeunload", sb.settingsLayout._beforeUnload);
+      }
+      sb.settingsLayout.unloadFlags[id] = !!enabled;
+    },
+
+    focusSelector: function (selector) {
+      var element = document.querySelector(selector);
+      if (element && element.focus) element.focus();
+    },
+
+    scrollIntoView: function (selector) {
+      var element = document.querySelector(selector);
+      if (element && element.scrollIntoView) {
+        element.scrollIntoView({ inline: "nearest", block: "nearest" });
+      }
+    },
+
+    focusFirstInvalid: function (root) {
+      var scope = root || document;
+      var field = scope.querySelector("[aria-invalid='true'], .sb-field--invalid input, .sb-field--invalid textarea, .sb-field--invalid select");
+      if (field && field.focus) {
+        field.focus();
+        return true;
+      }
+      return false;
+    },
+  };
 })(window.SufiBlazor);

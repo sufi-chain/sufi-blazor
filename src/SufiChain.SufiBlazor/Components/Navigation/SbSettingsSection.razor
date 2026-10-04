@@ -1,0 +1,17 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+@implements IDisposable
+
+@if (_layout != null && _layout.ShouldRenderBody(this))
+{
+    <div class="sb-settings-section @(_layout.IsSectionActive(this) ? "sb-settings-section--active" : null)"
+         id="@PanelDomId"
+         hidden="@(!_layout.IsSectionActive(this))"
+         role="tabpanel"
+         aria-labelledby="@_layout.HeadingId">
+        @ChildContent
+    </div>
+}
+else if (_layout == null)
+{
+    @ChildContent
+}

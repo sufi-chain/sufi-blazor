@@ -139,6 +139,7 @@ public class SufiBlazorDemoMenuContributor : IMenuContributor
         navigationGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.Accordion, l["Menu:Demo:Accordion"], "/demo/sufi-blazor/accordion", order: 4));
         navigationGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.NavMenu, l["Menu:Demo:NavMenu"], "/demo/sufi-blazor/nav-menu", order: 5));
         navigationGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.TreeView, l["Menu:Demo:TreeView"], "/demo/sufi-blazor/tree-view", order: 6));
+        navigationGroup.AddItem(new ApplicationMenuItem(SufiBlazorDemoMenus.SettingsLayout, l["Menu:Demo:SettingsLayout"], "/demo/sufi-blazor/settings-layout", order: 7));
         sufiBlazorDemo.AddItem(navigationGroup);
 
         // Overlays

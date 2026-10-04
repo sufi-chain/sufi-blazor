@@ -209,4 +209,15 @@
   <data name="Map:SearchPlace" xml:space="preserve"><value>جستجوی مکان...</value></data>
   <data name="Map:CurrentLocation" xml:space="preserve"><value>موقعیت فعلی</value></data>
   <data name="Map:GeolocationFailed" xml:space="preserve"><value>دریافت موقعیت شما ممکن نشد.</value></data>
+  <data name="Settings:Save" xml:space="preserve"><value>ذخیره</value></data>
+  <data name="Settings:Discard" xml:space="preserve"><value>نادیده‌گرفتن</value></data>
+  <data name="Settings:Stay" xml:space="preserve"><value>ماندن</value></data>
+  <data name="Settings:UnsavedChanges" xml:space="preserve"><value>تغییرات ذخیره‌نشده</value></data>
+  <data name="Settings:ViewOnly" xml:space="preserve"><value>فقط مشاهده</value></data>
+  <data name="Settings:GuardTitle" xml:space="preserve"><value>تغییرات ذخیره‌نشده</value></data>
+  <data name="Settings:GuardBody" xml:space="preserve"><value>پیش از ترک این بخش، تغییرات ذخیره شود؟</value></data>
+  <data name="Settings:Saved" xml:space="preserve"><value>تنظیمات ذخیره شد</value></data>
+  <data name="Settings:SaveFailed" xml:space="preserve"><value>ذخیرهٔ تنظیمات انجام نشد.</value></data>
+  <data name="Settings:EmptyTitle" xml:space="preserve"><value>تنظیماتی در دسترس نیست</value></data>
+  <data name="Settings:SectionPicker" xml:space="preserve"><value>بخش</value></data>
 </root>

@@ -89,6 +89,7 @@ public static class SufiBlazorDemoMenus
     public const string Accordion = Navigation + ".Accordion";
     public const string NavMenu = Navigation + ".NavMenu";
     public const string TreeView = Navigation + ".TreeView";
+    public const string SettingsLayout = Navigation + ".SettingsLayout";
 
     // Overlays
     public const string Dialog = Overlays + ".Dialog";
