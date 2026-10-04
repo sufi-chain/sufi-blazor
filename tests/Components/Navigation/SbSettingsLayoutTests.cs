@@ -31,6 +31,25 @@ public class SbSettingsLayoutTests : BunitContext
     }
 
     [Fact]
+    public void Rail_button_title_is_the_heading_and_the_visible_label_stays_short()
+    {
+        var cut = RenderLayout(null, builder =>
+        {
+            Section(builder, 0, "general", "General", "settings", title: "General settings");
+            Section(builder, 20, "languages", "Languages", "file-text");
+        });
+
+        var general = cut.Find(".sb-settings-rail [data-section-id='general']");
+        Assert.Equal("General settings", general.GetAttribute("title"));
+        Assert.Equal("General", general.QuerySelector(".sb-settings-item__label")!.TextContent);
+        Assert.Equal("General settings", cut.Find("h2.sb-settings-savebar__title").TextContent);
+
+        var languages = cut.Find(".sb-settings-rail [data-section-id='languages']");
+        Assert.Equal("Languages", languages.GetAttribute("title"));
+        Assert.Equal("Languages", languages.QuerySelector(".sb-settings-item__label")!.TextContent);
+    }
+
+    [Fact]
     public void DeepLink_SelectsRequestedSectionAndKeepsOtherKeys()
     {
         var cut = RenderLayout("http://localhost/settings?section=email&keep=1", builder =>
@@ -654,12 +673,17 @@ public class SbSettingsLayoutTests : BunitContext
         string? body = null,
         bool canSave = true,
         bool pending = false,
-        RenderFragment? barActions = null)
+        RenderFragment? barActions = null,
+        string? title = null)
     {
         builder.OpenComponent<SbSettingsSection>(sequence);
         builder.AddAttribute(sequence + 1, "Id", id);
         builder.AddAttribute(sequence + 2, "Label", label);
         builder.AddAttribute(sequence + 3, "Icon", icon);
+        if (title != null)
+        {
+            builder.AddAttribute(sequence + 16, "Title", title);
+        }
         builder.AddAttribute(sequence + 4, "Visible", visible);
         builder.AddAttribute(sequence + 5, "ReadOnly", readOnly);
         builder.AddAttribute(sequence + 6, "Disabled", disabled);

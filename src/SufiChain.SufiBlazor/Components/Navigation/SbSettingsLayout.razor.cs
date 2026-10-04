@@ -534,7 +534,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         builder.AddAttribute(2, "class", ItemClass(section, active, horizontal));
         builder.AddAttribute(3, "data-section-id", section.Id);
         builder.AddAttribute(4, "data-keyboard-focus", focused ? "true" : "false");
-        builder.AddAttribute(5, "title", section.Label);
+        builder.AddAttribute(5, "title", section.HeadingText);
         if (active)
         {
             builder.AddAttribute(6, "aria-current", "page");
