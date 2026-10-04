@@ -19,6 +19,7 @@ import {
 } from "./extensions/ai-suggestion";
 import { SufiKeymap } from "./extensions/keymap";
 import { isAllowedUrl } from "./extensions/link";
+import { canInvokeEditorCallback, markEditorCallbackDetached } from "./callback-guard";
 import "./editor.css";
 
 type DotNetRef = {
@@ -34,20 +35,61 @@ interface InitOptions {
   contentFormat?: "markdown" | "html" | "json";
   pasteCleanup?: Record<string, unknown>;
   features?: number;
+  callbackToken?: string;
 }
 
-const editors = new Map<string, Editor>();
-const editorFormats = new Map<string, string>();
+type EditorSession = {
+  editor: Editor;
+  format: string;
+  token: string;
+  dotNetRef: DotNetRef | null;
+};
+
+const sessions = new Map<string, EditorSession>();
 let nextId = 1;
 
-function safeInvoke(dotNetRef: DotNetRef, method: string, ...args: unknown[]): void {
+function editorOf(editorId: string): Editor | undefined {
+  return sessions.get(editorId)?.editor;
+}
+
+function safeInvoke(session: EditorSession, method: string, ...args: unknown[]): void {
+  const dotNetRef = session.dotNetRef;
+  if (!dotNetRef || !canInvokeEditorCallback(session.token)) {
+    return;
+  }
+
   void dotNetRef.invokeMethodAsync(method, ...args).catch(() => {
-    // Editor was disposed while Tiptap still had pending callbacks.
+    // The Blazor reference was disposed while Tiptap still had a queued callback.
   });
 }
 
-function notifyState(dotNetRef: DotNetRef, editor: Editor, editorId: string, format: string): void {
-  safeInvoke(dotNetRef, "OnEditorStateChanged", JSON.stringify(createEditorSnapshot(editor, editorId, format)));
+function notifyState(session: EditorSession, editorId: string): void {
+  if (!session.editor) {
+    return;
+  }
+
+  safeInvoke(
+    session,
+    "OnEditorStateChanged",
+    JSON.stringify(createEditorSnapshot(session.editor, editorId, session.format)),
+  );
+}
+
+export function detachEditorCallback(token: string | null | undefined): void {
+  markEditorCallbackDetached(token);
+  if (!token) {
+    return;
+  }
+
+  for (const [editorId, session] of sessions) {
+    if (session.token !== token) {
+      continue;
+    }
+
+    session.dotNetRef = null;
+    session.editor.destroy();
+    sessions.delete(editorId);
+  }
 }
 
 export function initEditor(
@@ -56,9 +98,20 @@ export function initEditor(
   options: InitOptions = {},
   bubbleMenuElement?: HTMLElement | null,
 ): string {
+  const token = options.callbackToken ?? "";
+  if (!canInvokeEditorCallback(token)) {
+    return "";
+  }
+
   const editorId = `sb-rte-${nextId++}`;
   const format = (options.contentFormat ?? "html").toLowerCase();
   const features = options.features ?? EditorFeature.Default;
+  const session: EditorSession = {
+    editor: undefined as unknown as Editor,
+    format,
+    token,
+    dotNetRef,
+  };
   const extensions = [
     ...createDocumentExtensions({ features }),
     Placeholder.configure({ placeholder: options.placeholder ?? "" }),
@@ -92,49 +145,60 @@ export function initEditor(
       },
     },
     onUpdate: ({ editor: current }) => {
+      session.editor = current;
       safeInvoke(
-        dotNetRef,
+        session,
         "OnEditorContentChanged",
         serializeContent(current, format),
         current.getHTML(),
         current.getText(),
       );
-      notifyState(dotNetRef, current, editorId, format);
+      notifyState(session, editorId);
     },
     onSelectionUpdate: ({ editor: current }) => {
-      notifyState(dotNetRef, current, editorId, format);
+      session.editor = current;
+      notifyState(session, editorId);
     },
     onCreate: ({ editor: current }) => {
-      notifyState(dotNetRef, current, editorId, format);
+      session.editor = current;
+      notifyState(session, editorId);
     },
   });
 
+  session.editor = editor;
+  if (!canInvokeEditorCallback(token)) {
+    session.dotNetRef = null;
+    editor.destroy();
+    return "";
+  }
+
   editor.on("sufiShortcut" as never, (payload: { name: string }) => {
-    safeInvoke(dotNetRef, "OnEditorShortcut", payload.name);
+    safeInvoke(session, "OnEditorShortcut", payload.name);
   });
 
-  editors.set(editorId, editor);
-  editorFormats.set(editorId, format);
+  sessions.set(editorId, session);
   return editorId;
 }
 
 export function destroyEditor(editorId: string): void {
-  const editor = editors.get(editorId);
-  if (!editor) {
+  const session = sessions.get(editorId);
+  if (!session) {
     return;
   }
-  editor.destroy();
-  editors.delete(editorId);
-  editorFormats.delete(editorId);
+
+  markEditorCallbackDetached(session.token);
+  session.dotNetRef = null;
+  session.editor.destroy();
+  sessions.delete(editorId);
 }
 
 export function getContent(editorId: string, format: string): string {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   return editor ? serializeContent(editor, format) : "";
 }
 
 export function setContent(editorId: string, content: string, format: string): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return;
   }
@@ -142,22 +206,22 @@ export function setContent(editorId: string, content: string, format: string): v
 }
 
 export function focusEditor(editorId: string): void {
-  editors.get(editorId)?.commands.focus();
+  editorOf(editorId)?.commands.focus();
 }
 
 export function setEditable(editorId: string, editable: boolean): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (editor) {
     editor.setEditable(editable);
   }
 }
 
 export function setDirection(editorId: string, direction: string): void {
-  editors.get(editorId)?.view.dom.setAttribute("dir", direction);
+  editorOf(editorId)?.view.dom.setAttribute("dir", direction);
 }
 
 export function execCommand(editorId: string, command: string, value?: unknown): boolean {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return false;
   }
@@ -226,7 +290,7 @@ export function execCommand(editorId: string, command: string, value?: unknown):
 }
 
 export function insertContent(editorId: string, text: string, format: string): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return;
   }
@@ -237,7 +301,7 @@ export function insertLink(editorId: string, url: string, text?: string, target?
   if (!isAllowedUrl(url)) {
     return;
   }
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return;
   }
@@ -253,7 +317,7 @@ export function insertLink(editorId: string, url: string, text?: string, target?
 }
 
 export function insertImage(editorId: string, url: string, alt?: string, width?: string, height?: string): void {
-  editors.get(editorId)?.chain().focus().setImage({ src: url, alt: alt ?? "", width, height } as never).run();
+  editorOf(editorId)?.chain().focus().setImage({ src: url, alt: alt ?? "", width, height } as never).run();
 }
 
 export function insertFile(editorId: string, url: string, name: string): void {
@@ -261,7 +325,7 @@ export function insertFile(editorId: string, url: string, name: string): void {
 }
 
 export function applyMark(editorId: string, mark: string, attrs?: Record<string, unknown>): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return;
   }
@@ -273,7 +337,7 @@ export function applyMark(editorId: string, mark: string, attrs?: Record<string,
 }
 
 export function applyBlock(editorId: string, block: string, attrs?: Record<string, unknown>): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return;
   }
@@ -287,7 +351,7 @@ export function applyBlock(editorId: string, block: string, attrs?: Record<strin
 }
 
 export function getSelection(editorId: string): { text: string; from: number; to: number; nodeType: string } {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return { text: "", from: 0, to: 0, nodeType: "" };
   }
@@ -309,12 +373,12 @@ function activeNodeName(editor: Editor): string {
 }
 
 export function replaceSelection(editorId: string, text: string, format: string): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   editor?.chain().focus().insertContent(text ?? "", { contentType: toContentType(format) }).run();
 }
 
 export function showSuggestions(editorId: string, itemsJson: string): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return;
   }
@@ -323,7 +387,7 @@ export function showSuggestions(editorId: string, itemsJson: string): void {
 }
 
 export function acceptSuggestion(editorId: string, id: string): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return;
   }
@@ -333,7 +397,7 @@ export function acceptSuggestion(editorId: string, id: string): void {
     return;
   }
 
-  const format = editorFormats.get(editorId) ?? "html";
+  const format = sessions.get(editorId)?.format ?? "html";
   const { from, to } = resolveRange(editor.state.doc.content.size, item);
   const content = item.insertText ?? "";
   const spansDocument = from <= 1 && to >= editor.state.doc.content.size;
@@ -352,7 +416,7 @@ export function acceptSuggestion(editorId: string, id: string): void {
 }
 
 export function rejectSuggestion(editorId: string, id: string): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return;
   }
@@ -360,7 +424,7 @@ export function rejectSuggestion(editorId: string, id: string): void {
 }
 
 export function clearEditorSuggestions(editorId: string): void {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (editor) {
     clearSuggestions(editor.view);
   }
@@ -372,7 +436,7 @@ export function getSuggestionRect(editorId: string, id?: string): {
   width: number;
   height: number;
 } | null {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   if (!editor) {
     return null;
   }
@@ -387,6 +451,6 @@ export function streamInsert(editorId: string, chunk: string): void {
 }
 
 export function getState(editorId: string, format: string): string {
-  const editor = editors.get(editorId);
+  const editor = editorOf(editorId);
   return editor ? JSON.stringify(createEditorSnapshot(editor, editorId, format)) : "{}";
 }
