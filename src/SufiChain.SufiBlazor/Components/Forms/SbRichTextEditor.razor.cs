@@ -41,6 +41,8 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
     private List<EditorToolbarItem> _slashItems = [];
     private bool _slashMenuOpen;
     private string? _appliedDirection;
+    private readonly string _callbackToken = Guid.NewGuid().ToString("N");
+    private bool _editorReleased;
 
     [Parameter] public string? Value { get; set; }
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
@@ -143,10 +145,23 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
             return;
         }
 
-        await LoadContributedToolbarAsync();
+        try
+        {
+            await LoadContributedToolbarAsync();
+        }
+        catch (Exception ex) when (IsEditorLifetimeException(ex))
+        {
+            return;
+        }
+
+        if (_disposed)
+        {
+            return;
+        }
 
         _interop = new SbRichTextEditorInterop(JSRuntime);
         _dotNetRef = DotNetObjectReference.Create(this);
+        var initialContent = Value;
         try
         {
             _editorId = await _interop.InitializeAsync(
@@ -158,21 +173,51 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
                     ReadOnly = IsReadOnly,
                     Disabled = Disabled,
                     Direction = EffectiveRightToLeft ? "rtl" : "ltr",
-                    Content = Value,
+                    Content = initialContent,
                     ContentFormat = EffectiveFormat.ToString().ToLowerInvariant(),
                     PasteCleanup = PasteCleanupOptions,
-                    Features = (int)Features
+                    Features = (int)Features,
+                    CallbackToken = _callbackToken
                 },
                 ShowBubbleMenu ? _bubbleMenu : null);
-            _lastValue = Value;
-            _appliedDirection = EffectiveRightToLeft ? "rtl" : "ltr";
+
+            if (_disposed)
+            {
+                await ReleaseEditorAsync();
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(_editorId))
+            {
+                _lastValue = initialContent;
+                _appliedDirection = EffectiveRightToLeft ? "rtl" : "ltr";
+                if (!string.Equals(Value, initialContent, StringComparison.Ordinal))
+                {
+                    await _interop.SetContentAsync(_editorId, Value ?? "", EffectiveFormat);
+                    _lastValue = Value;
+                }
+            }
         }
-        catch (JSException)
+        catch (Exception ex) when (IsEditorLifetimeException(ex))
         {
-            _useFallback = true;
+            if (!_disposed)
+            {
+                _useFallback = true;
+            }
         }
 
-        await InvokeAsync(StateHasChanged);
+        if (_disposed)
+        {
+            return;
+        }
+
+        try
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex) when (IsEditorLifetimeException(ex))
+        {
+        }
     }
 
     private async Task ApplyDirectionAsync()
@@ -749,26 +794,7 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
         }
 
         _disposed = true;
-        if (_editorId != null && _interop != null)
-        {
-            try
-            {
-                await _interop.DestroyAsync(_editorId);
-            }
-            catch (Exception ex) when (IsEditorLifetimeException(ex))
-            {
-            }
-        }
-
-        try
-        {
-            _dotNetRef?.Dispose();
-        }
-        catch (Exception ex) when (IsEditorLifetimeException(ex))
-        {
-        }
-
-        _dotNetRef = null;
+        await ReleaseEditorAsync();
 
         if (_interop != null)
         {
@@ -782,10 +808,58 @@ public partial class SbRichTextEditor : ComponentBase, IAsyncDisposable, ISbEdit
         }
     }
 
+    private async Task ReleaseEditorAsync()
+    {
+        if (_editorReleased)
+        {
+            return;
+        }
+
+        _editorReleased = true;
+        var interop = _interop;
+        var dotNetRef = _dotNetRef;
+        var editorId = _editorId;
+        _dotNetRef = null;
+        _editorId = null;
+
+        if (interop != null)
+        {
+            try
+            {
+                await interop.DetachAsync(_callbackToken);
+                if (!string.IsNullOrEmpty(editorId))
+                {
+                    await interop.DestroyAsync(editorId);
+                }
+            }
+            catch (Exception ex) when (IsEditorLifetimeException(ex))
+            {
+            }
+        }
+
+        try
+        {
+            dotNetRef?.Dispose();
+        }
+        catch (Exception ex) when (IsEditorLifetimeException(ex))
+        {
+        }
+    }
+
     private static bool IsEditorLifetimeException(Exception exception)
     {
-        return exception is ObjectDisposedException or JSDisconnectedException or JSException
-            || (exception is InvalidOperationException invalid &&
-                invalid.Message.Contains("disposed", StringComparison.OrdinalIgnoreCase));
+        if (exception is ObjectDisposedException or JSDisconnectedException or JSException)
+        {
+            return true;
+        }
+
+        if (exception is InvalidOperationException invalid)
+        {
+            return invalid.Message.Contains("disposed", StringComparison.OrdinalIgnoreCase)
+                || invalid.Message.Contains("JavaScript interop", StringComparison.OrdinalIgnoreCase)
+                || invalid.Message.Contains("circuit", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
     }
 }
