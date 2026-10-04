@@ -4,11 +4,11 @@
 @inject IStringLocalizer<SufiBlazorResource> L
 @implements IDisposable
 
+@if (Announce)
+{
+    <span class="sb-sr-only" role="status" aria-live="polite">@_announced</span>
+}
 <div class="@RootClass" aria-busy="@Busy.ToString().ToLowerInvariant()">
-    @if (Announce)
-    {
-        <span class="sb-sr-only" role="status" aria-live="polite">@_announced</span>
-    }
     @if (_showVisual)
     {
         <span class="sb-loading-skeleton__label" aria-hidden="true">@LabelText</span>
@@ -19,7 +19,7 @@
                     <div class="sb-loading-skeleton__kpis">
                         @for (var index = 0; index < SafeCount; index++)
                         {
-                            <SbSkeleton Variant="SbSkeletonVariant.Rounded" Height="4.5rem" Animation="@Animation" />
+                            <SbSkeleton Variant="SbSkeletonVariant.Rounded" Height="6.25rem" Animation="@Animation" />
                         }
                     </div>
                     break;

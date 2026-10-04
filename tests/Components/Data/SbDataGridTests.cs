@@ -265,8 +265,9 @@ public class SbDataGridTests : BunitContext
         cut.WaitForState(() => cut.FindAll(".sb-datagrid__loading").Count == 1, TimeSpan.FromSeconds(2));
         Assert.Contains("Loading…", cut.Markup);
         Assert.DoesNotContain("Loading...", cut.Markup);
-        Assert.Equal("true", cut.Find(".sb-datagrid").GetAttribute("aria-busy"));
-        Assert.Null(cut.Find("[role='status']").GetAttribute("aria-busy"));
+        Assert.Null(cut.Find(".sb-datagrid").GetAttribute("aria-busy"));
+        Assert.Equal("true", cut.Find("table.sb-datagrid__table").GetAttribute("aria-busy"));
+        BusyAncestorAssertions.AssertNoBusyAncestor(cut.Find("[role='status']"));
     }
 
     [Fact]
@@ -354,7 +355,9 @@ public class SbDataGridTests : BunitContext
             .Add(x => x.ShowPagination, false)
             .AddChildContent(ColumnsTemplate));
 
-        Assert.Equal("true", cut.Find(".sb-datagrid").GetAttribute("aria-busy"));
+        Assert.Null(cut.Find(".sb-datagrid").GetAttribute("aria-busy"));
+        Assert.Equal("true", cut.Find("table.sb-datagrid__table").GetAttribute("aria-busy"));
+        BusyAncestorAssertions.AssertNoBusyAncestor(cut.Find("[role='status']"));
         Assert.DoesNotContain("No data available", cut.Markup);
         Assert.DoesNotContain("couldn't be loaded", cut.Markup);
     }
@@ -1188,5 +1191,16 @@ public class SbDataGridTests : BunitContext
         public string Name { get; set; } = string.Empty;
         public int Value { get; set; }
         public string Status { get; set; } = string.Empty;
+    }
+}
+
+file static class BusyAncestorAssertions
+{
+    public static void AssertNoBusyAncestor(AngleSharp.Dom.IElement element)
+    {
+        for (var parent = element.ParentElement; parent is not null; parent = parent.ParentElement)
+        {
+            Assert.NotEqual("true", parent.GetAttribute("aria-busy"));
+        }
     }
 }

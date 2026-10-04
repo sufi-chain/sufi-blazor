@@ -26,17 +26,8 @@
      @onkeydown="HandleKeyDown"
      tabindex="0"
      role="application"
-     aria-label="@AriaLabel"
-     aria-busy="@IsAwaitingContent.ToString().ToLowerInvariant()">
-    @if (ShowBusyChrome && !ShowInitialPlaceholder)
-    {
-        <div class="sb-datagrid__loading" aria-hidden="true">
-            <div class="sb-datagrid__loading-spinner"></div>
-            <span>@L["Loading"]</span>
-        </div>
-    }
-    
-    @* One persistent status. Loading and other announcements only change its text. *@
+     aria-label="@AriaLabel">
+    @* One persistent status, outside every aria-busy container. *@
     <div class="sb-datagrid__sr-only" role="status" aria-live="polite" aria-atomic="true">
         @(_screenReaderAnnouncement ?? _loadingStatusText)
     </div>
@@ -115,6 +106,20 @@
     }
     
     <div class="sb-datagrid__container" style="@GetContainerStyle()">
+        @if (ShowBusyChrome && !ShowInitialPlaceholder && !UseCardLayout)
+        {
+            <div class="sb-datagrid__loading" aria-hidden="true">
+                <div class="sb-datagrid__loading-spinner"></div>
+                <span>@L["Loading"]</span>
+            </div>
+        }
+        @if (ShowLoadError && _displayItems.Any() && !UseCardLayout)
+        {
+            <div class="sb-datagrid__load-failed">
+                <span role="alert">@L["DataLoadFailed"]</span>
+                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="RetryLoadAsync">@L["Retry"]</SbButton>
+            </div>
+        }
         @if (!UseCardLayout)
         {
         <table class="sb-datagrid__table" 
@@ -342,6 +347,20 @@
         else
         {
             <div class="sb-datagrid__cards" role="list" aria-busy="@IsAwaitingContent.ToString().ToLowerInvariant()">
+                @if (ShowBusyChrome && !ShowInitialPlaceholder)
+                {
+                    <div class="sb-datagrid__loading" aria-hidden="true">
+                        <div class="sb-datagrid__loading-spinner"></div>
+                        <span>@L["Loading"]</span>
+                    </div>
+                }
+                @if (ShowLoadError && _displayItems.Any())
+                {
+                    <div class="sb-datagrid__load-failed">
+                        <span role="alert">@L["DataLoadFailed"]</span>
+                        <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="RetryLoadAsync">@L["Retry"]</SbButton>
+                    </div>
+                }
                 @if (_displayItems.Any())
                 {
                     var cardIndex = 0;
@@ -1544,7 +1563,10 @@
         var loading = L["Loading"].Value;
         if (busy)
         {
-            _loadingStatusText = _loadingStatusText == loading ? loading + "\u200B" : loading;
+            if (_loadingStatusText != loading)
+            {
+                _loadingStatusText = loading;
+            }
         }
         else if (_loadingStatusText == loading || (_loadingStatusText?.Length == loading.Length + 1 && _loadingStatusText.StartsWith(loading, StringComparison.Ordinal)))
         {

@@ -59,6 +59,7 @@ public class SbLoadingSkeletonTests : BunitContext
         Assert.Equal("polite", status.GetAttribute("aria-live"));
         Assert.Null(status.GetAttribute("aria-busy"));
         Assert.Equal("true", cut.Find(".sb-loading-skeleton").GetAttribute("aria-busy"));
+        BusyAncestorAssertions.AssertNoBusyAncestor(status);
         Assert.Equal("", status.TextContent);
 
         cut.WaitForState(() => cut.FindAll(".sb-loading-skeleton__label").Count == 1, TimeSpan.FromSeconds(2));
@@ -113,5 +114,17 @@ public class SbLoadingSkeletonPersianTests : BunitContext
         Assert.DoesNotContain("Loading", cut.Markup);
         Assert.Null(cut.Find(".sb-loading-skeleton").GetAttribute("role"));
         Assert.Null(cut.Find("[role='status']").GetAttribute("aria-busy"));
+        BusyAncestorAssertions.AssertNoBusyAncestor(cut.Find("[role='status']"));
+    }
+}
+
+file static class BusyAncestorAssertions
+{
+    public static void AssertNoBusyAncestor(AngleSharp.Dom.IElement element)
+    {
+        for (var parent = element.ParentElement; parent is not null; parent = parent.ParentElement)
+        {
+            Assert.NotEqual("true", parent.GetAttribute("aria-busy"));
+        }
     }
 }
