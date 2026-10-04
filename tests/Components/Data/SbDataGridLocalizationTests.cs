@@ -16,7 +16,8 @@ file sealed class PersianGridLocalizer : IStringLocalizer<SufiBlazorResource>
     {
         ["NoDataAvailable"] = "داده‌ای موجود نیست",
         ["Loading"] = "در حال بارگذاری…",
-        ["DataLoadFailed"] = "فهرست بارگذاری نشد. صفحه را تازه‌سازی کنید و دوباره تلاش کنید."
+        ["DataLoadFailed"] = "فهرست بارگذاری نشد.",
+        ["Retry"] = "تلاش دوباره"
     };
 
     public LocalizedString this[string name]
@@ -67,7 +68,7 @@ public class SbDataGridLocalizationTests : BunitContext
             .Add(x => x.ShowPagination, false)
             .AddChildContent(Columns));
 
-        Assert.Contains("در حال بارگذاری…", loading.Markup);
+        loading.WaitForState(() => loading.Markup.Contains("در حال بارگذاری…"), TimeSpan.FromSeconds(2));
         Assert.DoesNotContain("Loading...", loading.Markup);
         Assert.DoesNotContain("No data available", loading.Markup);
         Assert.DoesNotContain("داده‌ای موجود نیست", loading.Markup);

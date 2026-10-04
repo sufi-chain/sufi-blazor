@@ -20,7 +20,8 @@ file class StubStringLocalizer : IStringLocalizer<SufiBlazorResource>
     {
         ["NoDataAvailable"] = "No data available",
         ["Loading"] = "Loading…",
-        ["DataLoadFailed"] = "The list could not be loaded. Refresh the page and try again."
+        ["DataLoadFailed"] = "The list couldn't be loaded.",
+        ["Retry"] = "Try again"
     };
 
     public LocalizedString this[string name]
@@ -167,7 +168,7 @@ public class SbDataGridTests : BunitContext
             .Add(x => x.ShowPagination, false)
             .AddChildContent(ColumnsTemplate));
 
-        cut.WaitForState(() => cut.Markup.Contains("could not be loaded"));
+        cut.WaitForState(() => cut.Markup.Contains("couldn't be loaded"));
         Assert.Contains("sb-datagrid__row--load-failed", cut.Markup);
         Assert.DoesNotContain("No data available", cut.Markup);
         Assert.DoesNotContain("store unavailable", cut.Markup);
@@ -261,11 +262,11 @@ public class SbDataGridTests : BunitContext
         var cut = RenderDataGrid(configure: p => p.Add(x => x.Loading, true));
 
         // Assert
-        var loading = cut.Find(".sb-datagrid__loading");
-        Assert.NotNull(loading);
+        cut.WaitForState(() => cut.FindAll(".sb-datagrid__loading").Count == 1, TimeSpan.FromSeconds(2));
         Assert.Contains("Loading…", cut.Markup);
         Assert.DoesNotContain("Loading...", cut.Markup);
         Assert.Equal("true", cut.Find(".sb-datagrid").GetAttribute("aria-busy"));
+        Assert.Null(cut.Find("[role='status']").GetAttribute("aria-busy"));
     }
 
     [Fact]
@@ -279,8 +280,8 @@ public class SbDataGridTests : BunitContext
             .Add(x => x.ShowColumnFilters, false)
             .AddChildContent(ColumnsTemplate));
 
+        cut.WaitForState(() => cut.Markup.Contains("sb-datagrid__row--skeleton"), TimeSpan.FromSeconds(2));
         Assert.Contains("Loading…", cut.Markup);
-        Assert.Contains("sb-loading-skeleton", cut.Markup);
         Assert.DoesNotContain("No data available", cut.Markup);
         Assert.DoesNotContain("Loading...", cut.Markup);
         Assert.Equal("true", cut.Find("table.sb-datagrid__table").GetAttribute("aria-busy"));
@@ -294,7 +295,7 @@ public class SbDataGridTests : BunitContext
             .Add(x => x.ShowColumnFilters, false)
             .AddChildContent(ColumnsTemplate));
 
-        Assert.Contains("No data available", cut.Markup);
+        cut.WaitForState(() => cut.Markup.Contains("No data available"), TimeSpan.FromSeconds(2));
         Assert.DoesNotContain("Loading…", cut.Markup);
         Assert.Equal("false", cut.Find("table.sb-datagrid__table").GetAttribute("aria-busy"));
     }
@@ -310,7 +311,7 @@ public class SbDataGridTests : BunitContext
             .Add(x => x.ShowPagination, false)
             .AddChildContent(ColumnsTemplate));
 
-        Assert.Contains("sb-loading-skeleton--cards", cut.Markup);
+        cut.WaitForState(() => cut.Markup.Contains("sb-loading-skeleton__cards"), TimeSpan.FromSeconds(2));
         Assert.DoesNotContain("No data available", cut.Markup);
         Assert.Equal("true", cut.Find(".sb-datagrid__cards").GetAttribute("aria-busy"));
 
@@ -322,7 +323,7 @@ public class SbDataGridTests : BunitContext
             .Add(x => x.ShowPagination, false)
             .AddChildContent(ColumnsTemplate));
 
-        Assert.Contains("No data available", cut.Markup);
+        cut.WaitForState(() => cut.Markup.Contains("No data available"), TimeSpan.FromSeconds(2));
         Assert.Equal("false", cut.Find(".sb-datagrid__cards").GetAttribute("aria-busy"));
     }
 
@@ -337,10 +338,25 @@ public class SbDataGridTests : BunitContext
             .Add(x => x.ShowPagination, false)
             .AddChildContent(ColumnsTemplate));
 
-        Assert.Contains("could not be loaded", cut.Markup);
+        Assert.Contains("couldn't be loaded", cut.Markup);
+        Assert.Contains("Try again", cut.Markup);
         Assert.Contains("sb-datagrid__row--load-failed", cut.Markup);
         Assert.DoesNotContain("No data available", cut.Markup);
         Assert.Equal("false", cut.Find("table.sb-datagrid__table").GetAttribute("aria-busy"));
+    }
+
+    [Fact]
+    public void CancelledFirstServerLoadDoesNotShowTheEmptyState()
+    {
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.ItemsProvider, _ => Task.FromCanceled<SbDataResponse<TestItem>>(new CancellationToken(true)))
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .AddChildContent(ColumnsTemplate));
+
+        Assert.Equal("true", cut.Find(".sb-datagrid").GetAttribute("aria-busy"));
+        Assert.DoesNotContain("No data available", cut.Markup);
+        Assert.DoesNotContain("couldn't be loaded", cut.Markup);
     }
 
     [Fact]

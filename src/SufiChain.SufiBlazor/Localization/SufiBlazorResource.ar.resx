@@ -144,8 +144,11 @@
   <data name="Sort" xml:space="preserve"><value>فرز</value></data>
   <data name="SortAscending" xml:space="preserve"><value>تصاعدي</value></data>
   <data name="SortDescending" xml:space="preserve"><value>تنازلي</value></data>
+  <data name="Loading" xml:space="preserve"><value>جارٍ التحميل…</value></data>
   <data name="NoDataAvailable" xml:space="preserve"><value>لا توجد بيانات</value></data>
-  <data name="DataLoadFailed" xml:space="preserve"><value>تعذر تحميل القائمة. حدّث الصفحة وحاول مرة أخرى.</value></data>
+  <data name="DataLoadFailed" xml:space="preserve"><value>تعذّر تحميل القائمة.</value></data>
+  <data name="DataLoadFailedGeneric" xml:space="preserve"><value>تعذّر تحميل البيانات.</value></data>
+  <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
   <data name="SelectRow" xml:space="preserve"><value>تحديد الصف {0}</value></data>
   <data name="RemoveFilterFor" xml:space="preserve"><value>إزالة عامل التصفية لـ {0}</value></data>
   <data name="GenerateFromTitle" xml:space="preserve"><value>إنشاء من العنوان</value></data>

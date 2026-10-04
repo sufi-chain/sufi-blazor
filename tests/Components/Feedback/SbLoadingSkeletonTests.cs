@@ -57,8 +57,13 @@ public class SbLoadingSkeletonTests : BunitContext
 
         var status = cut.Find("[role='status']");
         Assert.Equal("polite", status.GetAttribute("aria-live"));
-        Assert.Equal("true", status.GetAttribute("aria-busy"));
+        Assert.Null(status.GetAttribute("aria-busy"));
+        Assert.Equal("true", cut.Find(".sb-loading-skeleton").GetAttribute("aria-busy"));
+        Assert.Equal("", status.TextContent);
+
+        cut.WaitForState(() => cut.FindAll(".sb-loading-skeleton__label").Count == 1, TimeSpan.FromSeconds(2));
         Assert.Equal("Loading…", cut.Find(".sb-loading-skeleton__label").TextContent);
+        Assert.Equal("Loading…", cut.Find("[role='status']").TextContent);
         Assert.Equal(4, cut.FindAll(".sb-skeleton").Count);
         Assert.All(cut.FindAll(".sb-skeleton"), skeleton => Assert.Equal("true", skeleton.GetAttribute("aria-hidden")));
         Assert.DoesNotContain(">0<", cut.Markup);
@@ -66,13 +71,23 @@ public class SbLoadingSkeletonTests : BunitContext
     }
 
     [Fact]
+    public void AnnounceFalseOmitsTheLiveRegion()
+    {
+        var cut = Render<SbLoadingSkeleton>(p => p.Add(x => x.Announce, false));
+
+        Assert.Empty(cut.FindAll("[role='status']"));
+        Assert.Equal("true", cut.Find(".sb-loading-skeleton").GetAttribute("aria-busy"));
+    }
+
+    [Fact]
     public void TablePresetDoesNotUseTheHardCodedEnglishLoadingString()
     {
         var cut = Render<SbLoadingSkeleton>(p => p.Add(x => x.Preset, SbLoadingSkeletonPreset.Table));
 
-        Assert.Contains("Loading…", cut.Markup);
+        cut.WaitForState(() => cut.Markup.Contains("Loading…"), TimeSpan.FromSeconds(2));
         Assert.DoesNotContain("Loading...", cut.Markup);
         Assert.Contains("sb-loading-skeleton--table", cut.Markup);
+        Assert.Contains("sb-loading-skeleton__row", cut.Markup);
     }
 }
 
@@ -92,8 +107,11 @@ public class SbLoadingSkeletonPersianTests : BunitContext
     {
         var cut = Render<SbLoadingSkeleton>(p => p.Add(x => x.Preset, SbLoadingSkeletonPreset.Text));
 
+        cut.WaitForState(() => cut.FindAll(".sb-loading-skeleton__label").Count == 1, TimeSpan.FromSeconds(2));
         Assert.Contains("در حال بارگذاری…", cut.Find(".sb-loading-skeleton__label").TextContent);
+        Assert.Contains("در حال بارگذاری…", cut.Find("[role='status']").TextContent);
         Assert.DoesNotContain("Loading", cut.Markup);
-        Assert.Equal("status", cut.Find(".sb-loading-skeleton").GetAttribute("role"));
+        Assert.Null(cut.Find(".sb-loading-skeleton").GetAttribute("role"));
+        Assert.Null(cut.Find("[role='status']").GetAttribute("aria-busy"));
     }
 }
