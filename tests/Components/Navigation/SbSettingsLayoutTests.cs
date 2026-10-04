@@ -106,6 +106,68 @@ public class SbSettingsLayoutTests : BunitContext
     }
 
     [Fact]
+    public void DirtyGuard_ShowsThreeActionsAndFocusesKeepEditing()
+    {
+        var saved = 0;
+        var discarded = 0;
+        var cut = RenderLayout(null, builder =>
+        {
+            Section(builder, 0, "email", "Email", "mail", dirty: true,
+                onSave: () =>
+                {
+                    saved++;
+                    return Task.FromResult(true);
+                },
+                onDiscard: () =>
+                {
+                    discarded++;
+                    return Task.CompletedTask;
+                });
+            Section(builder, 20, "identity", "Identity", "user-cog", dirty: true, onSave: () =>
+            {
+                saved++;
+                return Task.FromResult(true);
+            });
+        });
+
+        cut.Find(".sb-settings-rail [data-section-id='identity']").Click();
+
+        var title = cut.Find(".sb-dialog__title");
+        Assert.Equal("Settings:GuardTitle", title.TextContent);
+        Assert.DoesNotContain("Confirm", title.TextContent, StringComparison.Ordinal);
+        Assert.Empty(cut.FindAll(".sb-dialog__description"));
+
+        var stay = cut.Find(".sb-settings-guard__stay");
+        var discard = cut.Find(".sb-settings-guard__discard");
+        var save = cut.Find(".sb-settings-guard__save");
+        Assert.Equal("Settings:Stay", stay.TextContent.Trim());
+        Assert.Equal("true", stay.GetAttribute("autofocus"));
+        Assert.Equal("Settings:Discard", discard.TextContent.Trim());
+        Assert.Equal("Settings:Save", save.TextContent.Trim());
+        Assert.Contains("sb-button--solid", save.ClassName);
+        Assert.Contains("sb-button--primary", save.ClassName);
+        Assert.DoesNotContain("sb-button--solid", stay.ClassName);
+        Assert.DoesNotContain("sb-button--solid", discard.ClassName);
+
+        stay.Click();
+        Assert.Equal("email", cut.Find(".sb-settings-rail [aria-current='page']").GetAttribute("data-section-id"));
+        Assert.Empty(cut.FindAll(".sb-dialog__title"));
+        Assert.Equal(0, saved);
+        Assert.Equal(0, discarded);
+
+        cut.Find(".sb-settings-rail [data-section-id='identity']").Click();
+        cut.Find(".sb-settings-guard__discard").Click();
+        Assert.Equal(1, discarded);
+        Assert.Equal("identity", cut.Find(".sb-settings-rail [aria-current='page']").GetAttribute("data-section-id"));
+        Assert.Equal(0, saved);
+
+        cut.Find(".sb-settings-rail [data-section-id='email']").Click();
+        cut.Find(".sb-settings-guard__save").Click();
+        Assert.Equal(1, saved);
+        Assert.Equal("email", cut.Find(".sb-settings-rail [aria-current='page']").GetAttribute("data-section-id"));
+    }
+
+    [Fact]
     public void DirtyGuard_StayDiscardAndSave()
     {
         var saved = 0;
@@ -694,5 +756,38 @@ public class SettingsStripFadeContractTests
         Assert.Contains("[data-fade-start][data-fade-end]", css, StringComparison.Ordinal);
         Assert.DoesNotContain("[data-fade-start=\"true\"]", css, StringComparison.Ordinal);
         Assert.DoesNotContain("[data-fade-end=\"true\"]", css, StringComparison.Ordinal);
+    }
+}
+
+public class SettingsLeaveGuardCopyTests
+{
+    [Fact]
+    public void Leave_guard_title_is_the_localized_question()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root != null && !File.Exists(Path.Combine(root.FullName, "src", "SufiChain.SufiBlazor", "Localization", "SufiBlazorResource.resx")))
+        {
+            root = root.Parent;
+        }
+
+        Assert.NotNull(root);
+        var localization = Path.Combine(root!.FullName, "src", "SufiChain.SufiBlazor", "Localization");
+
+        Assert.Contains(
+            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>Save your changes before you leave?</value></data>",
+            File.ReadAllText(Path.Combine(localization, "SufiBlazorResource.resx")),
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>پیش از رفتن، تغییرات ذخیره شود؟</value></data>",
+            File.ReadAllText(Path.Combine(localization, "SufiBlazorResource.fa.resx")),
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>هل تريد حفظ التغييرات قبل الخروج؟</value></data>",
+            File.ReadAllText(Path.Combine(localization, "SufiBlazorResource.ar.resx")),
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>¿Guardar los cambios antes de salir?</value></data>",
+            File.ReadAllText(Path.Combine(localization, "SufiBlazorResource.es.resx")),
+            StringComparison.Ordinal);
     }
 }

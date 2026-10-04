@@ -165,13 +165,12 @@
 {
     <SbDialog Open="true"
               Title="@L["Settings:GuardTitle"]"
-              Description="@L["Settings:GuardBody"]"
               ShowCloseButton="false"
               CloseOnEscape="true"
               CloseOnBackdropClick="false"
               OnClose="OnGuardClose">
         <Footer>
-            <SbButton Variant="SbButtonVariant.Outline" Disabled="@_saving" Class="sb-settings-guard__stay" OnClick="StayAsync">
+            <SbButton Variant="SbButtonVariant.Outline" Disabled="@_saving" Class="sb-settings-guard__stay" autofocus="true" OnClick="StayAsync">
                 @L["Settings:Stay"]
             </SbButton>
             <SbButton Variant="SbButtonVariant.Outline" Disabled="@_saving" Class="sb-settings-guard__discard" OnClick="DiscardAndLeaveAsync">

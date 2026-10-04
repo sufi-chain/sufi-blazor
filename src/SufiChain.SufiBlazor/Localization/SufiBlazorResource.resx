@@ -214,7 +214,7 @@
   <data name="Settings:Stay" xml:space="preserve"><value>Keep editing</value></data>
   <data name="Settings:UnsavedChanges" xml:space="preserve"><value>Unsaved changes</value></data>
   <data name="Settings:ViewOnly" xml:space="preserve"><value>View only</value></data>
-  <data name="Settings:GuardTitle" xml:space="preserve"><value>Unsaved changes</value></data>
+  <data name="Settings:GuardTitle" xml:space="preserve"><value>Save your changes before you leave?</value></data>
   <data name="Settings:GuardBody" xml:space="preserve"><value>Save your changes before you leave?</value></data>
   <data name="Settings:Saved" xml:space="preserve"><value>Settings saved</value></data>
   <data name="Settings:SaveFailed" xml:space="preserve"><value>Could not save these settings.</value></data>
