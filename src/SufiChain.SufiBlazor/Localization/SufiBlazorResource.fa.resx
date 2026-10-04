@@ -145,6 +145,7 @@
   <data name="SortAscending" xml:space="preserve"><value>صعودی</value></data>
   <data name="SortDescending" xml:space="preserve"><value>نزولی</value></data>
   <data name="NoDataAvailable" xml:space="preserve"><value>داده‌ای موجود نیست</value></data>
+  <data name="DataLoadFailed" xml:space="preserve"><value>فهرست بارگذاری نشد. صفحه را تازه‌سازی کنید و دوباره تلاش کنید.</value></data>
   <data name="SelectRow" xml:space="preserve"><value>انتخاب ردیف {0}</value></data>
   <data name="RemoveFilterFor" xml:space="preserve"><value>حذف فیلتر {0}</value></data>
   <data name="GenerateFromTitle" xml:space="preserve"><value>تولید از عنوان</value></data>

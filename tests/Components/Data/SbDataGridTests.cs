@@ -137,6 +137,24 @@ public class SbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void ServerProviderExceptionStaysOnTheGridInsteadOfFailingRender()
+    {
+        // A thrown ItemsProvider used to escape OnAfterRenderAsync and drop the circuit.
+        // The grid must stay rendered and must not report an empty data set.
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.ItemsProvider, _ => Task.FromException<SbDataResponse<TestItem>>(
+                new InvalidOperationException("store unavailable")))
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .AddChildContent(ColumnsTemplate));
+
+        cut.WaitForState(() => cut.Markup.Contains("DataLoadFailed"));
+        Assert.Contains("sb-datagrid__row--load-failed", cut.Markup);
+        Assert.DoesNotContain("No data available", cut.Markup);
+        Assert.DoesNotContain("store unavailable", cut.Markup);
+    }
+
+    [Fact]
     public void RendersRowsWhenItemsArriveAfterEmptyFirstRender()
     {
         // Reproduces the Hooshvares/MCP-tools race: first render binds empty Items while

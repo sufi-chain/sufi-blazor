@@ -21,6 +21,7 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
     private List<EditorToolbarItem> _toolbarItems = [];
     private readonly EditorState _state = new();
     private bool _jsonValid = true;
+    private int _readVersion;
 
     [Parameter] public string Value { get; set; } = "";
     [Parameter] public EventCallback<string> ValueChanged { get; set; }
@@ -88,9 +89,11 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
         _dotNetRef = DotNetObjectReference.Create(this);
         try
         {
+            var initial = Value ?? "";
+            var seed = initial.Length > SbEditorTextTransfer.SingleMessageChars ? "" : initial;
             _editorId = await _interop.InitializeAsync(_editorContainer, _dotNetRef, new SbCodeEditorInitOptions
             {
-                Value = Value,
+                Value = seed,
                 Language = Language.ToString().ToLowerInvariant(),
                 ReadOnly = ReadOnly,
                 Disabled = Disabled,
@@ -100,7 +103,12 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
                 Placeholder = Placeholder,
                 ValidateJson = ValidateJson && Language == SbCodeLanguage.Json
             });
-            _lastValue = Value;
+            if (seed.Length != initial.Length)
+            {
+                await _interop.SetValueAsync(_editorId, initial);
+            }
+
+            _lastValue = initial;
         }
         catch (JSException)
         {
@@ -145,6 +153,25 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
                 State = _state
             });
         }
+    }
+
+    [JSInvokable]
+    public async Task OnLargeEditorContentChanged(int length)
+    {
+        if (_editorId == null || _interop == null || _disposed)
+        {
+            return;
+        }
+
+        var version = ++_readVersion;
+        var value = await _interop.GetValueAsync(_editorId);
+        if (version != _readVersion || _disposed)
+        {
+            return;
+        }
+
+        _ = length;
+        await OnEditorContentChanged(value);
     }
 
     [JSInvokable]

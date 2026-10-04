@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Bunit;
 using SufiChain.SufiBlazor.Components.Forms;
 using Xunit;
@@ -418,6 +419,82 @@ public class SbTextAreaTests : BunitContext
 
         // Assert
         Assert.Equal("New text", received);
+        Assert.Equal("New text", cut.Instance.CurrentText);
+    }
+
+    [Fact]
+    public async Task ChangeCommitsTextWhenInputHasNotFired()
+    {
+        string? received = null;
+        var cut = RenderTextArea(p => p
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, v => received = v)));
+
+        await cut.InvokeAsync(() => cut.Find("textarea").Change("QA P13 desc"));
+
+        Assert.Equal("QA P13 desc", received);
+        Assert.Equal("QA P13 desc", cut.Instance.CurrentText);
+    }
+
+    [Fact]
+    public void StaleParentValueDoesNotClearTypedDraft()
+    {
+        var cut = RenderTextArea(p => p.Add(x => x.Value, (string?)null));
+
+        cut.Find("textarea").Input("QA P13 desc");
+        cut.Render(p => p.Add(x => x.Value, (string?)null));
+
+        Assert.Equal("QA P13 desc", cut.Instance.CurrentText);
+        Assert.Equal("QA P13 desc", cut.Find("textarea").GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task GetCommittedValueReadsBrowserTextWhenDraftIsEmpty()
+    {
+        string? received = null;
+        var cut = RenderTextArea(p => p
+            .Add(x => x.Value, (string?)null)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, v => received = v)));
+
+        Assert.Null(cut.Instance.CurrentText);
+        JSInterop.Setup<string?>("SufiBlazor.readControlValue", _ => true)
+            .SetResult("QA P13 desc");
+
+        var committed = await cut.InvokeAsync(() => cut.Instance.GetCommittedValueAsync());
+
+        Assert.Equal("QA P13 desc", committed);
+        Assert.Equal("QA P13 desc", cut.Instance.CurrentText);
+        Assert.Equal("QA P13 desc", received);
+    }
+
+    [Fact]
+    public async Task GetCommittedValueTreatsEmptyBrowserTextAsCleared()
+    {
+        string? received = "unchanged";
+        var cut = RenderTextArea(p => p
+            .Add(x => x.Value, "QA P13 desc")
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, v => received = v)));
+
+        JSInterop.Setup<string?>("SufiBlazor.readControlValue", _ => true)
+            .SetResult(string.Empty);
+
+        var committed = await cut.InvokeAsync(() => cut.Instance.GetCommittedValueAsync());
+
+        Assert.Equal(string.Empty, committed);
+        Assert.Equal(string.Empty, cut.Instance.CurrentText);
+        Assert.Equal(string.Empty, received);
+    }
+
+    [Fact]
+    public async Task GetCommittedValueKeepsDraftWhenBrowserReadFails()
+    {
+        var cut = RenderTextArea(p => p.Add(x => x.Value, "QA P13 desc"));
+        JSInterop.Setup<string?>("SufiBlazor.readControlValue", _ => true)
+            .SetException(new JSException("read failed"));
+
+        var committed = await cut.InvokeAsync(() => cut.Instance.GetCommittedValueAsync());
+
+        Assert.Equal("QA P13 desc", committed);
+        Assert.Equal("QA P13 desc", cut.Instance.CurrentText);
     }
 
     [Fact]
