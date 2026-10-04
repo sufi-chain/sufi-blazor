@@ -144,6 +144,7 @@
   <data name="Sort" xml:space="preserve"><value>مرتب‌سازی</value></data>
   <data name="SortAscending" xml:space="preserve"><value>صعودی</value></data>
   <data name="SortDescending" xml:space="preserve"><value>نزولی</value></data>
+  <data name="Loading" xml:space="preserve"><value>در حال بارگذاری…</value></data>
   <data name="NoDataAvailable" xml:space="preserve"><value>داده‌ای موجود نیست</value></data>
   <data name="DataLoadFailed" xml:space="preserve"><value>فهرست بارگذاری نشد. صفحه را تازه‌سازی کنید و دوباره تلاش کنید.</value></data>
   <data name="SelectRow" xml:space="preserve"><value>انتخاب ردیف {0}</value></data>

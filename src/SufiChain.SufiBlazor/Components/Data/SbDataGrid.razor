@@ -1,6 +1,7 @@
 @namespace SufiChain.SufiBlazor.Components.Data
 @typeparam TItem
 @using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Feedback
 @using SufiChain.SufiBlazor.Components.Forms
 @using SufiChain.SufiBlazor.Contracts.Data
 @using Microsoft.AspNetCore.Components.Forms
@@ -25,12 +26,13 @@
      @onkeydown="HandleKeyDown"
      tabindex="0"
      role="application"
-     aria-label="@AriaLabel">
-    @if (Loading)
+     aria-label="@AriaLabel"
+     aria-busy="@IsAwaitingContent.ToString().ToLowerInvariant()">
+    @if (IsAwaitingContent && !ShowInitialPlaceholder)
     {
         <div class="sb-datagrid__loading" role="status" aria-live="polite">
             <div class="sb-datagrid__loading-spinner" aria-hidden="true"></div>
-            <span>Loading...</span>
+            <span>@L["Loading"]</span>
         </div>
     }
     
@@ -118,10 +120,10 @@
         <table class="sb-datagrid__table" 
                style="@GetTableStyle()"
                role="grid"
-               aria-rowcount="@TotalCount"
                aria-colcount="@GetTotalColumnCount()"
                aria-multiselectable="@(SelectionMode == SbSelectionMode.MultipleRows ? "true" : "false")"
-               aria-busy="@Loading.ToString().ToLower()">
+               aria-busy="@IsAwaitingContent.ToString().ToLowerInvariant()"
+               aria-rowcount="@(ShowInitialPlaceholder ? null : TotalCount.ToString(CultureInfo.InvariantCulture))">
             <thead class="sb-datagrid__header" role="rowgroup">
                 <tr role="row" aria-rowindex="1">
                     @{
@@ -259,12 +261,21 @@
                         rowIndex++;
                     }
                 }
-                else if (_serverLoadFailed)
+                else if (ShowLoadError)
                 {
                     <tr class="sb-datagrid__row sb-datagrid__row--empty sb-datagrid__row--load-failed">
                         <td class="sb-datagrid__cell sb-datagrid__cell--empty"
                             colspan="@GetTotalColumnCount()">
                             <span role="alert">@L["DataLoadFailed"]</span>
+                        </td>
+                    </tr>
+                }
+                else if (ShowInitialPlaceholder)
+                {
+                    <tr class="sb-datagrid__row sb-datagrid__row--loading">
+                        <td class="sb-datagrid__cell sb-datagrid__cell--empty"
+                            colspan="@GetTotalColumnCount()">
+                            <SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table" Count="4" />
                         </td>
                     </tr>
                 }
@@ -279,7 +290,7 @@
                             }
                             else
                             {
-                                <span>@(EmptyText ?? "No data available")</span>
+                                <span>@(EmptyText ?? L["NoDataAvailable"])</span>
                             }
                         </td>
                     </tr>
@@ -315,7 +326,7 @@
         }
         else
         {
-            <div class="sb-datagrid__cards" role="list">
+            <div class="sb-datagrid__cards" role="list" aria-busy="@IsAwaitingContent.ToString().ToLowerInvariant()">
                 @if (_displayItems.Any())
                 {
                     var cardIndex = 0;
@@ -325,11 +336,15 @@
                         cardIndex++;
                     }
                 }
-                else if (_serverLoadFailed)
+                else if (ShowLoadError)
                 {
                     <div class="sb-datagrid__cards-empty" role="alert">
                         <span>@L["DataLoadFailed"]</span>
                     </div>
+                }
+                else if (ShowInitialPlaceholder)
+                {
+                    <SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Cards" Count="3" />
                 }
                 else
                 {
@@ -812,6 +827,13 @@
     /// </summary>
     [Parameter]
     public bool Loading { get; set; }
+
+    /// <summary>
+    /// When true, an empty grid shows <c>DataLoadFailed</c> instead of the empty state.
+    /// Used by client-mode pages whose own load threw.
+    /// </summary>
+    [Parameter]
+    public bool LoadFailed { get; set; }
     
     /// <summary>
     /// The selection mode.
@@ -1126,6 +1148,16 @@
                                    _displayItems.All(item => _selectedKeys.Contains(GetItemKey(item)));
     
     private bool IsServerMode => ItemsProvider != null;
+
+    private bool ShowLoadError => _serverLoadFailed || LoadFailed;
+
+    /// <summary>
+    /// True until the first client or server read finishes, and while <see cref="Loading"/>
+    /// is set with nothing to show yet. Empty copy stays out of the tree for that time.
+    /// </summary>
+    private bool IsAwaitingContent => !ShowLoadError && (Loading || !_contentResolved);
+
+    private bool ShowInitialPlaceholder => IsAwaitingContent && !_displayItems.Any();
     
     private bool IsEditing => _editingRowKey != null;
     
@@ -1192,6 +1224,7 @@
     private int? _pendingPageSize;
     private int _serverLoadVersion;
     private bool _serverLoadFailed;
+    private bool _contentResolved;
     
     protected override void OnInitialized()
     {
@@ -1379,6 +1412,7 @@
         else
         {
             LoadClientData();
+            _contentResolved = true;
         }
     }
     
@@ -1568,6 +1602,11 @@
         }
         catch (OperationCanceledException)
         {
+            if (!_disposed && version == _serverLoadVersion)
+            {
+                _contentResolved = true;
+            }
+
             return;
         }
         catch (Exception)
@@ -1581,6 +1620,7 @@
             _displayItems = new List<TItem>();
             _virtualizedItems = new();
             TotalCount = 0;
+            _contentResolved = true;
             return;
         }
 
@@ -1602,6 +1642,7 @@
         }
 
         TotalCount = response.TotalCount ?? _displayItems.Count;
+        _contentResolved = true;
     }
     
     private string GetItemKey(TItem item)

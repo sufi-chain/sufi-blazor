@@ -7885,6 +7885,43 @@ body.sb-resizing {
 }
 
 /* ============================================
+   SbLoadingSkeleton
+   ============================================ */
+
+.sb-loading-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sb-space-3);
+    width: 100%;
+    min-width: 0;
+    padding: var(--sb-space-2) 0;
+}
+
+.sb-loading-skeleton__label {
+    color: var(--sb-color-text-secondary);
+    font-size: var(--sb-font-size-sm);
+}
+
+.sb-loading-skeleton__kpis,
+.sb-loading-skeleton__cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sb-space-3);
+}
+
+.sb-loading-skeleton__kpis > .sb-skeleton,
+.sb-loading-skeleton__cards > .sb-skeleton {
+    flex: 1 1 12rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sb-loading-skeleton .sb-skeleton {
+        animation: none;
+        background: var(--sb-color-surface-variant);
+    }
+}
+
+/* ============================================
    SbEmptyState
    ============================================ */
 

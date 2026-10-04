@@ -1,0 +1,35 @@
+@namespace SufiChain.SufiBlazor.Components.Feedback
+@using Microsoft.Extensions.Localization
+@using SufiChain.SufiBlazor.Localization
+@inject IStringLocalizer<SufiBlazorResource> L
+
+<div class="@RootClass" role="status" aria-live="polite" aria-busy="true">
+    <span class="sb-loading-skeleton__label">@(string.IsNullOrWhiteSpace(Label) ? L["Loading"] : Label)</span>
+    <div class="sb-loading-skeleton__body" aria-hidden="true">
+        @switch (Preset)
+        {
+            case SbLoadingSkeletonPreset.Kpi:
+                <div class="sb-loading-skeleton__kpis">
+                    @for (var index = 0; index < SafeCount; index++)
+                    {
+                        <SbSkeleton Variant="SbSkeletonVariant.Rounded" Height="4.5rem" Animation="@Animation" />
+                    }
+                </div>
+                break;
+            case SbLoadingSkeletonPreset.Cards:
+                <div class="sb-loading-skeleton__cards">
+                    @for (var index = 0; index < SafeCount; index++)
+                    {
+                        <SbSkeleton Variant="SbSkeletonVariant.Rounded" Height="5.5rem" Animation="@Animation" />
+                    }
+                </div>
+                break;
+            default:
+                @for (var index = 0; index < SafeCount; index++)
+                {
+                    <SbSkeleton Variant="SbSkeletonVariant.Text" Width="@BarWidth(index)" Animation="@Animation" />
+                }
+                break;
+        }
+    </div>
+</div>
