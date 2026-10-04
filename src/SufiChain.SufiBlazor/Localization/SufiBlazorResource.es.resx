@@ -69,4 +69,8 @@
   <data name="Settings:SaveFailed" xml:space="preserve"><value>No se pudo guardar la configuración.</value></data>
   <data name="Settings:EmptyTitle" xml:space="preserve"><value>No hay configuración disponible</value></data>
   <data name="Settings:SectionPicker" xml:space="preserve"><value>Sección</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="DataLoadFailed" xml:space="preserve"><value>No se ha podido cargar la lista.</value></data>
+  <data name="DataLoadFailedGeneric" xml:space="preserve"><value>No se ha podido cargar la información.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
 </root>

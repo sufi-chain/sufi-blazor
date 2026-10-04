@@ -1,6 +1,7 @@
 @namespace SufiChain.SufiBlazor.Components.Data
 @typeparam TItem
 @using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Feedback
 @using SufiChain.SufiBlazor.Components.Forms
 @using SufiChain.SufiBlazor.Contracts.Data
 @using Microsoft.AspNetCore.Components.Forms
@@ -26,17 +27,9 @@
      tabindex="0"
      role="application"
      aria-label="@AriaLabel">
-    @if (Loading)
-    {
-        <div class="sb-datagrid__loading" role="status" aria-live="polite">
-            <div class="sb-datagrid__loading-spinner" aria-hidden="true"></div>
-            <span>Loading...</span>
-        </div>
-    }
-    
-    @* Screen reader announcements *@
+    @* One persistent status, outside every aria-busy container. *@
     <div class="sb-datagrid__sr-only" role="status" aria-live="polite" aria-atomic="true">
-        @_screenReaderAnnouncement
+        @(_screenReaderAnnouncement ?? _loadingStatusText)
     </div>
     
     @* Active Filters Bar *@
@@ -113,15 +106,29 @@
     }
     
     <div class="sb-datagrid__container" style="@GetContainerStyle()">
+        @if (ShowBusyChrome && !ShowInitialPlaceholder && !UseCardLayout)
+        {
+            <div class="sb-datagrid__loading" aria-hidden="true">
+                <div class="sb-datagrid__loading-spinner"></div>
+                <span>@L["Loading"]</span>
+            </div>
+        }
+        @if (ShowLoadError && _displayItems.Any() && !UseCardLayout)
+        {
+            <div class="sb-datagrid__load-failed">
+                <span role="alert">@L["DataLoadFailed"]</span>
+                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="RetryLoadAsync">@L["Retry"]</SbButton>
+            </div>
+        }
         @if (!UseCardLayout)
         {
         <table class="sb-datagrid__table" 
                style="@GetTableStyle()"
                role="grid"
-               aria-rowcount="@TotalCount"
                aria-colcount="@GetTotalColumnCount()"
                aria-multiselectable="@(SelectionMode == SbSelectionMode.MultipleRows ? "true" : "false")"
-               aria-busy="@Loading.ToString().ToLower()">
+               aria-busy="@IsAwaitingContent.ToString().ToLowerInvariant()"
+               aria-rowcount="@(ShowInitialPlaceholder ? null : TotalCount.ToString(CultureInfo.InvariantCulture))">
             <thead class="sb-datagrid__header" role="rowgroup">
                 <tr role="row" aria-rowindex="1">
                     @{
@@ -259,13 +266,37 @@
                         rowIndex++;
                     }
                 }
-                else if (_serverLoadFailed)
+                else if (ShowLoadError)
                 {
                     <tr class="sb-datagrid__row sb-datagrid__row--empty sb-datagrid__row--load-failed">
                         <td class="sb-datagrid__cell sb-datagrid__cell--empty"
                             colspan="@GetTotalColumnCount()">
-                            <span role="alert">@L["DataLoadFailed"]</span>
+                            <div class="sb-datagrid__load-failed">
+                                <span role="alert">@L["DataLoadFailed"]</span>
+                                <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="RetryLoadAsync">@L["Retry"]</SbButton>
+                            </div>
                         </td>
+                    </tr>
+                }
+                else if (ShowInitialPlaceholder && ShowBusyChrome)
+                {
+                    var skeletonCells = VisibleColumns.Any() ? VisibleColumns.Count() : 3;
+                    @for (var skeletonRow = 0; skeletonRow < 4; skeletonRow++)
+                    {
+                        <tr class="sb-datagrid__row sb-datagrid__row--skeleton" aria-hidden="true">
+                            @for (var skeletonCell = 0; skeletonCell < skeletonCells; skeletonCell++)
+                            {
+                                <td class="sb-datagrid__cell">
+                                    <SbSkeleton Variant="SbSkeletonVariant.Text" Width="@(skeletonCell % 3 == 2 ? "55%" : "80%")" />
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+                else if (ShowInitialPlaceholder)
+                {
+                    <tr class="sb-datagrid__row sb-datagrid__row--placeholder" aria-hidden="true">
+                        <td class="sb-datagrid__cell" colspan="@GetTotalColumnCount()"></td>
                     </tr>
                 }
                 else
@@ -279,7 +310,7 @@
                             }
                             else
                             {
-                                <span>@(EmptyText ?? "No data available")</span>
+                                <span>@(EmptyText ?? L["NoDataAvailable"])</span>
                             }
                         </td>
                     </tr>
@@ -315,7 +346,21 @@
         }
         else
         {
-            <div class="sb-datagrid__cards" role="list">
+            <div class="sb-datagrid__cards" role="list" aria-busy="@IsAwaitingContent.ToString().ToLowerInvariant()">
+                @if (ShowBusyChrome && !ShowInitialPlaceholder)
+                {
+                    <div class="sb-datagrid__loading" aria-hidden="true">
+                        <div class="sb-datagrid__loading-spinner"></div>
+                        <span>@L["Loading"]</span>
+                    </div>
+                }
+                @if (ShowLoadError && _displayItems.Any())
+                {
+                    <div class="sb-datagrid__load-failed">
+                        <span role="alert">@L["DataLoadFailed"]</span>
+                        <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="RetryLoadAsync">@L["Retry"]</SbButton>
+                    </div>
+                }
                 @if (_displayItems.Any())
                 {
                     var cardIndex = 0;
@@ -325,11 +370,27 @@
                         cardIndex++;
                     }
                 }
-                else if (_serverLoadFailed)
+                else if (ShowLoadError)
                 {
-                    <div class="sb-datagrid__cards-empty" role="alert">
-                        <span>@L["DataLoadFailed"]</span>
+                    <div class="sb-datagrid__cards-empty">
+                        <div class="sb-datagrid__load-failed">
+                            <span role="alert">@L["DataLoadFailed"]</span>
+                            <SbButton Size="SbSize.Sm" Variant="SbButtonVariant.Outline" OnClick="RetryLoadAsync">@L["Retry"]</SbButton>
+                        </div>
                     </div>
+                }
+                else if (ShowInitialPlaceholder && ShowBusyChrome)
+                {
+                    <div class="sb-loading-skeleton__cards" aria-hidden="true">
+                        @for (var card = 0; card < 3; card++)
+                        {
+                            <SbSkeleton Variant="SbSkeletonVariant.Rounded" Height="5.5rem" />
+                        }
+                    </div>
+                }
+                else if (ShowInitialPlaceholder)
+                {
+                    <div class="sb-datagrid__cards-placeholder" aria-hidden="true"></div>
                 }
                 else
                 {
@@ -812,6 +873,19 @@
     /// </summary>
     [Parameter]
     public bool Loading { get; set; }
+
+    /// <summary>
+    /// When true, an empty grid shows <c>DataLoadFailed</c> instead of the empty state.
+    /// Used by client-mode pages whose own load threw.
+    /// </summary>
+    [Parameter]
+    public bool LoadFailed { get; set; }
+
+    /// <summary>
+    /// Reloads client-mode data after <see cref="LoadFailed"/>. Server mode refreshes itself.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnLoadRetry { get; set; }
     
     /// <summary>
     /// The selection mode.
@@ -1126,6 +1200,26 @@
                                    _displayItems.All(item => _selectedKeys.Contains(GetItemKey(item)));
     
     private bool IsServerMode => ItemsProvider != null;
+
+    private bool ShowLoadError => _serverLoadFailed || LoadFailed;
+
+    /// <summary>
+    /// True until the first client or server read finishes, while a server read is in flight,
+    /// and while <see cref="Loading"/> is set. Empty copy stays out of the tree for that time.
+    /// </summary>
+    private bool IsAwaitingContent => !ShowLoadError && (Loading || !_contentResolved || _serverBusy);
+
+    private bool ShowInitialPlaceholder => !ShowLoadError && !_displayItems.Any() && (IsAwaitingContent || ShowBusyChrome);
+
+    private const int BusyShowDelayMilliseconds = 200;
+    private const int BusyMinimumVisibleMilliseconds = 400;
+
+    private bool _serverBusy;
+    private bool _trackedBusy;
+    private bool ShowBusyChrome { get; set; }
+    private int _busyVisualGeneration;
+    private long _busyChromeShownAt;
+    private string _loadingStatusText = "";
     
     private bool IsEditing => _editingRowKey != null;
     
@@ -1192,6 +1286,7 @@
     private int? _pendingPageSize;
     private int _serverLoadVersion;
     private bool _serverLoadFailed;
+    private bool _contentResolved;
     
     protected override void OnInitialized()
     {
@@ -1249,7 +1344,9 @@
         if (!_isFirstRender && !IsServerMode && itemsChanged)
         {
             LoadClientData();
+            _contentResolved = true;
             _itemsAtLastRefresh = Items;
+            TrackBusyChrome();
             return;
         }
 
@@ -1291,6 +1388,8 @@
             return;
         }
 
+        TrackBusyChrome();
+
         if (firstRender)
         {
             _dotNetRef = DotNetObjectReference.Create(this);
@@ -1317,6 +1416,7 @@
             _itemsAtLastRefresh = Items;
             _itemsProviderAtLastRefresh = ItemsProvider;
             _suppressNextParameterRefresh = true;
+            TrackBusyChrome();
             StateHasChanged();
         }
     }
@@ -1379,6 +1479,98 @@
         else
         {
             LoadClientData();
+            _contentResolved = true;
+            TrackBusyChrome();
+        }
+    }
+
+    private async Task RetryLoadAsync()
+    {
+        _serverLoadFailed = false;
+        if (OnLoadRetry.HasDelegate)
+        {
+            await OnLoadRetry.InvokeAsync();
+            return;
+        }
+
+        await RefreshDataAsync();
+    }
+
+    private void TrackBusyChrome()
+    {
+        var busy = IsAwaitingContent;
+        if (busy == _trackedBusy)
+        {
+            return;
+        }
+
+        _trackedBusy = busy;
+        var generation = ++_busyVisualGeneration;
+        _ = ApplyBusyChromeAsync(busy, generation);
+    }
+
+    private async Task ApplyBusyChromeAsync(bool busy, int generation)
+    {
+        try
+        {
+            if (busy)
+            {
+                if (ShowBusyChrome)
+                {
+                    return;
+                }
+
+                await Task.Delay(BusyShowDelayMilliseconds);
+                if (_disposed || generation != _busyVisualGeneration || !IsAwaitingContent)
+                {
+                    return;
+                }
+
+                ShowBusyChrome = true;
+                _busyChromeShownAt = Environment.TickCount64;
+                SetLoadingStatus(true);
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            SetLoadingStatus(false);
+            if (!ShowBusyChrome)
+            {
+                return;
+            }
+
+            var remaining = BusyMinimumVisibleMilliseconds - (int)(Environment.TickCount64 - _busyChromeShownAt);
+            if (remaining > 0)
+            {
+                await Task.Delay(remaining);
+                if (_disposed || generation != _busyVisualGeneration || IsAwaitingContent)
+                {
+                    return;
+                }
+            }
+
+            ShowBusyChrome = false;
+            SetLoadingStatus(false);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+    }
+
+    private void SetLoadingStatus(bool busy)
+    {
+        var loading = L["Loading"].Value;
+        if (busy)
+        {
+            if (_loadingStatusText != loading)
+            {
+                _loadingStatusText = loading;
+            }
+        }
+        else if (_loadingStatusText == loading || (_loadingStatusText?.Length == loading.Length + 1 && _loadingStatusText.StartsWith(loading, StringComparison.Ordinal)))
+        {
+            _loadingStatusText = "";
         }
     }
     
@@ -1548,6 +1740,9 @@
         // so New User / New Contact could not open. Keep the circuit up and show a
         // load failure instead of "No data available".
         var version = ++_serverLoadVersion;
+        _serverBusy = true;
+        _serverLoadFailed = false;
+        TrackBusyChrome();
         var request = new SbDataRequest
         {
             PageIndex = _pageIndex,
@@ -1568,6 +1763,13 @@
         }
         catch (OperationCanceledException)
         {
+            if (_disposed || version != _serverLoadVersion)
+            {
+                return;
+            }
+
+            _serverBusy = false;
+            TrackBusyChrome();
             return;
         }
         catch (Exception)
@@ -1581,6 +1783,9 @@
             _displayItems = new List<TItem>();
             _virtualizedItems = new();
             TotalCount = 0;
+            _contentResolved = true;
+            _serverBusy = false;
+            TrackBusyChrome();
             return;
         }
 
@@ -1602,6 +1807,9 @@
         }
 
         TotalCount = response.TotalCount ?? _displayItems.Count;
+        _contentResolved = true;
+        _serverBusy = false;
+        TrackBusyChrome();
     }
     
     private string GetItemKey(TItem item)
