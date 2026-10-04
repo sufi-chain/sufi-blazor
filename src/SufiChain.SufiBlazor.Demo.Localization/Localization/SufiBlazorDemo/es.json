@@ -1,0 +1,31 @@
+{
+  "culture": "es",
+  "texts": {
+    "Menu:Demo:SettingsLayout": "Diseño de ajustes",
+    "Demo:SettingsLayoutDescription": "Una barra de secciones de ajustes con una barra de guardado fija, una protección de cambios sin guardar y un enlace directo a la sección.",
+    "Demo:SettingsLayoutBasic": "Secciones, solo lectura y desactivado",
+    "Demo:SettingsEmail": "Correo",
+    "Demo:SettingsEmailTitle": "Ajustes de correo",
+    "Demo:SettingsEmailDescription": "Cambia la dirección y luego guarda o descarta desde la barra.",
+    "Demo:SettingsIdentity": "Identidad",
+    "Demo:SettingsIdentityDescription": "La segunda sección conserva su propio texto sin guardar.",
+    "Demo:SettingsTimeZone": "Zona horaria",
+    "Demo:SettingsReadOnlyBody": "Esta sección es solo de lectura, así que no tiene Guardar.",
+    "Demo:SettingsShortLinks": "Enlaces cortos",
+    "Demo:SettingsDisabledReason": "Este módulo está apagado.",
+    "Demo:SettingsHidden": "Oculto",
+    "Demo:SettingsLongLabel": "Configuración avanzada de avisos del sistema y canales de mensajería de la organización",
+    "Demo:SettingsLayoutPicker": "Más de seis secciones",
+    "Demo:SettingsLayoutSingle": "Una sola sección",
+    "Demo:SettingsLayoutAsync": "Sección que aparece tras una comprobación",
+    "Demo:SettingsAsyncBody": "Esta sección permaneció oculta hasta que terminó la comprobación, y el enlace conservó la dirección.",
+    "Demo:SettingsSingle": "Perfil",
+    "Demo:SettingsPicker1": "Marca",
+    "Demo:SettingsPicker2": "Correo",
+    "Demo:SettingsPicker3": "Identidad",
+    "Demo:SettingsPicker4": "Zona horaria",
+    "Demo:SettingsPicker5": "Archivos",
+    "Demo:SettingsPicker6": "Enlaces cortos",
+    "Demo:SettingsPicker7": "Avisos"
+  }
+}

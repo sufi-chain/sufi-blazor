@@ -1,0 +1,191 @@
+@namespace SufiChain.SufiBlazor.Components.Navigation
+@using SufiChain.SufiBlazor.Components.Actions
+@using SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Components.Feedback
+@using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Overlays
+@implements IAsyncDisposable
+@inject IStringLocalizer<SufiBlazorResource> L
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<div class="@CssClass" style="@RootStyle" @ref="_rootRef" aria-busy="@((Busy || HasPending || _saving) ? "true" : null)">
+    @if (ShowNavigation)
+    {
+        <nav class="sb-settings-rail" aria-label="@AriaLabel">
+            <ul class="sb-settings-rail__list">
+                @foreach (var entry in RailEntries)
+                {
+                    <li class="sb-settings-rail__list-item">
+                        @RailButton(entry.Section, entry.Index, horizontal: false)
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+
+    <div class="sb-settings-pane" @ref="_paneRef">
+        <div class="sb-settings-sticky">
+            @if (ShowNavigation)
+            {
+                <div class="sb-settings-compact">
+                    @if (UseStrip)
+                    {
+                        <nav class="sb-settings-strip-wrap" aria-label="@AriaLabel">
+                            <ul class="sb-settings-strip" @ref="_stripRef">
+                                @foreach (var entry in RailEntries)
+                                {
+                                    <li class="sb-settings-strip__list-item">
+                                        @RailButton(entry.Section, entry.Index, horizontal: true)
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    }
+                    else
+                    {
+                        <div class="sb-settings-picker">
+                            <SbSimpleSelect TValue="string"
+                                            Value="@ActiveId"
+                                            ValueChanged="OnPickerChanged"
+                                            Disabled="@(Busy || _saving)"
+                                            Label="@L["Settings:SectionPicker"]"
+                                            Id="@_pickerId">
+                                @foreach (var section in VisibleSections)
+                                {
+                                    <SbSelectOption TValue="string" Value="@section.Id" Text="@PickerText(section)" Disabled="@section.Disabled">
+                                        <span class="sb-settings-picker__option">
+                                            <SbIcon Name="@section.Icon" Size="SbSize.Sm" Mirror="@MirrorsInRtl(section.Icon)" />
+                                            <span>@PickerText(section)</span>
+                                        </span>
+                                    </SbSelectOption>
+                                }
+                            </SbSimpleSelect>
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (Active is { } active)
+            {
+                <div class="sb-settings-savebar">
+                    <div class="sb-settings-savebar__titles">
+                        <h2 id="@HeadingId" class="sb-settings-savebar__title" tabindex="-1" @ref="_headingRef">@active.HeadingText</h2>
+                        @if (!string.IsNullOrWhiteSpace(active.Description))
+                        {
+                            <p class="sb-settings-savebar__description">@active.Description</p>
+                        }
+                    </div>
+                    @if (active.ReadOnly)
+                    {
+                        <span class="sb-settings-savebar__viewonly">@L["Settings:ViewOnly"]</span>
+                    }
+                    else if (active.ShowsSaveControls || active.BarActions != null)
+                    {
+                        <div class="sb-settings-savebar__actions">
+                            @if (active.EffectiveDirty && active.ShowsSaveControls)
+                            {
+                                <span class="sb-settings-savebar__dirty" role="status">@L["Settings:UnsavedChanges"]</span>
+                            }
+                            @if (active.BarActions != null)
+                            {
+                                <div class="sb-settings-savebar__bar-actions">
+                                    @active.BarActions
+                                </div>
+                            }
+                            @if (active.ShowsSaveControls && active.EffectiveDirty)
+                            {
+                                <SbButton Variant="SbButtonVariant.Outline"
+                                          Disabled="@(Busy || _saving)"
+                                          Class="sb-settings-savebar__discard"
+                                          OnClick="DiscardFromBarAsync">
+                                    @L["Settings:Discard"]
+                                </SbButton>
+                            }
+                            @if (active.ShowsSaveControls)
+                            {
+                                <SbButton Variant="SbButtonVariant.Solid"
+                                          Color="SbColor.Primary"
+                                          Loading="@_saving"
+                                          Disabled="@(!CanPressSave)"
+                                          Class="sb-settings-savebar__save"
+                                          OnClick="SaveFromBarAsync">
+                                    @L["Settings:Save"]
+                                </SbButton>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        @if (_saveFailed && Active != null)
+        {
+            <div class="sb-settings-savebar__error" tabindex="-1" @ref="_errorRef">
+                <SbAlert Severity="SbAlertSeverity.Danger">@L["Settings:SaveFailed"]</SbAlert>
+            </div>
+        }
+
+        @if (Active == null && HasPending)
+        {
+            <div class="sb-settings-pending" role="status">
+                <SbSkeleton Width="40%" Height="1.25rem" />
+                <SbSkeleton Width="100%" Height="2.75rem" />
+                <SbSkeleton Width="100%" Height="8rem" />
+            </div>
+        }
+        else if (Active == null && !HasVisibleSection && !HasPending)
+        {
+            @if (EmptyContent != null)
+            {
+                @EmptyContent
+            }
+            else
+            {
+                <SbEmptyState IconText="" Title="@L["Settings:EmptyTitle"]">
+                    <Icon>
+                        <SbIcon Name="settings" Size="SbSize.Lg" />
+                    </Icon>
+                </SbEmptyState>
+            }
+        }
+
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+    </div>
+
+    @if (_reasonOpenId != null && ReasonText(_reasonOpenId) is { } reasonText)
+    {
+        <div class="sb-settings-reason-popover" role="tooltip" id="@_reasonPopoverId">@reasonText</div>
+    }
+</div>
+
+@if (_guardOpen)
+{
+    <SbDialog Open="true"
+              Title="@L["Settings:GuardTitle"]"
+              ShowCloseButton="false"
+              CloseOnEscape="true"
+              CloseOnBackdropClick="false"
+              OnClose="OnGuardClose">
+        <Footer>
+            <SbButton Variant="SbButtonVariant.Outline" Disabled="@_saving" Class="sb-settings-guard__stay" autofocus="true" OnClick="StayAsync">
+                @L["Settings:Stay"]
+            </SbButton>
+            <SbButton Variant="SbButtonVariant.Outline" Disabled="@_saving" Class="sb-settings-guard__discard" OnClick="DiscardAndLeaveAsync">
+                @L["Settings:Discard"]
+            </SbButton>
+            <SbButton Variant="SbButtonVariant.Solid" Color="SbColor.Primary" Class="sb-settings-guard__save" Loading="@_saving" Disabled="@(!CanPressSave)" OnClick="SaveAndLeaveAsync">
+                @L["Settings:Save"]
+            </SbButton>
+        </Footer>
+    </SbDialog>
+}
+
+@if (_toastVisible)
+{
+    <div class="sb-settings-toast">
+        <SbToast Message="@L["Settings:Saved"]" Severity="SbToastSeverity.Success" OnClose="DismissToast" />
+    </div>
+}
