@@ -803,6 +803,11 @@ window.SufiBlazor = window.SufiBlazor || {};
       }
     },
 
+    setStripFade: function (strip, name, enabled) {
+      if (enabled) strip.setAttribute(name, "true");
+      else strip.removeAttribute(name);
+    },
+
     updateStripFades: function (strip) {
       if (!strip || !strip.classList) return;
       var max = strip.scrollWidth - strip.clientWidth;
@@ -812,8 +817,8 @@ window.SufiBlazor = window.SufiBlazor || {};
         return;
       }
       var scrolled = Math.abs(strip.scrollLeft);
-      strip.toggleAttribute("data-fade-start", scrolled > 1);
-      strip.toggleAttribute("data-fade-end", scrolled < max - 1);
+      sb.settingsLayout.setStripFade(strip, "data-fade-start", scrolled > 1);
+      sb.settingsLayout.setStripFade(strip, "data-fade-end", scrolled < max - 1);
       if (!strip.dataset.fadeBound) {
         strip.dataset.fadeBound = "true";
         strip.addEventListener("scroll", function () {

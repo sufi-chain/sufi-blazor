@@ -210,7 +210,7 @@
   <data name="Map:CurrentLocation" xml:space="preserve"><value>الموقع الحالي</value></data>
   <data name="Map:GeolocationFailed" xml:space="preserve"><value>تعذر الحصول على موقعك.</value></data>
   <data name="Settings:Save" xml:space="preserve"><value>حفظ</value></data>
-  <data name="Settings:Discard" xml:space="preserve"><value>تجاهل</value></data>
+  <data name="Settings:Discard" xml:space="preserve"><value>تجاهل التغييرات</value></data>
   <data name="Settings:Stay" xml:space="preserve"><value>متابعة التعديل</value></data>
   <data name="Settings:UnsavedChanges" xml:space="preserve"><value>تغييرات غير محفوظة</value></data>
   <data name="Settings:ViewOnly" xml:space="preserve"><value>للعرض فقط</value></data>

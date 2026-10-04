@@ -669,3 +669,30 @@ file sealed class PendingSectionsHost : ComponentBase
         builder.CloseComponent();
     }
 }
+
+public class SettingsStripFadeContractTests
+{
+    [Fact]
+    public void Strip_fade_attributes_are_true_and_the_masks_match_presence()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory);
+        while (root != null && !File.Exists(Path.Combine(root.FullName, "src", "SufiChain.SufiBlazor", "wwwroot", "sufiblazor.js")))
+        {
+            root = root.Parent;
+        }
+
+        Assert.NotNull(root);
+        var js = File.ReadAllText(Path.Combine(root!.FullName, "src", "SufiChain.SufiBlazor", "wwwroot", "sufiblazor.js"));
+        var css = File.ReadAllText(Path.Combine(root.FullName, "src", "SufiChain.SufiBlazor", "wwwroot", "sufiblazor.css"));
+
+        Assert.Contains("setAttribute(name, \"true\")", js, StringComparison.Ordinal);
+        Assert.Contains("removeAttribute(name)", js, StringComparison.Ordinal);
+        Assert.DoesNotContain("toggleAttribute(\"data-fade-start\"", js, StringComparison.Ordinal);
+        Assert.DoesNotContain("toggleAttribute(\"data-fade-end\"", js, StringComparison.Ordinal);
+        Assert.Contains("[data-fade-start]:not([data-fade-end])", css, StringComparison.Ordinal);
+        Assert.Contains("[data-fade-end]:not([data-fade-start])", css, StringComparison.Ordinal);
+        Assert.Contains("[data-fade-start][data-fade-end]", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("[data-fade-start=\"true\"]", css, StringComparison.Ordinal);
+        Assert.DoesNotContain("[data-fade-end=\"true\"]", css, StringComparison.Ordinal);
+    }
+}

@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Settings:Save" xml:space="preserve"><value>Guardar</value></data>
-  <data name="Settings:Discard" xml:space="preserve"><value>Descartar</value></data>
+  <data name="Settings:Discard" xml:space="preserve"><value>Descartar cambios</value></data>
   <data name="Settings:Stay" xml:space="preserve"><value>Seguir editando</value></data>
   <data name="Settings:UnsavedChanges" xml:space="preserve"><value>Cambios sin guardar</value></data>
   <data name="Settings:ViewOnly" xml:space="preserve"><value>Solo lectura</value></data>
