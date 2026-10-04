@@ -145,6 +145,7 @@
   <data name="SortAscending" xml:space="preserve"><value>Ascending</value></data>
   <data name="SortDescending" xml:space="preserve"><value>Descending</value></data>
   <data name="NoDataAvailable" xml:space="preserve"><value>No data available</value></data>
+  <data name="DataLoadFailed" xml:space="preserve"><value>The list could not be loaded. Refresh the page and try again.</value></data>
   <data name="SelectRow" xml:space="preserve"><value>Select row {0}</value></data>
   <data name="RemoveFilterFor" xml:space="preserve"><value>Remove filter for {0}</value></data>
   <data name="GenerateFromTitle" xml:space="preserve"><value>Generate from title</value></data>
