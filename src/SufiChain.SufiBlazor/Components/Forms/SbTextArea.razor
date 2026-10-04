@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiBlazor.Components.Forms
+@inject IJSRuntime JsRuntime
 
 <div class="sb-textarea @(Error ? "sb-textarea--error" : "") @(Disabled ? "sb-textarea--disabled" : "") @(ReadOnly ? "sb-textarea--readonly" : "") @Class" style="@Style">
     @if (!string.IsNullOrEmpty(Label))
@@ -11,10 +12,12 @@
             }
         </label>
     }
-    <textarea class="sb-textarea__input"
+    <textarea @ref="_inputRef"
+              class="sb-textarea__input"
               @bind:get="_draft"
               @bind:set="OnInputAsync"
               @bind:event="oninput"
+              @onchange="OnChangeAsync"
               placeholder="@Placeholder"
               disabled="@Disabled"
               readonly="@ReadOnly"
@@ -49,6 +52,7 @@
 </div>
 
 @code {
+    private ElementReference _inputRef;
     private string? _draft;
     private string? _lastParentValue;
     private bool _hasObservedParentValue;
@@ -64,6 +68,21 @@
     /// Text held by the control, including input that has not yet round-tripped to the parent.
     /// </summary>
     public string? CurrentText => _draft;
+
+    /// <summary>
+    /// Text currently shown in the browser, including keystrokes that have not yet updated <see cref="CurrentText"/>.
+    /// </summary>
+    public async Task<string?> GetCommittedValueAsync()
+    {
+        var fromDom = await TryReadDomValueAsync();
+        if (fromDom != null)
+        {
+            await CommitValueAsync(fromDom);
+            return _draft;
+        }
+
+        return _draft ?? Value;
+    }
     
     /// <summary>
     /// Callback when value changes.
@@ -205,10 +224,37 @@
         }
     }
     
-    private async Task OnInputAsync(string? value)
+    private Task OnInputAsync(string? value)
     {
+        return CommitValueAsync(value);
+    }
+
+    private Task OnChangeAsync(ChangeEventArgs args)
+    {
+        return CommitValueAsync(args.Value?.ToString());
+    }
+
+    private async Task CommitValueAsync(string? value)
+    {
+        if (_hasObservedParentValue && string.Equals(value, _draft, StringComparison.Ordinal))
+        {
+            return;
+        }
+
         _draft = value;
         _updatingFromInput = true;
         await ValueChanged.InvokeAsync(value);
+    }
+
+    private async Task<string?> TryReadDomValueAsync()
+    {
+        try
+        {
+            return await JsRuntime.InvokeAsync<string?>("SufiBlazor.readControlValue", _inputRef);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException)
+        {
+            return null;
+        }
     }
 }
