@@ -83,12 +83,25 @@ public class SbSettingsLayoutTests : BunitContext
         Assert.False(string.IsNullOrWhiteSpace(describedBy));
         var reason = cut.Find($"#{describedBy}");
         Assert.Contains("Module is off", reason.TextContent);
+        Assert.Equal("sb-sr-only", reason.ClassName);
+        Assert.Null(disabled.QuerySelector($"#{describedBy}"));
+        Assert.Equal("true", disabled.QuerySelector(".sb-settings-item__reason")?.GetAttribute("aria-hidden"));
         Assert.Contains("Module is off", disabled.TextContent);
+        Assert.Equal("Time zone", disabled.GetAttribute("title"));
+        Assert.Equal("Time zone", disabled.GetAttribute("aria-label"));
 
         disabled.Click();
         Assert.Equal("email", cut.Find(".sb-settings-rail [aria-current='page']").GetAttribute("data-section-id"));
         Assert.Contains("Module is off", cut.Find(".sb-settings-reason-popover").TextContent);
         Assert.Contains("section=email", Services.GetRequiredService<NavigationManager>().Uri);
+
+        cut.Find(".sb-settings-reason-backdrop").Click();
+        Assert.Empty(cut.FindAll(".sb-settings-reason-popover"));
+
+        disabled.Click();
+        Assert.NotEmpty(cut.FindAll(".sb-settings-reason-popover"));
+        disabled.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Empty(cut.FindAll(".sb-settings-reason-popover"));
     }
 
     [Fact]
@@ -312,7 +325,7 @@ public class SbSettingsLayoutTests : BunitContext
         nav.NavigateTo("http://localhost/settings?section=email&keep=1");
         var cut = Render<PendingSectionsHost>();
 
-        Assert.NotEmpty(cut.FindAll(".sb-settings-pending"));
+        Assert.NotEmpty(cut.FindAll(".sb-settings-pending.sb-loading-skeleton"));
         Assert.DoesNotContain("Settings:EmptyTitle", cut.Markup);
         Assert.Empty(cut.FindAll("[aria-current='page']"));
         Assert.Contains("section=email", nav.Uri);
@@ -322,7 +335,7 @@ public class SbSettingsLayoutTests : BunitContext
         cut.Render(parameters => parameters.Add(component => component.BrandingPending, false).Add(component => component.EmailPending, true));
 
         Assert.Empty(cut.FindAll("[aria-current='page']"));
-        Assert.NotEmpty(cut.FindAll(".sb-settings-pending"));
+        Assert.NotEmpty(cut.FindAll(".sb-settings-pending.sb-loading-skeleton"));
         Assert.DoesNotContain("Settings:EmptyTitle", cut.Markup);
         Assert.Contains("section=email", nav.Uri);
         Assert.DoesNotContain("section=branding", nav.Uri);
@@ -620,6 +633,90 @@ public class SbSettingsLayoutTests : BunitContext
         Assert.Equal("true", cut.Find(".sb-settings-rail [data-section-id='email']").GetAttribute("data-keyboard-focus"));
     }
 
+    [Fact]
+    public void PendingChoice_UserSelectionSurvivesALaterDeepLinkResolution()
+    {
+        var nav = Services.GetRequiredService<NavigationManager>();
+        nav.NavigateTo("http://localhost/settings?section=email&keep=1");
+        var cut = Render<PendingChoiceHost>();
+
+        Assert.Empty(cut.FindAll("[aria-current='page']"));
+        Assert.Contains("section=email", nav.Uri);
+
+        cut.Find(".sb-settings-rail [data-section-id='branding']").Click();
+        Assert.Equal("branding", cut.Find("[aria-current='page']").GetAttribute("data-section-id"));
+
+        cut.Render(parameters => parameters.Add(component => component.EmailPending, false));
+
+        Assert.Equal("branding", cut.Find("[aria-current='page']").GetAttribute("data-section-id"));
+        Assert.Contains("Branding body", cut.Markup);
+        Assert.Contains("section=branding", nav.Uri);
+        Assert.Contains("keep=1", nav.Uri);
+        Assert.DoesNotContain("section=email", nav.Uri);
+    }
+
+    [Fact]
+    public void Stay_NotifiesTheBoundActiveSection()
+    {
+        var cut = Render<BoundSectionHost>();
+
+        cut.Find(".sb-settings-rail [data-section-id='identity']").Click();
+        Assert.NotNull(cut.Find(".sb-settings-guard__stay"));
+        Assert.Equal("email", cut.Instance.Active);
+
+        cut.Find(".sb-settings-guard__stay").Click();
+        Assert.Equal("email", cut.Instance.Active);
+        Assert.Equal("email", cut.Find("[aria-current='page']").GetAttribute("data-section-id"));
+        Assert.Empty(cut.FindAll(".sb-settings-guard__stay"));
+    }
+
+    [Fact]
+    public void SamePathUnknownOrDisabledSection_RewritesBackToTheActiveId()
+    {
+        var nav = (BunitNavigationManager)Services.GetRequiredService<NavigationManager>();
+        nav.NavigateTo("http://localhost/settings?section=email&keep=1");
+        var cut = RenderLayout(null, builder =>
+        {
+            Section(builder, 0, "email", "Email", "mail");
+            Section(builder, 20, "identity", "Identity", "user-cog", disabled: true, reason: "Feature is off");
+        });
+
+        nav.NavigateTo("http://localhost/settings?section=missing&keep=1");
+        Assert.Equal("email", cut.Find("[aria-current='page']").GetAttribute("data-section-id"));
+        Assert.Contains("section=email", nav.Uri);
+        Assert.Contains("keep=1", nav.Uri);
+        Assert.DoesNotContain("section=missing", nav.Uri);
+        Assert.Contains(nav.History, entry =>
+            entry.Uri.Contains("section=email", StringComparison.Ordinal)
+            && entry.Options.ReplaceHistoryEntry);
+
+        nav.NavigateTo("http://localhost/settings?section=identity&keep=1");
+        Assert.Equal("email", cut.Find("[aria-current='page']").GetAttribute("data-section-id"));
+        Assert.Contains("section=email", nav.Uri);
+        Assert.DoesNotContain("section=identity", nav.Uri);
+        Assert.Contains("Feature is off", cut.Find(".sb-settings-reason-popover").TextContent);
+
+        nav.NavigateTo("http://localhost/settings?section=&keep=1");
+        Assert.Contains("section=email", nav.Uri);
+        Assert.Contains("keep=1", nav.Uri);
+    }
+
+    [Fact]
+    public void RailLabel_ExposesTheFullText()
+    {
+        const string label = "تنظیمات منطقه زمانی برای همه کاربران";
+        var cut = RenderLayout(null, builder =>
+        {
+            Section(builder, 0, "timezone", label, "clock");
+            Section(builder, 20, "email", "Email", "mail");
+        });
+
+        var item = cut.Find(".sb-settings-rail [data-section-id='timezone']");
+        Assert.Equal(label, item.GetAttribute("title"));
+        Assert.Equal(label, item.GetAttribute("aria-label"));
+        Assert.Equal(label, item.QuerySelector(".sb-settings-item__label")?.TextContent);
+    }
+
     private IRenderedComponent<SbSettingsLayout> RenderLayout(
         string? startUrl,
         Action<Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder> sections,
@@ -698,6 +795,70 @@ public class SbSettingsLayoutTests : BunitContext
         && value == armed;
 }
 
+file sealed class PendingChoiceHost : ComponentBase
+{
+    [Parameter]
+    public bool EmailPending { get; set; } = true;
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<SbSettingsLayout>(0);
+        builder.AddAttribute(1, "AriaLabel", "Settings");
+        builder.AddAttribute(2, "ChildContent", (RenderFragment)(content =>
+        {
+            content.OpenComponent<SbSettingsSection>(0);
+            content.AddAttribute(1, "Id", "branding");
+            content.AddAttribute(2, "Label", "Branding");
+            content.AddAttribute(3, "Icon", "palette");
+            content.AddAttribute(4, "Pending", false);
+            content.AddAttribute(5, "ChildContent", (RenderFragment)(body => body.AddMarkupContent(0, "<p>Branding body</p>")));
+            content.CloseComponent();
+
+            content.OpenComponent<SbSettingsSection>(20);
+            content.AddAttribute(21, "Id", "email");
+            content.AddAttribute(22, "Label", "Email");
+            content.AddAttribute(23, "Icon", "mail");
+            content.AddAttribute(24, "Pending", EmailPending);
+            content.AddAttribute(25, "ChildContent", (RenderFragment)(body => body.AddMarkupContent(0, "<p>Email body</p>")));
+            content.CloseComponent();
+        }));
+        builder.CloseComponent();
+    }
+}
+
+file sealed class BoundSectionHost : ComponentBase
+{
+    public string? Active { get; set; } = "email";
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<SbSettingsLayout>(0);
+        builder.AddAttribute(1, "AriaLabel", "Settings");
+        builder.AddAttribute(2, "ActiveSection", Active);
+        builder.AddAttribute(3, "ActiveSectionChanged", EventCallback.Factory.Create<string>(this, value => Active = value));
+        builder.AddAttribute(4, "ChildContent", (RenderFragment)(content =>
+        {
+            content.OpenComponent<SbSettingsSection>(0);
+            content.AddAttribute(1, "Id", "email");
+            content.AddAttribute(2, "Label", "Email");
+            content.AddAttribute(3, "Icon", "mail");
+            content.AddAttribute(4, "IsDirty", true);
+            content.AddAttribute(5, "OnSave", (Func<Task<bool>>)(() => Task.FromResult(true)));
+            content.AddAttribute(6, "OnDiscard", (Func<Task>)(() => Task.CompletedTask));
+            content.AddAttribute(7, "ChildContent", (RenderFragment)(body => body.AddMarkupContent(0, "<p>Email body</p>")));
+            content.CloseComponent();
+
+            content.OpenComponent<SbSettingsSection>(20);
+            content.AddAttribute(21, "Id", "identity");
+            content.AddAttribute(22, "Label", "Identity");
+            content.AddAttribute(23, "Icon", "user-cog");
+            content.AddAttribute(24, "ChildContent", (RenderFragment)(body => body.AddMarkupContent(0, "<p>Identity body</p>")));
+            content.CloseComponent();
+        }));
+        builder.CloseComponent();
+    }
+}
+
 file sealed class PendingSectionsHost : ComponentBase
 {
     [Parameter]
@@ -756,6 +917,12 @@ public class SettingsStripFadeContractTests
         Assert.Contains("[data-fade-start][data-fade-end]", css, StringComparison.Ordinal);
         Assert.DoesNotContain("[data-fade-start=\"true\"]", css, StringComparison.Ordinal);
         Assert.DoesNotContain("[data-fade-end=\"true\"]", css, StringComparison.Ordinal);
+        Assert.Contains(".sb-settings-rail__item .sb-settings-item__label", css, StringComparison.Ordinal);
+        Assert.Contains("-webkit-line-clamp: 2", css, StringComparison.Ordinal);
+        Assert.Contains(".sb-settings-item--disabled > .sb-settings-item__label", css, StringComparison.Ordinal);
+        Assert.Contains("color: var(--sb-color-text-muted)", css, StringComparison.Ordinal);
+        Assert.Contains(".sb-settings-reason-backdrop", css, StringComparison.Ordinal);
+        Assert.Contains("@media (min-width: 769px)", css, StringComparison.Ordinal);
     }
 }
 
