@@ -7,6 +7,20 @@ window.SufiBlazor = window.SufiBlazor || {};
   "use strict";
 
   /**
+   * Read the live value of an input or textarea.
+   * Blazor's oninput callback can still hold the previous draft when Save runs.
+   * @param {HTMLInputElement|HTMLTextAreaElement|null} element
+   * @returns {string|null}
+   */
+  sb.readControlValue = function (element) {
+    if (!element) {
+      return null;
+    }
+
+    return element.value == null ? "" : String(element.value);
+  };
+
+  /**
    * Focus management utilities
    */
   sb.focus = {
