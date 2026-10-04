@@ -259,6 +259,15 @@
                         rowIndex++;
                     }
                 }
+                else if (_serverLoadFailed)
+                {
+                    <tr class="sb-datagrid__row sb-datagrid__row--empty sb-datagrid__row--load-failed">
+                        <td class="sb-datagrid__cell sb-datagrid__cell--empty"
+                            colspan="@GetTotalColumnCount()">
+                            <span role="alert">@L["DataLoadFailed"]</span>
+                        </td>
+                    </tr>
+                }
                 else
                 {
                     <tr class="sb-datagrid__row sb-datagrid__row--empty">
@@ -315,6 +324,12 @@
                         @RenderCard(item, cardIndex)
                         cardIndex++;
                     }
+                }
+                else if (_serverLoadFailed)
+                {
+                    <div class="sb-datagrid__cards-empty" role="alert">
+                        <span>@L["DataLoadFailed"]</span>
+                    </div>
                 }
                 else
                 {
@@ -1175,6 +1190,8 @@
     private int _pageSize = 10;
     private int? _pendingPageIndex;
     private int? _pendingPageSize;
+    private int _serverLoadVersion;
+    private bool _serverLoadFailed;
     
     protected override void OnInitialized()
     {
@@ -1525,7 +1542,12 @@
     private async Task LoadServerDataAsync()
     {
         if (_disposed || ItemsProvider == null) return;
-        
+
+        // Users, CRM, and My Tickets load from OnAfterRenderAsync. An exception here
+        // used to leave the prerendered empty grid and disconnect the Blazor circuit,
+        // so New User / New Contact could not open. Keep the circuit up and show a
+        // load failure instead of "No data available".
+        var version = ++_serverLoadVersion;
         var request = new SbDataRequest
         {
             PageIndex = _pageIndex,
@@ -1548,12 +1570,26 @@
         {
             return;
         }
+        catch (Exception)
+        {
+            if (_disposed || version != _serverLoadVersion)
+            {
+                return;
+            }
 
-        if (_disposed)
+            _serverLoadFailed = true;
+            _displayItems = new List<TItem>();
+            _virtualizedItems = new();
+            TotalCount = 0;
+            return;
+        }
+
+        if (_disposed || version != _serverLoadVersion)
         {
             return;
         }
-        
+
+        _serverLoadFailed = false;
         _displayItems = response.Items.ToList();
         
         if (VirtualizationEnabled)

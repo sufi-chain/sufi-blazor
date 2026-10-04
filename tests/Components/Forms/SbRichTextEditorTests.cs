@@ -289,6 +289,16 @@ public class SbRichTextEditorTests : BunitContext
     }
 
     [Fact]
+    public async Task DisposeAsync_DoesNotThrowWhenTheEditorIsReleased()
+    {
+        var cut = RenderEditor();
+
+        await cut.InvokeAsync(() => cut.Instance.DisposeAsync().AsTask());
+
+        Assert.NotNull(cut.Find(".sb-editor"));
+    }
+
+    [Fact]
     public void UsesCustomCharacterCountFormat()
     {
         // Arrange & Act
