@@ -50,6 +50,33 @@ public class SbSettingsLayoutTests : BunitContext
     }
 
     [Fact]
+    public async Task ConfirmLeave_OpensTheGuardWhenDirtyAndStayingKeepsTheEdits()
+    {
+        var cut = RenderLayout(null, builder =>
+        {
+            Section(builder, 0, "general", "General", "settings", dirty: true, onSave: () => Task.FromResult(true));
+        });
+
+        var pending = cut.Instance.ConfirmLeaveAsync();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".sb-settings-guard__stay")));
+        cut.Find(".sb-settings-guard__stay").Click();
+        Assert.False(await pending);
+        Assert.Empty(cut.FindAll(".sb-dialog"));
+    }
+
+    [Fact]
+    public async Task ConfirmLeave_IsImmediateWhenTheSectionIsClean()
+    {
+        var cut = RenderLayout(null, builder =>
+        {
+            Section(builder, 0, "general", "General", "settings");
+        });
+
+        Assert.True(await cut.Instance.ConfirmLeaveAsync());
+        Assert.Empty(cut.FindAll(".sb-settings-guard__stay"));
+    }
+
+    [Fact]
     public void DeepLink_SelectsRequestedSectionAndKeepsOtherKeys()
     {
         var cut = RenderLayout("http://localhost/settings?section=email&keep=1", builder =>

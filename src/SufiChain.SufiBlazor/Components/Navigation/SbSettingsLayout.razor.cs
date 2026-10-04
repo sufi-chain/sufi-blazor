@@ -30,6 +30,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private bool _saveFailed;
     private bool _toastVisible;
     private bool _guardOpen;
+    private TaskCompletionSource<bool>? _externalLeave;
     private bool _suppressLeaveGuard;
     private bool _beforeUnloadArmed;
     private bool _saving;
@@ -464,6 +465,37 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         _saveFailed = false;
     }
 
+    /// <summary>
+    /// Opens the leave guard when the active section has unsaved edits.
+    /// Returns true when the section is clean, or after the user saves or discards.
+    /// Returns false when the user stays.
+    /// </summary>
+    public Task<bool> ConfirmLeaveAsync()
+    {
+        if (!NeedsLeaveGuard())
+        {
+            return Task.FromResult(true);
+        }
+
+        _externalLeave?.TrySetResult(false);
+        _externalLeave = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        _pendingSectionId = null;
+        _pendingLocation = null;
+        _pendingHistoryState = null;
+        _guardTriggerId = _activeId;
+        _guardFromStrip = false;
+        _guardOpen = true;
+        _ = InvokeAsync(StateHasChanged);
+        return _externalLeave.Task;
+    }
+
+    private void FinishExternalLeave(bool proceed)
+    {
+        var leave = _externalLeave;
+        _externalLeave = null;
+        leave?.TrySetResult(proceed);
+    }
+
     private Task StayAsync()
     {
         _guardOpen = false;
@@ -476,6 +508,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
             _focusStrip = _guardFromStrip;
         }
 
+        FinishExternalLeave(false);
         return Task.CompletedTask;
     }
 
@@ -488,7 +521,12 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 
         await DiscardFromBarAsync();
         _guardOpen = false;
-        await CompletePendingAsync();
+        var external = _externalLeave != null;
+        FinishExternalLeave(true);
+        if (!external)
+        {
+            await CompletePendingAsync();
+        }
     }
 
     private async Task SaveAndLeaveAsync()
@@ -505,11 +543,17 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
             _pendingSectionId = null;
             _pendingLocation = null;
             _pendingHistoryState = null;
+            FinishExternalLeave(false);
             return;
         }
 
         _guardOpen = false;
-        await CompletePendingAsync();
+        var external = _externalLeave != null;
+        FinishExternalLeave(true);
+        if (!external)
+        {
+            await CompletePendingAsync();
+        }
     }
 
     private Task OnGuardClose(SbDialogCloseReason reason)
@@ -1075,6 +1119,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        FinishExternalLeave(false);
         _locationRegistration?.Dispose();
         _toastVersion++;
         _disposeCts.Cancel();
