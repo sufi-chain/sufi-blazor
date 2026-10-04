@@ -256,4 +256,54 @@ public class SbConversationComposerTests : BunitContext
         Assert.Contains("sb-conversation-message__bubble--thinking-detail", cut.Markup);
         Assert.Contains("searching_kb", cut.Markup);
     }
+
+    [Fact]
+    public void Enter_To_Send_Binds_Once_When_The_First_Render_Succeeds()
+    {
+        var cut = Render<SbConversationComposer>(parameters => parameters
+            .Add(p => p.Value, "Hello")
+            .Add(p => p.CanSend, true));
+
+        Assert.Equal(1, BindCalls());
+
+        cut.Render(parameters => parameters
+            .Add(p => p.Value, "Hello")
+            .Add(p => p.Placeholder, "Write a message"));
+
+        Assert.Equal(1, BindCalls());
+    }
+
+    private int BindCalls() =>
+        JSInterop.Invocations.Count(invocation =>
+            invocation.Identifier == "SufiBlazor.conversationComposer.bindEnterToSend");
+}
+
+public class SbConversationComposerEnterRetryTests : BunitContext
+{
+    public SbConversationComposerEnterRetryTests()
+    {
+        JSInterop.SetupVoid("SufiBlazor.conversationComposer.setValue", _ => true).SetVoidResult();
+        JSInterop.SetupVoid("SufiBlazor.conversationComposer.bindEnterToSend", _ => true)
+            .SetException(new InvalidOperationException("Static prerender"));
+    }
+
+    [Fact]
+    public void Enter_To_Send_Retries_When_The_First_Render_Cannot_Bind()
+    {
+        var cut = Render<SbConversationComposer>(parameters => parameters
+            .Add(p => p.Value, "Hello")
+            .Add(p => p.CanSend, true));
+
+        Assert.Equal(1, BindCalls());
+
+        cut.Render(parameters => parameters
+            .Add(p => p.Value, "Hello")
+            .Add(p => p.Placeholder, "Write a message"));
+
+        Assert.Equal(2, BindCalls());
+    }
+
+    private int BindCalls() =>
+        JSInterop.Invocations.Count(invocation =>
+            invocation.Identifier == "SufiBlazor.conversationComposer.bindEnterToSend");
 }

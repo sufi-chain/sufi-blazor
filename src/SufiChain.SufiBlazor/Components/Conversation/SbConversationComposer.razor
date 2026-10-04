@@ -93,6 +93,7 @@
    private string _lastParentValue = string.Empty;
    private bool _updatingFromInput;
    private bool _enterBound;
+   private bool _enterBindStarted;
    private bool _submitting;
    private DotNetObjectReference<SbConversationComposer>? _dotNetRef;
 
@@ -233,14 +234,18 @@
 
    protected override async Task OnAfterRenderAsync(bool firstRender)
    {
-       if (!firstRender || _enterBound)
+       if (_enterBound || _enterBindStarted)
        {
            return;
        }
 
+       // Claim the bind before the await. Blazor can run OnAfterRenderAsync again
+       // while the first JS call is still in flight, and that second call would
+       // attach a duplicate Enter handler.
+       _enterBindStarted = true;
        try
        {
-           _dotNetRef = DotNetObjectReference.Create(this);
+           _dotNetRef ??= DotNetObjectReference.Create(this);
            await JsRuntime.InvokeVoidAsync(
                "SufiBlazor.conversationComposer.bindEnterToSend",
                _textAreaRef,
@@ -250,10 +255,18 @@
        }
        catch (JSDisconnectedException)
        {
+           // The circuit is gone. A later interactive render can bind again.
+           _enterBindStarted = false;
+       }
+       catch (JSException)
+       {
+           // The helper script is not ready yet. Retry on the next render.
+           _enterBindStarted = false;
        }
        catch (InvalidOperationException)
        {
-           // Static prerender — retry on the next interactive render.
+           // Static prerender. Retry on the next interactive render.
+           _enterBindStarted = false;
        }
    }
 
