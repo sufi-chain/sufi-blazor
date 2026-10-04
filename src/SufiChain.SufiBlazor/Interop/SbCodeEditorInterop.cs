@@ -1,7 +1,17 @@
+using System.Text;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace SufiChain.SufiBlazor.Interop;
+
+/// <summary>
+/// One Blazor circuit message stays under the 32 KB SignalR receive default.
+/// Chunking keeps a large document working without raising the circuit hub limit.
+/// </summary>
+public static class SbEditorTextTransfer
+{
+    public const int SingleMessageChars = 8000;
+}
 
 /// <summary>
 /// JavaScript interop for the CodeMirror 6 code editor.
@@ -47,19 +57,56 @@ public sealed class SbCodeEditorInterop : IAsyncDisposable
     public async Task<string> GetValueAsync(string editorId)
     {
         var module = await EnsureModuleAsync();
-        return await module.InvokeAsync<string>("getValue", editorId);
+        var length = await module.InvokeAsync<int>("getValueLength", editorId);
+        if (length <= SbEditorTextTransfer.SingleMessageChars)
+        {
+            return await module.InvokeAsync<string>("getValue", editorId);
+        }
+
+        var builder = new StringBuilder(length);
+        for (var offset = 0; offset < length; offset += SbEditorTextTransfer.SingleMessageChars)
+        {
+            var take = Math.Min(SbEditorTextTransfer.SingleMessageChars, length - offset);
+            builder.Append(await module.InvokeAsync<string>("readValueChunk", editorId, offset, take));
+        }
+
+        return builder.ToString();
     }
 
     public async Task SetValueAsync(string editorId, string value)
     {
         var module = await EnsureModuleAsync();
-        await module.InvokeVoidAsync("setValue", editorId, value);
+        var text = value ?? string.Empty;
+        if (text.Length <= SbEditorTextTransfer.SingleMessageChars)
+        {
+            await module.InvokeVoidAsync("setValue", editorId, text);
+            return;
+        }
+
+        var reset = true;
+        for (var offset = 0; offset < text.Length; offset += SbEditorTextTransfer.SingleMessageChars)
+        {
+            var take = Math.Min(SbEditorTextTransfer.SingleMessageChars, text.Length - offset);
+            await module.InvokeVoidAsync("setValueChunk", editorId, text.Substring(offset, take), reset);
+            reset = false;
+        }
     }
 
     public async Task InsertTextAsync(string editorId, string text)
     {
         var module = await EnsureModuleAsync();
-        await module.InvokeVoidAsync("insertText", editorId, text);
+        var value = text ?? string.Empty;
+        if (value.Length <= SbEditorTextTransfer.SingleMessageChars)
+        {
+            await module.InvokeVoidAsync("insertText", editorId, value);
+            return;
+        }
+
+        for (var offset = 0; offset < value.Length; offset += SbEditorTextTransfer.SingleMessageChars)
+        {
+            var take = Math.Min(SbEditorTextTransfer.SingleMessageChars, value.Length - offset);
+            await module.InvokeVoidAsync("insertText", editorId, value.Substring(offset, take));
+        }
     }
 
     public async Task<string> GetSelectionAsync(string editorId)

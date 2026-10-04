@@ -26,7 +26,41 @@ interface InitOptions {
 }
 
 const editors = new Map<string, EditorView>();
+const suppressEditorNotify = new Set<string>();
+const editorNotifyTimers = new Map<string, ReturnType<typeof setTimeout>>();
+/** Stay under the Blazor circuit's default 32 KB receive limit. */
+const editorChunkChars = 8000;
 let nextId = 1;
+
+function notifyEditorContent(editorId: string, dotNetRef: DotNetRef, view: EditorView): void {
+  if (suppressEditorNotify.has(editorId)) {
+    return;
+  }
+
+  const doc = view.state.doc;
+  if (doc.length <= editorChunkChars) {
+    const pending = editorNotifyTimers.get(editorId);
+    if (pending) {
+      clearTimeout(pending);
+      editorNotifyTimers.delete(editorId);
+    }
+    void dotNetRef.invokeMethodAsync("OnEditorContentChanged", doc.toString());
+    return;
+  }
+
+  const existing = editorNotifyTimers.get(editorId);
+  if (existing) {
+    clearTimeout(existing);
+  }
+  editorNotifyTimers.set(editorId, setTimeout(() => {
+    editorNotifyTimers.delete(editorId);
+    const current = editors.get(editorId);
+    if (!current) {
+      return;
+    }
+    void dotNetRef.invokeMethodAsync("OnLargeEditorContentChanged", current.state.doc.length);
+  }, 250));
+}
 
 function languageExtension(language?: string) {
   switch ((language ?? "plaintext").toLowerCase()) {
@@ -77,7 +111,7 @@ export function initEditor(element: HTMLElement, dotNetRef: DotNetRef, options: 
     languageExtension(options.language),
     EditorView.updateListener.of((update) => {
       if (update.docChanged) {
-        void dotNetRef.invokeMethodAsync("OnEditorContentChanged", update.state.doc.toString());
+        notifyEditorContent(editorId, dotNetRef, update.view);
       }
     }),
     EditorView.editable.of(!(options.readOnly || options.disabled)),
@@ -120,14 +154,55 @@ export function getValue(editorId: string): string {
   return editors.get(editorId)?.state.doc.toString() ?? "";
 }
 
+export function getValueLength(editorId: string): number {
+  return editors.get(editorId)?.state.doc.length ?? 0;
+}
+
+export function readValueChunk(editorId: string, offset: number, length: number): string {
+  const doc = editors.get(editorId)?.state.doc;
+  if (!doc) {
+    return "";
+  }
+  const start = Math.max(0, offset);
+  const end = Math.min(doc.length, start + Math.max(0, length));
+  return doc.sliceString(start, end);
+}
+
 export function setValue(editorId: string, value: string): void {
   const view = editors.get(editorId);
   if (!view) {
     return;
   }
-  view.dispatch({
-    changes: { from: 0, to: view.state.doc.length, insert: value ?? "" },
-  });
+  suppressEditorNotify.add(editorId);
+  try {
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: value ?? "" },
+    });
+  } finally {
+    suppressEditorNotify.delete(editorId);
+  }
+}
+
+export function setValueChunk(editorId: string, chunk: string, reset: boolean): void {
+  const view = editors.get(editorId);
+  if (!view) {
+    return;
+  }
+  suppressEditorNotify.add(editorId);
+  try {
+    if (reset) {
+      view.dispatch({
+        changes: { from: 0, to: view.state.doc.length, insert: chunk ?? "" },
+      });
+      return;
+    }
+    const end = view.state.doc.length;
+    view.dispatch({
+      changes: { from: end, to: end, insert: chunk ?? "" },
+    });
+  } finally {
+    suppressEditorNotify.delete(editorId);
+  }
 }
 
 export function insertText(editorId: string, text: string): void {

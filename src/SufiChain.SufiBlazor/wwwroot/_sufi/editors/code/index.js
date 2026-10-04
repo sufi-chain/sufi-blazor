@@ -1287,6 +1287,25 @@ function _t(i) {
       return [];
   }
 }
+const editorChunkChars = 8000;
+const suppressEditorNotify = /* @__PURE__ */ new Set();
+const editorNotifyTimers = /* @__PURE__ */ new Map();
+function notifyEditorContent(i, e, t) {
+  if (suppressEditorNotify.has(i) || !t)
+    return;
+  const s = t.state.doc;
+  if (s.length <= editorChunkChars) {
+    const n = editorNotifyTimers.get(i);
+    n && clearTimeout(n), editorNotifyTimers.delete(i), e.invokeMethodAsync("OnEditorContentChanged", s.toString());
+    return;
+  }
+  const r = editorNotifyTimers.get(i);
+  r && clearTimeout(r), editorNotifyTimers.set(i, setTimeout(() => {
+    editorNotifyTimers.delete(i);
+    const n = L.get(i);
+    n && e.invokeMethodAsync("OnLargeEditorContentChanged", n.state.doc.length);
+  }, 250));
+}
 function Vt(i, e, t = {}) {
   const s = `sb-code-${Nt++}`, n = [
     je(),
@@ -1306,7 +1325,7 @@ function Vt(i, e, t = {}) {
     ]),
     _t(t.language),
     y.updateListener.of((l) => {
-      l.docChanged && e.invokeMethodAsync("OnEditorContentChanged", l.state.doc.toString());
+      l.docChanged && notifyEditorContent(s, e, l.view);
     }),
     y.editable.of(!(t.readOnly || t.disabled)),
     Y.readOnly.of(!!t.readOnly)
@@ -1327,11 +1346,46 @@ function jt(i) {
 function zt(i) {
   return L.get(i)?.state.doc.toString() ?? "";
 }
+function getValueLength(i) {
+  return L.get(i)?.state.doc.length ?? 0;
+}
+function readValueChunk(i, e, t) {
+  const s = L.get(i)?.state.doc;
+  if (!s)
+    return "";
+  const n = Math.max(0, e), r = Math.min(s.length, n + Math.max(0, t));
+  return s.sliceString(n, r);
+}
 function Ht(i, e) {
   const t = L.get(i);
-  t && t.dispatch({
-    changes: { from: 0, to: t.state.doc.length, insert: e ?? "" }
-  });
+  if (!t)
+    return;
+  suppressEditorNotify.add(i);
+  try {
+    t.dispatch({
+      changes: { from: 0, to: t.state.doc.length, insert: e ?? "" }
+    });
+  } finally {
+    suppressEditorNotify.delete(i);
+  }
+}
+function setValueChunk(i, e, t) {
+  const s = L.get(i);
+  if (!s)
+    return;
+  suppressEditorNotify.add(i);
+  try {
+    if (t) {
+      s.dispatch({
+        changes: { from: 0, to: s.state.doc.length, insert: e ?? "" }
+      });
+      return;
+    }
+    const n = s.state.doc.length;
+    s.dispatch({ changes: { from: n, to: n, insert: e ?? "" } });
+  } finally {
+    suppressEditorNotify.delete(i);
+  }
 }
 function Qt(i, e) {
   const t = L.get(i);
@@ -1377,8 +1431,11 @@ export {
   Ut as formatJson,
   Jt as getSelection,
   zt as getValue,
+  getValueLength,
   Vt as initEditor,
   Qt as insertText,
+  readValueChunk,
   Ht as setValue,
+  setValueChunk,
   Yt as validateJson
 };
