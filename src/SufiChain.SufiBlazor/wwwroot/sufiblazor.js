@@ -789,24 +789,51 @@ window.SufiBlazor = window.SufiBlazor || {};
       sb.settingsLayout.unloadFlags[id] = !!enabled;
     },
 
-    focusSelector: function (selector) {
-      var element = document.querySelector(selector);
+    focusSelector: function (root, selector) {
+      var scope = root && root.querySelector ? root : document;
+      var element = scope.querySelector(selector);
       if (element && element.focus) element.focus();
     },
 
-    scrollIntoView: function (selector) {
-      var element = document.querySelector(selector);
+    scrollIntoView: function (root, selector) {
+      var scope = root && root.querySelector ? root : document;
+      var element = scope.querySelector(selector);
       if (element && element.scrollIntoView) {
         element.scrollIntoView({ inline: "nearest", block: "nearest" });
       }
     },
 
+    updateStripFades: function (strip) {
+      if (!strip || !strip.classList) return;
+      var max = strip.scrollWidth - strip.clientWidth;
+      if (max <= 1) {
+        strip.removeAttribute("data-fade-start");
+        strip.removeAttribute("data-fade-end");
+        return;
+      }
+      var scrolled = Math.abs(strip.scrollLeft);
+      strip.toggleAttribute("data-fade-start", scrolled > 1);
+      strip.toggleAttribute("data-fade-end", scrolled < max - 1);
+      if (!strip.dataset.fadeBound) {
+        strip.dataset.fadeBound = "true";
+        strip.addEventListener("scroll", function () {
+          sb.settingsLayout.updateStripFades(strip);
+        });
+      }
+    },
+
     focusFirstInvalid: function (root) {
-      var scope = root || document;
-      var field = scope.querySelector("[aria-invalid='true'], .sb-field--invalid input, .sb-field--invalid textarea, .sb-field--invalid select");
+      var scope = root && root.querySelector ? root : document;
+      var panel = scope.querySelector(".sb-settings-section--active") || scope;
+      var field = panel.querySelector("[aria-invalid='true'], .sb-field--invalid input, .sb-field--invalid textarea, .sb-field--invalid select");
       if (field && field.focus) {
         field.focus();
         return true;
+      }
+      var alert = scope.querySelector(".sb-settings-savebar__error [role='alert']");
+      if (alert && alert.focus) {
+        if (!alert.hasAttribute("tabindex")) alert.setAttribute("tabindex", "-1");
+        alert.focus();
       }
       return false;
     },

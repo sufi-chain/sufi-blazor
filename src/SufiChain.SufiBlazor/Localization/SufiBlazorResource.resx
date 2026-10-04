@@ -210,12 +210,12 @@
   <data name="Map:CurrentLocation" xml:space="preserve"><value>Current location</value></data>
   <data name="Map:GeolocationFailed" xml:space="preserve"><value>Could not get your location.</value></data>
   <data name="Settings:Save" xml:space="preserve"><value>Save</value></data>
-  <data name="Settings:Discard" xml:space="preserve"><value>Discard</value></data>
-  <data name="Settings:Stay" xml:space="preserve"><value>Stay</value></data>
+  <data name="Settings:Discard" xml:space="preserve"><value>Discard changes</value></data>
+  <data name="Settings:Stay" xml:space="preserve"><value>Keep editing</value></data>
   <data name="Settings:UnsavedChanges" xml:space="preserve"><value>Unsaved changes</value></data>
   <data name="Settings:ViewOnly" xml:space="preserve"><value>View only</value></data>
   <data name="Settings:GuardTitle" xml:space="preserve"><value>Unsaved changes</value></data>
-  <data name="Settings:GuardBody" xml:space="preserve"><value>Save your changes before leaving this section?</value></data>
+  <data name="Settings:GuardBody" xml:space="preserve"><value>Save your changes before you leave?</value></data>
   <data name="Settings:Saved" xml:space="preserve"><value>Settings saved</value></data>
   <data name="Settings:SaveFailed" xml:space="preserve"><value>Could not save these settings.</value></data>
   <data name="Settings:EmptyTitle" xml:space="preserve"><value>No settings available</value></data>

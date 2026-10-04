@@ -211,11 +211,11 @@
   <data name="Map:GeolocationFailed" xml:space="preserve"><value>تعذر الحصول على موقعك.</value></data>
   <data name="Settings:Save" xml:space="preserve"><value>حفظ</value></data>
   <data name="Settings:Discard" xml:space="preserve"><value>تجاهل</value></data>
-  <data name="Settings:Stay" xml:space="preserve"><value>البقاء</value></data>
+  <data name="Settings:Stay" xml:space="preserve"><value>متابعة التعديل</value></data>
   <data name="Settings:UnsavedChanges" xml:space="preserve"><value>تغييرات غير محفوظة</value></data>
   <data name="Settings:ViewOnly" xml:space="preserve"><value>للعرض فقط</value></data>
   <data name="Settings:GuardTitle" xml:space="preserve"><value>تغييرات غير محفوظة</value></data>
-  <data name="Settings:GuardBody" xml:space="preserve"><value>هل تريد حفظ التغييرات قبل مغادرة هذا القسم؟</value></data>
+  <data name="Settings:GuardBody" xml:space="preserve"><value>هل تريد حفظ التغييرات قبل الخروج؟</value></data>
   <data name="Settings:Saved" xml:space="preserve"><value>تم حفظ الإعدادات</value></data>
   <data name="Settings:SaveFailed" xml:space="preserve"><value>تعذر حفظ الإعدادات.</value></data>
   <data name="Settings:EmptyTitle" xml:space="preserve"><value>لا تتوفر إعدادات</value></data>

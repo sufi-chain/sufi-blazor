@@ -9,6 +9,8 @@ public partial class SbSettingsSection : ComponentBase, IDisposable
 {
     private SbSettingsLayout? _layout;
     private bool _locallyClean;
+    private bool _seenIsDirty;
+    private bool _seenIsDirtyReady;
     private string? _parameterSnapshot;
     private bool _hasBeenActivated;
 
@@ -52,6 +54,13 @@ public partial class SbSettingsSection : ComponentBase, IDisposable
     public bool Visible { get; set; } = true;
 
     /// <summary>
+    /// The section is still deciding whether it is visible, for example while a permission check is running.
+    /// The layout waits, and does not fall back, rewrite the URL, or show the empty state.
+    /// </summary>
+    [Parameter]
+    public bool Pending { get; set; }
+
+    /// <summary>
     /// View-only section. The save bar shows a badge and no Save or Discard.
     /// </summary>
     [Parameter]
@@ -77,6 +86,8 @@ public partial class SbSettingsSection : ComponentBase, IDisposable
 
     /// <summary>
     /// The section content reports unsaved changes.
+    /// Bind with <c>@bind-IsDirty</c>. Discard and a successful save set this back to false.
+    /// A parent that leaves it true after discard stays clean until the parent changes the value.
     /// </summary>
     [Parameter]
     public bool IsDirty { get; set; }
@@ -141,6 +152,17 @@ public partial class SbSettingsSection : ComponentBase, IDisposable
 
     protected override void OnParametersSet()
     {
+        if (!_seenIsDirtyReady)
+        {
+            _seenIsDirty = IsDirty;
+            _seenIsDirtyReady = true;
+        }
+        else if (IsDirty != _seenIsDirty)
+        {
+            _seenIsDirty = IsDirty;
+            _locallyClean = false;
+        }
+
         if (!IsDirty)
         {
             _locallyClean = false;
@@ -153,7 +175,7 @@ public partial class SbSettingsSection : ComponentBase, IDisposable
             _layout?.Register(this);
         }
 
-        var snapshot = string.Join('|', Visible, Disabled, ReadOnly, IsDirty, CanSave, Label, Icon, HeadingText, Description, DisabledReason);
+        var snapshot = string.Join('|', Visible, Pending, Disabled, ReadOnly, IsDirty, CanSave, Label, Icon, HeadingText, Description, DisabledReason);
         if (!string.Equals(snapshot, _parameterSnapshot, StringComparison.Ordinal))
         {
             _parameterSnapshot = snapshot;

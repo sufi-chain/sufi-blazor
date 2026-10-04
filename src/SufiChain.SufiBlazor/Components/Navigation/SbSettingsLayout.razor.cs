@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Components;
+using SufiChain.SufiBlazor.Components.Overlays;
 
 namespace SufiChain.SufiBlazor.Components.Navigation;
 
@@ -13,9 +15,13 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 {
     private readonly string _instanceId = Guid.NewGuid().ToString("N");
     private readonly string _pickerId = $"sb-settings-picker-{Guid.NewGuid():N}";
+    private readonly string _reasonPopoverId = $"sb-settings-reason-{Guid.NewGuid():N}";
     private readonly List<SbSettingsSection> _sections = new();
+    private ElementReference _rootRef;
     private ElementReference _paneRef;
+    private ElementReference _stripRef;
     private ElementReference _headingRef;
+    private ElementReference _errorRef;
     private IDisposable? _locationRegistration;
     private bool _locationRegistered;
     private bool _jsReady;
@@ -26,17 +32,25 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private bool _guardOpen;
     private bool _suppressLeaveGuard;
     private bool _beforeUnloadArmed;
+    private bool _saving;
     private int _toastVersion;
     private readonly CancellationTokenSource _disposeCts = new();
     private string? _activeId;
     private string? _notifiedActiveId;
     private string? _pendingSectionId;
     private string? _pendingLocation;
+    private string? _pendingHistoryState;
     private string? _focusedId;
+    private string? _reasonOpenId;
+    private string? _guardTriggerId;
     private bool _focusStrip;
+    private bool _guardFromStrip;
     private bool _urlWriteQueued;
+    private bool _scrollStrip;
     private bool _sectionsStable;
     private bool _userChoseSection;
+    private string? _trackedActiveSection;
+    private bool _trackedActiveSectionSet;
 
     /// <summary>
     /// Section children. They register in document order.
@@ -46,6 +60,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Active section id. The first selectable section is used when this is empty.
+    /// Later changes go through the same leave guard as a rail click.
     /// </summary>
     [Parameter]
     public string? ActiveSection { get; set; }
@@ -114,17 +129,19 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 
     private string? ActiveId => _activeId;
 
-    private SbSettingsSection? Active => _sections.FirstOrDefault(section => section.Id == _activeId && section.Visible && !section.Disabled);
+    private SbSettingsSection? Active => _sections.FirstOrDefault(section => section.Id == _activeId && section.Visible && !section.Disabled && !section.Pending);
 
-    private bool HasVisibleSection => _sections.Any(section => section.Visible);
+    private bool HasVisibleSection => _sections.Any(section => section.Visible && !section.Pending);
+
+    private bool HasPending => _sections.Any(section => section.Pending);
 
     private bool ShowNavigation => VisibleSections.Count > 1;
 
     private bool UseStrip => CompactMode == SbSettingsCompactMode.Strip || (CompactMode == SbSettingsCompactMode.Auto && VisibleSections.Count <= 6);
 
-    private bool CanPressSave => Active is { } active && active.ShowsSaveControls && active.EffectiveDirty && active.CanSave && !Busy;
+    private bool CanPressSave => Active is { } active && active.ShowsSaveControls && active.EffectiveDirty && active.CanSave && !Busy && !_saving;
 
-    private List<SbSettingsSection> VisibleSections => _sections.Where(section => section.Visible).ToList();
+    private List<SbSettingsSection> VisibleSections => _sections.Where(section => section.Visible && !section.Pending).ToList();
 
     private IEnumerable<(SbSettingsSection Section, int Index)> RailEntries =>
         VisibleSections.Select((section, index) => (section, index));
@@ -187,11 +204,11 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         _ = InvokeAsync(StateHasChanged);
     }
 
-    internal bool IsSectionActive(SbSettingsSection section) => section.Visible && !section.Disabled && section.Id == _activeId;
+    internal bool IsSectionActive(SbSettingsSection section) => section.Visible && !section.Disabled && !section.Pending && section.Id == _activeId;
 
     internal bool ShouldRenderBody(SbSettingsSection section)
     {
-        if (!section.Visible || section.Disabled)
+        if (!section.Visible || section.Disabled || section.Pending)
         {
             return false;
         }
@@ -209,12 +226,36 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         ReconcileActive();
     }
 
+    protected override void OnParametersSet()
+    {
+        if (!_trackedActiveSectionSet)
+        {
+            _trackedActiveSection = ActiveSection;
+            _trackedActiveSectionSet = true;
+            return;
+        }
+
+        if (string.Equals(ActiveSection, _trackedActiveSection, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _trackedActiveSection = ActiveSection;
+        if (_sectionsStable && !string.IsNullOrEmpty(ActiveSection) && !string.Equals(ActiveSection, _activeId, StringComparison.Ordinal))
+        {
+            _ = RequestSectionAsync(ActiveSection, fromStrip: false);
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        var renderAgain = false;
         if (firstRender)
         {
             _sectionsStable = true;
+            var previousActive = _activeId;
             ReconcileActive();
+            renderAgain = !string.Equals(previousActive, _activeId, StringComparison.Ordinal);
             await StartJsAsync();
             RegisterLocationHandler();
         }
@@ -235,6 +276,13 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         }
 
         await SyncBeforeUnloadAsync();
+        await UpdateStripFadesAsync();
+
+        if (_scrollStrip && _activeId != null)
+        {
+            _scrollStrip = false;
+            await ScrollStripItemAsync(_activeId);
+        }
 
         if (_focusHeading)
         {
@@ -258,24 +306,43 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
                 var selector = strip
                     ? $".sb-settings-strip [data-section-id='{CssEscape(target)}']"
                     : $".sb-settings-rail [data-section-id='{CssEscape(target)}']";
-                await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.focusSelector", selector);
-                await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.scrollIntoView", selector);
+                await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.focusSelector", _rootRef, selector);
+                await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.scrollIntoView", _rootRef, selector);
             }
             catch (Exception ex) when (ex is JSException or InvalidOperationException)
             {
             }
         }
+
+        if (renderAgain)
+        {
+            StateHasChanged();
+        }
     }
 
-    internal async Task RequestSectionAsync(string? id)
+    internal async Task RequestSectionAsync(string? id, bool fromStrip)
     {
-        if (Busy || string.IsNullOrEmpty(id) || id == _activeId)
+        if (_saving || string.IsNullOrEmpty(id))
         {
-            if (id == _activeId)
-            {
-                _focusHeading = true;
-            }
+            return;
+        }
 
+        var known = _sections.FirstOrDefault(section => section.Id == id);
+        if (known?.Disabled == true)
+        {
+            _reasonOpenId = _reasonOpenId == id ? null : id;
+            return;
+        }
+
+        if (Busy)
+        {
+            return;
+        }
+
+        if (id == _activeId)
+        {
+            _reasonOpenId = null;
+            _focusHeading = true;
             return;
         }
 
@@ -289,33 +356,37 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         {
             _pendingSectionId = id;
             _pendingLocation = null;
+            _pendingHistoryState = null;
+            _guardTriggerId = id;
+            _guardFromStrip = fromStrip;
             _guardOpen = true;
+            _reasonOpenId = null;
             return;
         }
 
         await CommitSectionAsync(target);
     }
 
-    private async Task OnPickerChanged(string? id) => await RequestSectionAsync(id);
+    private Task OnPickerChanged(string? id) => RequestSectionAsync(id, fromStrip: false);
 
     private async Task OnItemKeyDown(KeyboardEventArgs args, int index, bool horizontal)
     {
         var sections = VisibleSections;
-        if (sections.Count == 0 || Busy)
+        if (sections.Count == 0 || Busy || _saving)
         {
             return;
         }
 
-        var delta = KeyDelta(args.Key, horizontal);
-        if (delta != 0)
+        if (args.Key is "Home" or "End")
         {
-            var next = index;
-            for (var step = 0; step < sections.Count; step++)
+            var next = args.Key == "Home" ? 0 : sections.Count - 1;
+            var step = args.Key == "Home" ? 1 : -1;
+            while (sections[next].Disabled && next >= 0 && next < sections.Count)
             {
-                next = (next + delta + sections.Count) % sections.Count;
-                if (!sections[next].Disabled)
+                next += step;
+                if (next < 0 || next >= sections.Count)
                 {
-                    break;
+                    return;
                 }
             }
 
@@ -324,10 +395,24 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
             return;
         }
 
-        if (args.Key is "Enter" or " ")
+        var delta = KeyDelta(args.Key, horizontal);
+        if (delta == 0)
         {
-            await RequestSectionAsync(sections[index].Id);
+            return;
         }
+
+        var cursor = index;
+        for (var step = 0; step < sections.Count; step++)
+        {
+            cursor = (cursor + delta + sections.Count) % sections.Count;
+            if (!sections[cursor].Disabled)
+            {
+                break;
+            }
+        }
+
+        _focusedId = sections[cursor].Id;
+        _focusStrip = horizontal;
     }
 
     private int KeyDelta(string key, bool horizontal)
@@ -365,7 +450,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private async Task DiscardFromBarAsync()
     {
         var active = Active;
-        if (active == null || Busy)
+        if (active == null || Busy || _saving)
         {
             return;
         }
@@ -384,11 +469,23 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         _guardOpen = false;
         _pendingSectionId = null;
         _pendingLocation = null;
+        _pendingHistoryState = null;
+        if (!string.IsNullOrEmpty(_guardTriggerId))
+        {
+            _focusedId = _guardTriggerId;
+            _focusStrip = _guardFromStrip;
+        }
+
         return Task.CompletedTask;
     }
 
     private async Task DiscardAndLeaveAsync()
     {
+        if (_saving)
+        {
+            return;
+        }
+
         await DiscardFromBarAsync();
         _guardOpen = false;
         await CompletePendingAsync();
@@ -396,17 +493,33 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 
     private async Task SaveAndLeaveAsync()
     {
+        if (_saving || !CanPressSave)
+        {
+            return;
+        }
+
         var saved = await SaveActiveAsync();
         if (!saved)
         {
             _guardOpen = false;
             _pendingSectionId = null;
             _pendingLocation = null;
+            _pendingHistoryState = null;
             return;
         }
 
         _guardOpen = false;
         await CompletePendingAsync();
+    }
+
+    private Task OnGuardClose(SbDialogCloseReason reason)
+    {
+        if (reason == SbDialogCloseReason.Escape && _guardOpen)
+        {
+            return StayAsync();
+        }
+
+        return Task.CompletedTask;
     }
 
     private void DismissToast() => _toastVisible = false;
@@ -415,40 +528,44 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     {
         var active = IsSectionActive(section);
         var focused = section.Id == _focusedId;
+        var reasonId = ReasonId(section, horizontal);
         builder.OpenElement(0, "button");
         builder.AddAttribute(1, "type", "button");
         builder.AddAttribute(2, "class", ItemClass(section, active, horizontal));
         builder.AddAttribute(3, "data-section-id", section.Id);
         builder.AddAttribute(4, "data-keyboard-focus", focused ? "true" : "false");
+        builder.AddAttribute(5, "title", section.Label);
         if (active)
         {
-            builder.AddAttribute(5, "aria-current", "page");
+            builder.AddAttribute(6, "aria-current", "page");
         }
 
         if (section.Disabled)
         {
-            builder.AddAttribute(6, "aria-disabled", "true");
+            builder.AddAttribute(7, "aria-disabled", "true");
+            if (!string.IsNullOrWhiteSpace(section.DisabledReason))
+            {
+                builder.AddAttribute(8, "aria-describedby", reasonId);
+            }
         }
-
-        if (Busy || section.Disabled)
+        else if (Busy || _saving)
         {
-            builder.AddAttribute(7, "disabled", true);
+            builder.AddAttribute(9, "disabled", true);
         }
 
-        builder.AddAttribute(8, "aria-controls", section.PanelDomId);
-        builder.AddAttribute(9, "onclick", EventCallback.Factory.Create(this, () => RequestSectionAsync(section.Id)));
-        builder.AddAttribute(10, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, args => OnItemKeyDown(args, index, horizontal)));
-        builder.AddContent(12, ItemContent(section));
+        builder.AddAttribute(10, "aria-controls", section.PanelDomId);
+        builder.AddAttribute(11, "onclick", EventCallback.Factory.Create(this, () => RequestSectionAsync(section.Id, horizontal)));
+        builder.AddAttribute(12, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, args => OnItemKeyDown(args, index, horizontal)));
+        builder.AddContent(13, ItemContent(section, reasonId));
         builder.CloseElement();
     };
 
-    private RenderFragment ItemContent(SbSettingsSection section) => builder =>
+    private RenderFragment ItemContent(SbSettingsSection section, string reasonId) => builder =>
     {
         builder.OpenComponent<SufiChain.SufiBlazor.Components.Common.SbIcon>(0);
         builder.AddAttribute(1, "Name", section.Icon);
         builder.AddAttribute(2, "Size", SbSize.Md);
         builder.AddAttribute(3, "Mirror", MirrorsInRtl(section.Icon));
-        builder.AddAttribute(4, "Class", MirrorClass(section.Icon));
         builder.CloseComponent();
 
         builder.OpenElement(5, "span");
@@ -479,8 +596,8 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         if (section.Disabled && !string.IsNullOrWhiteSpace(section.DisabledReason))
         {
             builder.OpenElement(17, "span");
-            builder.AddAttribute(18, "class", "sb-settings-item__tooltip");
-            builder.AddAttribute(19, "role", "tooltip");
+            builder.AddAttribute(18, "id", reasonId);
+            builder.AddAttribute(19, "class", "sb-settings-item__reason");
             builder.AddContent(20, section.DisabledReason);
             builder.CloseElement();
         }
@@ -512,80 +629,100 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         return section.Label;
     }
 
+    private string? ReasonText(string? id)
+    {
+        var section = _sections.FirstOrDefault(item => item.Id == id);
+        return string.IsNullOrWhiteSpace(section?.DisabledReason) ? null : section.DisabledReason;
+    }
+
+    private string ReasonId(SbSettingsSection section, bool horizontal) =>
+        $"sb-settings-reason-{(horizontal ? "strip" : "rail")}-{_instanceId}-{section.Id}";
+
     private static bool MirrorsInRtl(string icon) =>
         icon.StartsWith("arrow-", StringComparison.Ordinal)
         || icon.StartsWith("chevron-", StringComparison.Ordinal)
         || string.Equals(icon, "external-link", StringComparison.Ordinal);
 
-    private static string? MirrorClass(string icon) => MirrorsInRtl(icon) ? "sb-icon--mirror-rtl" : null;
-
     private void ReconcileActive()
     {
+        if (HasPending)
+        {
+            var requested = ReadSectionQuery() ?? ActiveSection;
+            var ready = SelectableSections();
+            var pendingMatch = ready.FirstOrDefault(section => section.Id == requested);
+            if (pendingMatch != null)
+            {
+                _activeId = pendingMatch.Id;
+                pendingMatch.MarkActivated();
+            }
+            else if (_activeId != null && !ready.Any(section => section.Id == _activeId))
+            {
+                _activeId = null;
+            }
+
+            return;
+        }
+
         var selectable = SelectableSections();
         if (selectable.Count == 0)
         {
+            NoteUnavailable(_activeId);
             _activeId = null;
-            if (_sectionsStable && DeepLink && ReadSectionQuery() != null)
-            {
-                _urlWriteQueued = true;
-            }
-
             return;
         }
 
-        if (_userChoseSection && _activeId != null && selectable.Any(section => section.Id == _activeId))
+        if (!_userChoseSection)
+        {
+            var requested = ReadSectionQuery() ?? ActiveSection;
+            if (!string.IsNullOrEmpty(requested))
+            {
+                var match = selectable.FirstOrDefault(section => section.Id == requested);
+                if (match != null)
+                {
+                    _activeId = match.Id;
+                    match.MarkActivated();
+                    QueueUrlIfNeeded();
+                    _scrollStrip = true;
+                    return;
+                }
+
+                if (!_sectionsStable)
+                {
+                    return;
+                }
+            }
+        }
+
+        if (_activeId != null && selectable.Any(section => section.Id == _activeId))
         {
             selectable.First(section => section.Id == _activeId).MarkActivated();
+            QueueUrlIfNeeded();
             return;
         }
 
-        if (_userChoseSection)
+        NoteUnavailable(_activeId);
+        _activeId = selectable[0].Id;
+        selectable[0].MarkActivated();
+        QueueUrlIfNeeded();
+        _scrollStrip = true;
+    }
+
+    private void NoteUnavailable(string? id)
+    {
+        if (string.IsNullOrEmpty(id))
         {
-            _userChoseSection = false;
+            return;
         }
 
-        var requested = ReadSectionQuery() ?? ActiveSection;
-        if (!string.IsNullOrEmpty(requested))
+        var previous = _sections.FirstOrDefault(section => section.Id == id);
+        if (previous is { EffectiveDirty: true, ShowsSaveControls: true })
         {
-            var match = selectable.FirstOrDefault(section => section.Id == requested);
-            if (match != null)
-            {
-                _activeId = match.Id;
-                match.MarkActivated();
-                if (_sectionsStable && DeepLink && !string.Equals(ReadSectionQuery(), _activeId, StringComparison.Ordinal))
-                {
-                    _urlWriteQueued = true;
-                }
-
-                return;
-            }
-
-            if (!_sectionsStable)
-            {
-                if (_activeId == null || !selectable.Any(section => section.Id == _activeId))
-                {
-                    _activeId = selectable[0].Id;
-                    selectable[0].MarkActivated();
-                }
-
-                return;
-            }
-        }
-
-        if (_activeId == null || !selectable.Any(section => section.Id == _activeId))
-        {
-            _activeId = selectable[0].Id;
-        }
-
-        selectable.First(section => section.Id == _activeId).MarkActivated();
-        if (_sectionsStable && DeepLink && !string.Equals(ReadSectionQuery(), _activeId, StringComparison.Ordinal))
-        {
-            _urlWriteQueued = true;
+            Trace.TraceInformation("Settings section {0} became unavailable while it had unsaved changes.", id);
         }
     }
 
     private List<SbSettingsSection> SelectableSections() =>
-        _sections.Where(section => section.Visible && !section.Disabled).ToList();
+        _sections.Where(section => section.Visible && !section.Disabled && !section.Pending).ToList();
 
     private bool NeedsLeaveGuard()
     {
@@ -596,10 +733,12 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private async Task CommitSectionAsync(SbSettingsSection section)
     {
         _saveFailed = false;
+        _reasonOpenId = null;
         _userChoseSection = true;
         _activeId = section.Id;
         section.MarkActivated();
         _focusHeading = true;
+        _scrollStrip = true;
         _urlWriteQueued = true;
         await InvokeAsync(StateHasChanged);
     }
@@ -607,11 +746,12 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private async Task<bool> SaveActiveAsync()
     {
         var active = Active;
-        if (active?.OnSave == null || !active.ShowsSaveControls)
+        if (active?.OnSave == null || !active.ShowsSaveControls || _saving)
         {
             return false;
         }
 
+        _saving = true;
         bool saved;
         try
         {
@@ -621,13 +761,21 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         {
             saved = false;
         }
+        finally
+        {
+            _saving = false;
+        }
 
         if (!saved)
         {
             _saveFailed = true;
             try
             {
-                await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.focusFirstInvalid", _paneRef);
+                var focused = await JS.InvokeAsync<bool>("SufiBlazor.settingsLayout.focusFirstInvalid", _paneRef);
+                if (!focused)
+                {
+                    await _errorRef.FocusAsync();
+                }
             }
             catch (Exception ex) when (ex is JSException or InvalidOperationException)
             {
@@ -665,8 +813,10 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     {
         var sectionId = _pendingSectionId;
         var location = _pendingLocation;
+        var historyState = _pendingHistoryState;
         _pendingSectionId = null;
         _pendingLocation = null;
+        _pendingHistoryState = null;
 
         if (!string.IsNullOrEmpty(sectionId))
         {
@@ -679,10 +829,25 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 
         if (!string.IsNullOrEmpty(location))
         {
+            var sectionInLocation = ReadSectionFrom(location);
+            if (!string.IsNullOrEmpty(sectionInLocation))
+            {
+                var target = SelectableSections().FirstOrDefault(section => section.Id == sectionInLocation);
+                if (target != null)
+                {
+                    await CommitSectionAsync(target);
+                }
+            }
+
             _suppressLeaveGuard = true;
             try
             {
-                Navigation.NavigateTo(location);
+                Navigation.NavigateTo(location, new NavigationOptions
+                {
+                    ForceLoad = false,
+                    ReplaceHistoryEntry = false,
+                    HistoryEntryState = historyState
+                });
             }
             finally
             {
@@ -704,19 +869,47 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 
     private ValueTask OnLocationChanging(LocationChangingContext context)
     {
-        if (_suppressLeaveGuard || !NeedsLeaveGuard())
+        if (_suppressLeaveGuard)
         {
             return ValueTask.CompletedTask;
         }
 
         if (IsSamePage(context.TargetLocation))
         {
+            var next = ReadSectionFrom(context.TargetLocation);
+            if (string.IsNullOrEmpty(next) || string.Equals(next, _activeId, StringComparison.Ordinal))
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            if (NeedsLeaveGuard())
+            {
+                context.PreventNavigation();
+                _pendingSectionId = next;
+                _pendingLocation = context.TargetLocation;
+                _pendingHistoryState = context.HistoryEntryState;
+                _guardTriggerId = next;
+                _guardFromStrip = false;
+                _guardOpen = true;
+                _ = InvokeAsync(StateHasChanged);
+                return ValueTask.CompletedTask;
+            }
+
+            _ = RequestSectionAsync(next, fromStrip: false);
+            return ValueTask.CompletedTask;
+        }
+
+        if (!NeedsLeaveGuard())
+        {
             return ValueTask.CompletedTask;
         }
 
         context.PreventNavigation();
         _pendingLocation = context.TargetLocation;
+        _pendingHistoryState = context.HistoryEntryState;
         _pendingSectionId = null;
+        _guardTriggerId = _activeId;
+        _guardFromStrip = false;
         _guardOpen = true;
         _ = InvokeAsync(StateHasChanged);
         return ValueTask.CompletedTask;
@@ -729,14 +922,16 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         return string.Equals(current.AbsolutePath, target.AbsolutePath, StringComparison.OrdinalIgnoreCase);
     }
 
-    private string? ReadSectionQuery()
+    private string? ReadSectionQuery() => ReadSectionFrom(Navigation.Uri);
+
+    private string? ReadSectionFrom(string uri)
     {
         if (!DeepLink || string.IsNullOrEmpty(QueryParameter))
         {
             return null;
         }
 
-        var query = Navigation.ToAbsoluteUri(Navigation.Uri).Query;
+        var query = Navigation.ToAbsoluteUri(uri).Query;
         if (string.IsNullOrEmpty(query))
         {
             return null;
@@ -759,9 +954,22 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         return null;
     }
 
+    private void QueueUrlIfNeeded()
+    {
+        if (!_sectionsStable || HasPending || !DeepLink || string.IsNullOrEmpty(_activeId))
+        {
+            return;
+        }
+
+        if (!string.Equals(ReadSectionQuery(), _activeId, StringComparison.Ordinal))
+        {
+            _urlWriteQueued = true;
+        }
+    }
+
     private void WriteSectionUrl(string? sectionId)
     {
-        if (!DeepLink || string.IsNullOrEmpty(sectionId))
+        if (!DeepLink || string.IsNullOrEmpty(sectionId) || HasPending)
         {
             return;
         }
@@ -774,7 +982,10 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         _suppressLeaveGuard = true;
         try
         {
-            Navigation.NavigateTo(Navigation.GetUriWithQueryParameter(QueryParameter, sectionId), replace: true);
+            Navigation.NavigateTo(Navigation.GetUriWithQueryParameter(QueryParameter, sectionId), new NavigationOptions
+            {
+                ReplaceHistoryEntry = true
+            });
         }
         catch (NavigationException)
         {
@@ -793,6 +1004,31 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
             await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.watchCompact", _instanceId, reference);
             await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.watchDirection", _instanceId, reference);
             _jsReady = true;
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException)
+        {
+        }
+    }
+
+    private async Task UpdateStripFadesAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.updateStripFades", _stripRef);
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException)
+        {
+        }
+    }
+
+    private async Task ScrollStripItemAsync(string id)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync(
+                "SufiBlazor.settingsLayout.scrollIntoView",
+                _rootRef,
+                $".sb-settings-strip [data-section-id='{CssEscape(id)}']");
         }
         catch (Exception ex) when (ex is JSException or InvalidOperationException)
         {

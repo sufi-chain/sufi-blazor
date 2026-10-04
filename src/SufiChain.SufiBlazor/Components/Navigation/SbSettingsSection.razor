@@ -6,7 +6,7 @@
     <div class="sb-settings-section @(_layout.IsSectionActive(this) ? "sb-settings-section--active" : null)"
          id="@PanelDomId"
          hidden="@(!_layout.IsSectionActive(this))"
-         role="tabpanel"
+         role="region"
          aria-labelledby="@_layout.HeadingId">
         @ChildContent
     </div>
