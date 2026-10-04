@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiBlazor.Components.Forms
+@using System.Linq.Expressions
 
 <label class="@CssClass" style="@Style">
     <input type="checkbox"
@@ -8,6 +9,7 @@
            checked="@Value"
            disabled="@Disabled"
            aria-checked="@GetAriaChecked()"
+           aria-invalid="@(HasSaveError ? "true" : null)"
            @onchange="HandleChange"
            @attributes="AdditionalAttributes" />
     <span class="sb-checkbox__box">
@@ -47,6 +49,17 @@
     /// </summary>
     [Parameter]
     public EventCallback<bool> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Field expression supplied by <c>@bind-Value</c>. Used to mark a failed save.
+    /// </summary>
+    [Parameter]
+    public Expression<Func<bool>>? ValueExpression { get; set; }
+
+    [CascadingParameter]
+    private SbSaveFieldErrorSet? SaveFieldErrors { get; set; }
+
+    private bool HasSaveError => SaveFieldErrors?.Matches(ValueExpression) == true;
 
     /// <summary>
     /// Whether the checkbox is in indeterminate state.

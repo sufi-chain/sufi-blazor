@@ -827,6 +827,42 @@ window.SufiBlazor = window.SufiBlazor || {};
       }
     },
 
+    measureReason: function (root, sectionId) {
+      var scope = root && root.querySelector ? root : document;
+      var nodes = scope.querySelectorAll("[data-section-id='" + String(sectionId).replace(/'/g, "\\'") + "']");
+      var item = null;
+      var rect = null;
+      for (var i = 0; i < nodes.length; i++) {
+        var candidate = nodes[i].getBoundingClientRect();
+        if (candidate.width > 0 && candidate.height > 0) {
+          item = nodes[i];
+          rect = candidate;
+          break;
+        }
+      }
+      if (!item && nodes.length) {
+        item = nodes[0];
+        rect = item.getBoundingClientRect();
+      }
+      if (!rect) return null;
+      var margin = 8;
+      var popoverWidth = Math.min(320, Math.max(0, window.innerWidth - margin * 2));
+      var popoverHeight = 72;
+      var dir = (document.documentElement.getAttribute("dir") || "").toLowerCase();
+      var rtl = dir === "rtl";
+      var start = rtl ? window.innerWidth - rect.right : rect.left;
+      var maxStart = Math.max(margin, window.innerWidth - popoverWidth - margin);
+      if (start > maxStart) start = maxStart;
+      if (start < margin) start = margin;
+      var top = rect.bottom + 4;
+      var maxTop = window.innerHeight - popoverHeight - margin;
+      if (top > maxTop) {
+        var above = rect.top - popoverHeight - 4;
+        top = above >= margin ? above : margin;
+      }
+      return [top, start];
+    },
+
     focusFirstInvalid: function (root) {
       var scope = root && root.querySelector ? root : document;
       var panel = scope.querySelector(".sb-settings-section--active") || scope;

@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiBlazor.Components.Forms
+@using System.Linq.Expressions
 @using System.Globalization
 @using SufiChain.SufiBlazor.Components.Common
 @typeparam TNumber where TNumber : struct, IComparable<TNumber>
@@ -20,7 +21,7 @@
                id="@EffectiveId"
                aria-required="@(Required || FormFieldContext?.Required == true ? "true" : null)"
                aria-describedby="@InputDescription"
-               aria-invalid="@(FormFieldContext?.HasError == true ? "true" : null)"
+               aria-invalid="@((FormFieldContext?.HasError == true || HasSaveError) ? "true" : null)"
                value="@CurrentValueAsString"
                @oninput="HandleInput"
                @onchange="HandleChange"
@@ -71,6 +72,17 @@
     /// </summary>
     [Parameter]
     public EventCallback<TNumber> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Field expression supplied by <c>@bind-Value</c>. Used to mark a failed save.
+    /// </summary>
+    [Parameter]
+    public Expression<Func<TNumber>>? ValueExpression { get; set; }
+
+    [CascadingParameter]
+    private SbSaveFieldErrorSet? SaveFieldErrors { get; set; }
+
+    private bool HasSaveError => SaveFieldErrors?.Matches(ValueExpression) == true;
 
     /// <summary>
     /// Minimum value.

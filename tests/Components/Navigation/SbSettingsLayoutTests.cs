@@ -92,7 +92,10 @@ public class SbSettingsLayoutTests : BunitContext
 
         disabled.Click();
         Assert.Equal("email", cut.Find(".sb-settings-rail [aria-current='page']").GetAttribute("data-section-id"));
-        Assert.Contains("Module is off", cut.Find(".sb-settings-reason-popover").TextContent);
+        var popover = cut.Find(".sb-settings-reason-popover");
+        Assert.Contains("Module is off", popover.TextContent);
+        Assert.Contains("inset-inline-start:", popover.GetAttribute("style"), StringComparison.Ordinal);
+        Assert.DoesNotContain("left:", popover.GetAttribute("style") ?? "", StringComparison.Ordinal);
         Assert.Contains("section=email", Services.GetRequiredService<NavigationManager>().Uri);
 
         cut.Find(".sb-settings-reason-backdrop").Click();
@@ -101,6 +104,24 @@ public class SbSettingsLayoutTests : BunitContext
         disabled.Click();
         Assert.NotEmpty(cut.FindAll(".sb-settings-reason-popover"));
         disabled.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Empty(cut.FindAll(".sb-settings-reason-popover"));
+    }
+
+    [Fact]
+    public void ReasonPopover_TapOnAnotherItemSelectsThatItem()
+    {
+        var cut = RenderLayout(null, builder =>
+        {
+            Section(builder, 0, "email", "Email", "mail");
+            Section(builder, 20, "timezone", "Time zone", "clock", disabled: true, reason: "Module is off");
+            Section(builder, 40, "identity", "Identity", "user-cog");
+        });
+
+        cut.Find(".sb-settings-rail [data-section-id='timezone']").Click();
+        Assert.NotEmpty(cut.FindAll(".sb-settings-reason-popover"));
+
+        cut.Find(".sb-settings-rail [data-section-id='identity']").Click();
+        Assert.Equal("identity", cut.Find(".sb-settings-rail [aria-current='page']").GetAttribute("data-section-id"));
         Assert.Empty(cut.FindAll(".sb-settings-reason-popover"));
     }
 
@@ -694,7 +715,10 @@ public class SbSettingsLayoutTests : BunitContext
         Assert.Equal("email", cut.Find("[aria-current='page']").GetAttribute("data-section-id"));
         Assert.Contains("section=email", nav.Uri);
         Assert.DoesNotContain("section=identity", nav.Uri);
-        Assert.Contains("Feature is off", cut.Find(".sb-settings-reason-popover").TextContent);
+        var deepLinkPopover = cut.Find(".sb-settings-reason-popover");
+        Assert.Contains("Feature is off", deepLinkPopover.TextContent);
+        Assert.Contains("inset-inline-start:", deepLinkPopover.GetAttribute("style"), StringComparison.Ordinal);
+        Assert.DoesNotContain("left:", deepLinkPopover.GetAttribute("style") ?? "", StringComparison.Ordinal);
 
         nav.NavigateTo("http://localhost/settings?section=&keep=1");
         Assert.Contains("section=email", nav.Uri);
@@ -923,6 +947,14 @@ public class SettingsStripFadeContractTests
         Assert.Contains("color: var(--sb-color-text-muted)", css, StringComparison.Ordinal);
         Assert.Contains(".sb-settings-reason-backdrop", css, StringComparison.Ordinal);
         Assert.Contains("@media (min-width: 769px)", css, StringComparison.Ordinal);
+        Assert.Contains("inset-inline-start:", css, StringComparison.Ordinal);
+        Assert.Contains(".sb-settings-rail {", css, StringComparison.Ordinal);
+        Assert.Contains("z-index: 5;", css, StringComparison.Ordinal);
+        Assert.Contains("z-index: 3;", css, StringComparison.Ordinal);
+        Assert.Contains("z-index: 6;", css, StringComparison.Ordinal);
+        Assert.Contains("measureReason:", js, StringComparison.Ordinal);
+        Assert.Contains("maxStart", js, StringComparison.Ordinal);
+        Assert.Contains("100vw", css, StringComparison.Ordinal);
     }
 }
 

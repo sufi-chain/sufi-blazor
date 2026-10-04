@@ -43,8 +43,10 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private string? _focusedId;
     private string? _keyboardFocusId;
     private string? _reasonOpenId;
-    private double _reasonTop;
-    private double _reasonLeft;
+    private double _reasonTop = 8;
+    private double _reasonInset = 8;
+    private bool _reasonMeasure;
+    private bool _focusSaveError;
     private string? _guardTriggerId;
     private bool _focusStrip;
     private bool _guardFromStrip;
@@ -180,7 +182,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private string RootStyle => $"--sb-settings-sticky-offset: {StickyOffset}";
 
     private string ReasonPopoverStyle =>
-        $"top: {_reasonTop.ToString(CultureInfo.InvariantCulture)}px; left: {_reasonLeft.ToString(CultureInfo.InvariantCulture)}px";
+        $"top: {_reasonTop.ToString(CultureInfo.InvariantCulture)}px; inset-inline-start: {_reasonInset.ToString(CultureInfo.InvariantCulture)}px";
 
     internal void Register(SbSettingsSection section)
     {
@@ -305,6 +307,28 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
             }
         }
 
+        if (_focusSaveError)
+        {
+            _focusSaveError = false;
+            try
+            {
+                var focused = await JS.InvokeAsync<bool>("SufiBlazor.settingsLayout.focusFirstInvalid", _paneRef);
+                if (!focused)
+                {
+                    await _errorRef.FocusAsync();
+                }
+            }
+            catch (Exception ex) when (ex is JSException or InvalidOperationException)
+            {
+            }
+        }
+
+        if (_reasonMeasure && _reasonOpenId != null)
+        {
+            _reasonMeasure = false;
+            await MeasureReasonAsync(_reasonOpenId);
+        }
+
         if (_focusedId != null)
         {
             var target = _focusedId;
@@ -339,7 +363,16 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         var known = _sections.FirstOrDefault(section => section.Id == id);
         if (known?.Disabled == true)
         {
-            _reasonOpenId = _reasonOpenId == id ? null : id;
+            if (_reasonOpenId == id)
+            {
+                _reasonOpenId = null;
+            }
+            else
+            {
+                _reasonOpenId = id;
+                QueueReasonPosition();
+            }
+
             return;
         }
 
@@ -652,9 +685,34 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 
     private Task OnItemClick(string id, bool fromStrip, MouseEventArgs args)
     {
-        _reasonTop = args.ClientY;
-        _reasonLeft = args.ClientX;
+        _ = args;
         return RequestSectionAsync(id, fromStrip);
+    }
+
+    private void QueueReasonPosition()
+    {
+        _reasonTop = 8;
+        _reasonInset = 8;
+        _reasonMeasure = true;
+    }
+
+    private async Task MeasureReasonAsync(string sectionId)
+    {
+        try
+        {
+            var measured = await JS.InvokeAsync<double[]>("SufiBlazor.settingsLayout.measureReason", _rootRef, sectionId);
+            if (measured is not { Length: 2 } || _reasonOpenId != sectionId)
+            {
+                return;
+            }
+
+            _reasonTop = measured[0];
+            _reasonInset = measured[1];
+            StateHasChanged();
+        }
+        catch (Exception ex) when (ex is JSException or InvalidOperationException)
+        {
+        }
     }
 
     private void CloseReason() => _reasonOpenId = null;
@@ -839,18 +897,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         if (!saved)
         {
             _saveFailed = true;
-            try
-            {
-                var focused = await JS.InvokeAsync<bool>("SufiBlazor.settingsLayout.focusFirstInvalid", _paneRef);
-                if (!focused)
-                {
-                    await _errorRef.FocusAsync();
-                }
-            }
-            catch (Exception ex) when (ex is JSException or InvalidOperationException)
-            {
-            }
-
+            _focusSaveError = true;
             return false;
         }
 
@@ -959,9 +1006,15 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
                 context.PreventNavigation();
                 if (known?.Disabled == true)
                 {
-                    _reasonTop = 0;
-                    _reasonLeft = 0;
-                    _reasonOpenId = _reasonOpenId == next ? null : next;
+                    if (_reasonOpenId == next)
+                    {
+                        _reasonOpenId = null;
+                    }
+                    else
+                    {
+                        _reasonOpenId = next;
+                        QueueReasonPosition();
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(_activeId))

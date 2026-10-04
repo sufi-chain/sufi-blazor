@@ -128,8 +128,9 @@
 
         @if (Active == null && HasPending)
         {
-            <SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Text"
-                               Count="3"
+            <SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table"
+                               Count="5"
+                               Announce="false"
                                Class="sb-settings-pending" />
         }
         else if (Active == null && !HasVisibleSection && !HasPending)

@@ -10778,6 +10778,7 @@ body.sb-resizing {
 
 .sb-settings-rail {
     position: sticky;
+    z-index: 5;
     inset-block-start: var(--sb-settings-sticky-offset, var(--sb-app-header-height, 0px));
     max-block-size: calc(100dvh - var(--sb-settings-sticky-offset, var(--sb-app-header-height, 0px)));
     overflow: auto;
@@ -10909,8 +10910,10 @@ body.sb-resizing {
 
 .sb-settings-reason-popover {
     position: fixed;
-    z-index: 4;
-    max-inline-size: min(20rem, calc(100% - 2rem));
+    z-index: 6;
+    max-inline-size: min(20rem, calc(100vw - 1rem));
+    max-block-size: min(12rem, calc(100vh - 1rem));
+    overflow: auto;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--sb-color-border);
     border-radius: var(--sb-radius-md, 0.5rem);
@@ -10941,6 +10944,8 @@ body.sb-resizing {
 
 .sb-settings-compact {
     display: none;
+    position: relative;
+    z-index: 5;
 }
 
 .sb-settings-savebar {
