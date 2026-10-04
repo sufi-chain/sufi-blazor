@@ -941,7 +941,7 @@ public class SettingsLeaveGuardCopyTests
         var localization = Path.Combine(root!.FullName, "src", "SufiChain.SufiBlazor", "Localization");
 
         Assert.Contains(
-            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>Save your changes before you leave?</value></data>",
+            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>Save your changes before you go?</value></data>",
             File.ReadAllText(Path.Combine(localization, "SufiBlazorResource.resx")),
             StringComparison.Ordinal);
         Assert.Contains(
@@ -949,11 +949,11 @@ public class SettingsLeaveGuardCopyTests
             File.ReadAllText(Path.Combine(localization, "SufiBlazorResource.fa.resx")),
             StringComparison.Ordinal);
         Assert.Contains(
-            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>هل تريد حفظ التغييرات قبل الخروج؟</value></data>",
+            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>هل تريد حفظ التغييرات قبل المغادرة؟</value></data>",
             File.ReadAllText(Path.Combine(localization, "SufiBlazorResource.ar.resx")),
             StringComparison.Ordinal);
         Assert.Contains(
-            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>¿Guardar los cambios antes de salir?</value></data>",
+            "<data name=\"Settings:GuardTitle\" xml:space=\"preserve\"><value>¿Quieres guardar los cambios antes de salir?</value></data>",
             File.ReadAllText(Path.Combine(localization, "SufiBlazorResource.es.resx")),
             StringComparison.Ordinal);
     }
