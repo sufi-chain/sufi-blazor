@@ -1,0 +1,66 @@
+@page "/demo/sufi-blazor/settings-layout"
+
+<PageTitle>@(L["Menu:Demo:SettingsLayout"] + " - " + L["Menu:Demo:SufiBlazorDemo"])</PageTitle>
+
+<DemoLayout>
+    <SbHeading Level="1">@L["Menu:Demo:SettingsLayout"]</SbHeading>
+    <SbText Color="SbColor.Muted">@L["Demo:SettingsLayoutDescription"]</SbText>
+
+    <SbDivider />
+
+    <DemoSection Title="@L["Demo:SettingsLayoutBasic"]">
+        <ExampleContent>
+            <SbSettingsLayout AriaLabel="@L["Menu:Demo:SettingsLayout"]">
+                <SbSettingsSection Id="email" Label="@L["Demo:SettingsEmail"]" Icon="mail" Title="@L["Demo:SettingsEmailTitle"]" Description="@L["Demo:SettingsEmailDescription"]" @bind-IsDirty="_emailDirty" OnSave="SaveEmailAsync" OnDiscard="DiscardEmailAsync">
+                    <SbTextField TValue="string" @bind-Value="EmailDraft" Label="@L["Demo:SettingsEmail"]" />
+                </SbSettingsSection>
+                <SbSettingsSection Id="identity" Label="@L["Demo:SettingsIdentity"]" Icon="user-cog" Description="@L["Demo:SettingsIdentityDescription"]" @bind-IsDirty="_identityDirty" OnSave="SaveIdentityAsync" OnDiscard="DiscardIdentityAsync">
+                    <SbTextField TValue="string" @bind-Value="IdentityDraft" Label="@L["Demo:SettingsIdentity"]" />
+                </SbSettingsSection>
+                <SbSettingsSection Id="timezone" Label="@L["Demo:SettingsTimeZone"]" Icon="clock" ReadOnly="true" OnSave="SaveIdentityAsync">
+                    <SbText>@L["Demo:SettingsReadOnlyBody"]</SbText>
+                </SbSettingsSection>
+                <SbSettingsSection Id="short-links" Label="@L["Demo:SettingsShortLinks"]" Icon="link" Disabled="true" DisabledReason="@L["Demo:SettingsDisabledReason"]" />
+                <SbSettingsSection Id="notifications" Label="@L["Demo:SettingsLongLabel"]" Icon="bell" Description="@L["Demo:SettingsLongLabel"]" @bind-IsDirty="_notesDirty" OnSave="SaveNotesAsync" OnDiscard="DiscardNotesAsync">
+                    <SbText>@L["Demo:SettingsLongLabel"]</SbText>
+                </SbSettingsSection>
+                <SbSettingsSection Id="hidden" Label="@L["Demo:SettingsHidden"]" Icon="eye-off" Visible="false" />
+            </SbSettingsLayout>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SettingsLayoutPicker"]">
+        <ExampleContent>
+            <SbSettingsLayout AriaLabel="@L["Demo:SettingsLayoutPicker"]">
+                @for (var index = 1; index <= 7; index++)
+                {
+                    var id = $"picker-{index}";
+                    <SbSettingsSection @key="id" Id="@id" Label="@L[$"Demo:SettingsPicker{index}"]" Icon="settings">
+                        <SbText>@L[$"Demo:SettingsPicker{index}"]</SbText>
+                    </SbSettingsSection>
+                }
+            </SbSettingsLayout>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SettingsLayoutSingle"]">
+        <ExampleContent>
+            <SbSettingsLayout AriaLabel="@L["Demo:SettingsLayoutSingle"]">
+                <SbSettingsSection Id="profile" Label="@L["Demo:SettingsSingle"]" Icon="user-cog" @bind-IsDirty="_singleDirty" OnSave="SaveSingleAsync" OnDiscard="DiscardSingleAsync">
+                    <SbTextField TValue="string" @bind-Value="SingleDraft" Label="@L["Demo:SettingsSingle"]" />
+                </SbSettingsSection>
+            </SbSettingsLayout>
+        </ExampleContent>
+    </DemoSection>
+
+    <DemoSection Title="@L["Demo:SettingsLayoutAsync"]">
+        <ExampleContent>
+            <SbSettingsLayout AriaLabel="@L["Demo:SettingsLayoutAsync"]">
+                <SbSettingsSection Id="email" Label="@L["Demo:SettingsEmail"]" Icon="mail" Pending="@_asyncPending">
+                    <SbText>@L["Demo:SettingsAsyncBody"]</SbText>
+                </SbSettingsSection>
+                <SbSettingsSection Id="identity" Label="@L["Demo:SettingsIdentity"]" Icon="user-cog" Pending="@_asyncPending" />
+            </SbSettingsLayout>
+        </ExampleContent>
+    </DemoSection>
+</DemoLayout>
