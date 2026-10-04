@@ -34,7 +34,28 @@ public sealed class SbRichTextEditorInterop : IAsyncDisposable
         object? bubbleMenu = null) where T : class
     {
         var module = await EnsureModuleAsync();
+        if (module == null)
+        {
+            return string.Empty;
+        }
+
         return await module.InvokeAsync<string>("initEditor", container, dotNetRef, options, bubbleMenu);
+    }
+
+    public async Task DetachAsync(string callbackToken)
+    {
+        if (string.IsNullOrEmpty(callbackToken))
+        {
+            return;
+        }
+
+        var module = await EnsureModuleAsync();
+        if (module == null)
+        {
+            return;
+        }
+
+        await module.InvokeVoidAsync("detachEditorCallback", callbackToken);
     }
 
     public async Task DestroyAsync(string editorId)
@@ -207,4 +228,5 @@ public sealed class SbRichTextEditorInitOptions
     public string ContentFormat { get; set; } = "html";
     public SbPasteCleanupOptions? PasteCleanup { get; set; }
     public int Features { get; set; } = (int)SbEditorFeatures.Default;
+    public string? CallbackToken { get; set; }
 }
