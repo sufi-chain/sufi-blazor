@@ -10778,6 +10778,7 @@ body.sb-resizing {
 
 .sb-settings-rail {
     position: sticky;
+    z-index: 5;
     inset-block-start: var(--sb-settings-sticky-offset, var(--sb-app-header-height, 0px));
     max-block-size: calc(100dvh - var(--sb-settings-sticky-offset, var(--sb-app-header-height, 0px)));
     overflow: auto;
@@ -10834,9 +10835,18 @@ body.sb-resizing {
     text-align: start;
 }
 
+.sb-settings-rail__item .sb-settings-item__label {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+}
+
 .sb-settings-item__reason {
     flex: 1 1 100%;
     color: var(--sb-color-text-muted);
+    opacity: 1;
     font-size: 0.75rem;
     font-weight: 400;
     line-height: 1.4;
@@ -10868,11 +10878,15 @@ body.sb-resizing {
     padding: 1rem;
 }
 
-.sb-settings-item--disabled,
+.sb-settings-item--disabled {
+    cursor: not-allowed;
+}
+
+.sb-settings-item--disabled > .sb-icon,
+.sb-settings-item--disabled > .sb-settings-item__label,
 .sb-settings-rail__item:disabled,
 .sb-settings-strip__item:disabled {
     opacity: 0.6;
-    cursor: not-allowed;
 }
 
 .sb-settings-item__dirty {
@@ -10887,12 +10901,19 @@ body.sb-resizing {
     flex: 0 0 auto;
 }
 
+.sb-settings-reason-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    background: transparent;
+}
+
 .sb-settings-reason-popover {
-    position: absolute;
-    z-index: 4;
-    inset-block-start: 0.5rem;
-    inset-inline-start: 1rem;
-    max-inline-size: min(20rem, calc(100% - 2rem));
+    position: fixed;
+    z-index: 6;
+    max-inline-size: min(20rem, calc(100vw - 1rem));
+    max-block-size: min(12rem, calc(100vh - 1rem));
+    overflow: auto;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--sb-color-border);
     border-radius: var(--sb-radius-md, 0.5rem);
@@ -10901,6 +10922,13 @@ body.sb-resizing {
     box-shadow: var(--sb-shadow-md, 0 0.5rem 1.5rem rgb(16 31 44 / 16%));
     font-size: 0.875rem;
     line-height: 1.4;
+}
+
+@media (min-width: 769px) {
+    .sb-settings-reason-backdrop,
+    .sb-settings-reason-popover {
+        display: none;
+    }
 }
 
 .sb-settings-pane {
@@ -10916,6 +10944,8 @@ body.sb-resizing {
 
 .sb-settings-compact {
     display: none;
+    position: relative;
+    z-index: 5;
 }
 
 .sb-settings-savebar {

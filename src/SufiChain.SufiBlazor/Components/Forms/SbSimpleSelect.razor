@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiBlazor.Components.Forms
+@using System.Linq.Expressions
 @typeparam TValue
 @implements IDisposable
 @implements ISbSelectOptionContext<TValue>
@@ -27,7 +28,7 @@
                 disabled="@Disabled"
                 aria-haspopup="listbox"
                 aria-describedby="@FormFieldContext?.DescriptionId"
-                aria-invalid="@(FormFieldContext?.HasError == true ? "true" : null)"
+                aria-invalid="@((FormFieldContext?.HasError == true || HasSaveError) ? "true" : null)"
                 aria-expanded="@(_isOpen ? "true" : "false")"
                 aria-labelledby="@LabelledBy"
                 aria-controls="@(_isOpen ? $"{EffectiveId}-options" : null)">
@@ -142,6 +143,17 @@
     /// </summary>
     [Parameter]
     public EventCallback<TValue?> ValueChanged { get; set; }
+
+    /// <summary>
+    /// Field expression supplied by <c>@bind-Value</c>. Used to mark a failed save.
+    /// </summary>
+    [Parameter]
+    public Expression<Func<TValue?>>? ValueExpression { get; set; }
+
+    [CascadingParameter]
+    private SbSaveFieldErrorSet? SaveFieldErrors { get; set; }
+
+    private bool HasSaveError => SaveFieldErrors?.Matches(ValueExpression) == true;
 
     /// <summary>
     /// Child content containing SbSelectOption elements.

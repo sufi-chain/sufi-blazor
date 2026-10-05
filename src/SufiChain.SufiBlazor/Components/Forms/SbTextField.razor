@@ -239,7 +239,13 @@
 
     private string InputType => Type == "password" && _showPassword ? "text" : Type;
 
-    private bool HasError => FormFieldContext?.HasError == true || EditContext?.GetValidationMessages(FieldIdentifier).Any() == true;
+    [CascadingParameter]
+    private SbSaveFieldErrorSet? SaveFieldErrors { get; set; }
+
+    private bool HasError =>
+        FormFieldContext?.HasError == true
+        || EditContext?.GetValidationMessages(FieldIdentifier).Any() == true
+        || SaveFieldErrors?.Contains(FieldIdentifier.FieldName) == true;
 
     private string WrapperCssClass
     {

@@ -9,7 +9,7 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<div class="@CssClass" style="@RootStyle" @ref="_rootRef" aria-busy="@((Busy || HasPending || _saving) ? "true" : null)">
+<div class="@CssClass" style="@RootStyle" @ref="_rootRef" aria-busy="@((Busy || _saving) ? "true" : null)" @onkeydown="OnLayoutKeyDown">
     @if (ShowNavigation)
     {
         <nav class="sb-settings-rail" aria-label="@AriaLabel">
@@ -128,11 +128,10 @@
 
         @if (Active == null && HasPending)
         {
-            <div class="sb-settings-pending" role="status">
-                <SbSkeleton Width="40%" Height="1.25rem" />
-                <SbSkeleton Width="100%" Height="2.75rem" />
-                <SbSkeleton Width="100%" Height="8rem" />
-            </div>
+            <SbLoadingSkeleton Preset="SbLoadingSkeletonPreset.Table"
+                               Count="5"
+                               Announce="false"
+                               Class="sb-settings-pending" />
         }
         else if (Active == null && !HasVisibleSection && !HasPending)
         {
@@ -157,7 +156,8 @@
 
     @if (_reasonOpenId != null && ReasonText(_reasonOpenId) is { } reasonText)
     {
-        <div class="sb-settings-reason-popover" role="tooltip" id="@_reasonPopoverId">@reasonText</div>
+        <div class="sb-settings-reason-backdrop" @onclick="CloseReason"></div>
+        <div class="sb-settings-reason-popover" role="tooltip" aria-hidden="true" style="@ReasonPopoverStyle">@reasonText</div>
     }
 </div>
 
