@@ -270,7 +270,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
             RegisterLocationHandler();
         }
 
-        if (_urlWriteQueued || _rewriteCurrentSection)
+        if ((_urlWriteQueued || _rewriteCurrentSection) && !HasPending)
         {
             var rewriteCurrent = _rewriteCurrentSection;
             _urlWriteQueued = false;
