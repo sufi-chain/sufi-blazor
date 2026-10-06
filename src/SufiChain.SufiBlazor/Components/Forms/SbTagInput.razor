@@ -120,32 +120,52 @@
     private void OnInput(string? input)
     {
         var value = input ?? "";
-        
-        // Check for comma delimiter in the value
-        if (value.Contains(','))
+        if (ContainsCommitSeparator(value))
         {
-            var parts = value.Split(',');
-            foreach (var part in parts)
+            foreach (var part in SplitCommitted(value))
             {
                 var trimmed = part.Trim();
                 if (!string.IsNullOrEmpty(trimmed))
                 {
-                    AddTag(trimmed);
+                    _ = AddTagAsync(trimmed);
                 }
             }
+
             _inputValue = "";
+            return;
         }
-        else
-        {
-            _inputValue = value;
-        }
+
+        _inputValue = value;
     }
+
+    private bool ContainsCommitSeparator(string value)
+    {
+        if (value.Contains(',') || value.Contains('\n') || value.Contains('\r'))
+        {
+            return true;
+        }
+
+        return Delimiters.Contains(" ") && value.Contains(' ');
+    }
+
+    private IEnumerable<string> SplitCommitted(string value)
+    {
+        var separators = Delimiters.Contains(" ")
+            ? new[] { ',', '\n', '\r', ' ', '\t' }
+            : new[] { ',', '\n', '\r' };
+        return value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+    }
+
+    private bool IsDelimiterKey(string key) =>
+        Delimiters.Contains(key)
+        || (key == "Comma" && (Delimiters.Contains(",") || Delimiters.Contains("Comma")))
+        || (key == "NumpadEnter" && Delimiters.Contains("Enter"));
     
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
-        if (Delimiters.Contains(e.Key) && !string.IsNullOrWhiteSpace(_inputValue))
+        if (IsDelimiterKey(e.Key) && !string.IsNullOrWhiteSpace(_inputValue))
         {
-            AddTag(_inputValue.Trim());
+            await AddTagAsync(_inputValue.Trim());
             _inputValue = "";
         }
         else if (e.Key == "Backspace" && string.IsNullOrEmpty(_inputValue) && Tags.Any())
@@ -154,16 +174,16 @@
         }
     }
     
-    private void OnBlur()
+    private async Task OnBlur()
     {
         if (!string.IsNullOrWhiteSpace(_inputValue))
         {
-            AddTag(_inputValue.Trim());
+            await AddTagAsync(_inputValue.Trim());
             _inputValue = "";
         }
     }
     
-    private async void AddTag(string tag)
+    private async Task AddTagAsync(string tag)
     {
         if (string.IsNullOrWhiteSpace(tag)) return;
         if (MaxTags.HasValue && Tags.Count >= MaxTags.Value) return;
