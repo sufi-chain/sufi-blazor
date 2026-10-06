@@ -73,4 +73,7 @@
   <data name="DataLoadFailed" xml:space="preserve"><value>No se ha podido cargar la lista.</value></data>
   <data name="DataLoadFailedGeneric" xml:space="preserve"><value>No se ha podido cargar la información.</value></data>
   <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="Search_Placeholder" xml:space="preserve"><value>Buscar...</value></data>
+  <data name="Columns" xml:space="preserve"><value>Columnas</value></data>
+  <data name="FilterBy" xml:space="preserve"><value>Filtro: {0}</value></data>
 </root>
