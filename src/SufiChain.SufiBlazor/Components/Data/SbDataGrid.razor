@@ -278,7 +278,7 @@
                         </td>
                     </tr>
                 }
-                else if (ShowInitialPlaceholder && ShowBusyChrome)
+                else if (ShowInitialPlaceholder)
                 {
                     var skeletonCells = VisibleColumns.Any() ? VisibleColumns.Count() : 3;
                     @for (var skeletonRow = 0; skeletonRow < 4; skeletonRow++)
@@ -292,12 +292,6 @@
                             }
                         </tr>
                     }
-                }
-                else if (ShowInitialPlaceholder)
-                {
-                    <tr class="sb-datagrid__row sb-datagrid__row--placeholder" aria-hidden="true">
-                        <td class="sb-datagrid__cell" colspan="@GetTotalColumnCount()"></td>
-                    </tr>
                 }
                 else
                 {
@@ -379,7 +373,7 @@
                         </div>
                     </div>
                 }
-                else if (ShowInitialPlaceholder && ShowBusyChrome)
+                else if (ShowInitialPlaceholder)
                 {
                     <div class="sb-loading-skeleton__cards" aria-hidden="true">
                         @for (var card = 0; card < 3; card++)
@@ -387,10 +381,6 @@
                             <SbSkeleton Variant="SbSkeletonVariant.Rounded" Height="5.5rem" />
                         }
                     </div>
-                }
-                else if (ShowInitialPlaceholder)
-                {
-                    <div class="sb-datagrid__cards-placeholder" aria-hidden="true"></div>
                 }
                 else
                 {
