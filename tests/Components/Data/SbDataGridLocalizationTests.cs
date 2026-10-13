@@ -98,3 +98,54 @@ public class SbDataGridLocalizationTests : BunitContext
         Assert.DoesNotContain("No data available", cut.Markup);
     }
 }
+
+public class SbDataGridSpanishLocalizationTests : BunitContext
+{
+    public SbDataGridSpanishLocalizationTests()
+    {
+        JSInterop.Mode = JSRuntimeMode.Loose;
+        JSInterop.SetupVoid("SufiBlazor.clickAway.unregister", _ => true);
+        JSInterop.SetupVoid("SufiBlazor.clickAway.register", _ => true);
+        JSInterop.Setup<bool>("SufiBlazor.viewport.watchCompact", _ => true).SetResult(false);
+        JSInterop.SetupVoid("SufiBlazor.viewport.unwatchCompact", _ => true);
+        JSInterop.Setup<bool>("SufiBlazor.select.shouldFlipUp", _ => true).SetResult(false);
+        Services.AddLocalization();
+    }
+
+    private static RenderFragment Columns => builder =>
+    {
+        builder.OpenComponent<SbColumn<string>>(0);
+        builder.AddAttribute(1, "Field", "Length");
+        builder.AddAttribute(2, "Title", "Name");
+        builder.CloseComponent();
+    };
+
+    [Fact]
+    public void SpanishPagerShowsLocalizedItemsPerPage()
+    {
+        var previousCulture = CultureInfo.CurrentCulture;
+        var previousUICulture = CultureInfo.CurrentUICulture;
+        try
+        {
+            var spanish = CultureInfo.GetCultureInfo("es-ES");
+            CultureInfo.CurrentCulture = spanish;
+            CultureInfo.CurrentUICulture = spanish;
+
+            var items = Enumerable.Range(1, 15).Select(i => $"item-{i}").ToArray();
+            var cut = Render<SbDataGrid<string>>(p => p
+                .Add(x => x.Items, items)
+                .Add(x => x.ShowPagination, true)
+                .Add(x => x.ShowPageSizeSelector, true)
+                .Add(x => x.PageSize, 10)
+                .AddChildContent(Columns));
+
+            Assert.Contains("Elementos por página", cut.Markup);
+            Assert.DoesNotContain("Items per page", cut.Markup);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = previousCulture;
+            CultureInfo.CurrentUICulture = previousUICulture;
+        }
+    }
+}

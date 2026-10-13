@@ -58,6 +58,160 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Clear" xml:space="preserve"><value>Limpiar</value></data>
+  <data name="Close" xml:space="preserve"><value>Cerrar</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Apply" xml:space="preserve"><value>Aplicar</value></data>
+  <data name="Save" xml:space="preserve"><value>Guardar</value></data>
+  <data name="Expand" xml:space="preserve"><value>Expandir</value></data>
+  <data name="Collapse" xml:space="preserve"><value>Contraer</value></data>
+  <data name="Remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="Yes" xml:space="preserve"><value>Sí</value></data>
+  <data name="No" xml:space="preserve"><value>No</value></data>
+  <data name="Select_Placeholder" xml:space="preserve"><value>Seleccionar...</value></data>
+  <data name="Search_Placeholder" xml:space="preserve"><value>Buscar...</value></data>
+  <data name="SelectDate_Placeholder" xml:space="preserve"><value>Seleccionar fecha...</value></data>
+  <data name="SelectDateRange_Placeholder" xml:space="preserve"><value>Seleccionar intervalo de fechas...</value></data>
+  <data name="SelectTime_Placeholder" xml:space="preserve"><value>Seleccionar hora...</value></data>
+  <data name="SelectColor_Placeholder" xml:space="preserve"><value>Seleccionar color...</value></data>
+  <data name="EnterValue_Placeholder" xml:space="preserve"><value>Introducir valor...</value></data>
+  <data name="ShowPassword" xml:space="preserve"><value>Mostrar contraseña</value></data>
+  <data name="HidePassword" xml:space="preserve"><value>Ocultar contraseña</value></data>
+  <data name="ClearTime" xml:space="preserve"><value>Borrar hora</value></data>
+  <data name="ClearColor" xml:space="preserve"><value>Borrar color</value></data>
+  <data name="ClearDate" xml:space="preserve"><value>Borrar fecha</value></data>
+  <data name="ClearDates" xml:space="preserve"><value>Borrar fechas</value></data>
+  <data name="DateRangePreset_QuickRange" xml:space="preserve"><value>Intervalo rápido...</value></data>
+  <data name="DateRangePreset_Today" xml:space="preserve"><value>Hoy</value></data>
+  <data name="DateRangePreset_Last7Days" xml:space="preserve"><value>Últimos 7 días</value></data>
+  <data name="DateRangePreset_Last30Days" xml:space="preserve"><value>Últimos 30 días</value></data>
+  <data name="DateRangePreset_Last90Days" xml:space="preserve"><value>Últimos 90 días</value></data>
+  <data name="DateRangePreset_ThisMonth" xml:space="preserve"><value>Este mes</value></data>
+  <data name="DateRangePreset_LastMonth" xml:space="preserve"><value>Mes pasado</value></data>
+  <data name="Hour" xml:space="preserve"><value>Hora</value></data>
+  <data name="Minute" xml:space="preserve"><value>Minuto</value></data>
+  <data name="Second" xml:space="preserve"><value>Segundo</value></data>
+  <data name="Period" xml:space="preserve"><value>Periodo</value></data>
+  <data name="Now" xml:space="preserve"><value>Ahora</value></data>
+  <data name="FirstPage" xml:space="preserve"><value>Primera página</value></data>
+  <data name="PreviousPage" xml:space="preserve"><value>Página anterior</value></data>
+  <data name="NextPage" xml:space="preserve"><value>Página siguiente</value></data>
+  <data name="LastPage" xml:space="preserve"><value>Última página</value></data>
+  <data name="ItemsPerPage" xml:space="preserve"><value>Elementos por página:</value></data>
+  <data name="NoItems" xml:space="preserve"><value>No hay elementos</value></data>
+  <data name="PageAriaLabelFormat" xml:space="preserve"><value>Página {0}</value></data>
+  <data name="PageInfoFormat" xml:space="preserve"><value>{0}-{1} de {2}</value></data>
+  <data name="Previous" xml:space="preserve"><value>Anterior</value></data>
+  <data name="Next" xml:space="preserve"><value>Siguiente</value></data>
+  <data name="Operator" xml:space="preserve"><value>Operador</value></data>
+  <data name="Value" xml:space="preserve"><value>Valor</value></data>
+  <data name="And" xml:space="preserve"><value>Y</value></data>
+  <data name="FilterBy" xml:space="preserve"><value>Filtro: {0}</value></data>
+  <data name="FilterOptions" xml:space="preserve"><value>Opciones de filtro</value></data>
+  <data name="FilterEquals" xml:space="preserve"><value>Es igual a</value></data>
+  <data name="FilterNotEquals" xml:space="preserve"><value>No es igual a</value></data>
+  <data name="FilterContains" xml:space="preserve"><value>Contiene</value></data>
+  <data name="FilterStartsWith" xml:space="preserve"><value>Empieza por</value></data>
+  <data name="FilterEndsWith" xml:space="preserve"><value>Termina en</value></data>
+  <data name="FilterGreaterThan" xml:space="preserve"><value>Mayor que</value></data>
+  <data name="FilterGreaterThanOrEqual" xml:space="preserve"><value>Mayor o igual que</value></data>
+  <data name="FilterLessThan" xml:space="preserve"><value>Menor que</value></data>
+  <data name="FilterLessThanOrEqual" xml:space="preserve"><value>Menor o igual que</value></data>
+  <data name="FilterBetween" xml:space="preserve"><value>Entre</value></data>
+  <data name="FilterInList" xml:space="preserve"><value>En la lista</value></data>
+  <data name="FilterIsEmpty" xml:space="preserve"><value>Está vacío</value></data>
+  <data name="FilterIsNotEmpty" xml:space="preserve"><value>No está vacío</value></data>
+  <data name="CustomColor" xml:space="preserve"><value>Color personalizado</value></data>
+  <data name="Opacity" xml:space="preserve"><value>Opacidad: {0}%</value></data>
+  <data name="Preview" xml:space="preserve"><value>Vista previa:</value></data>
+  <data name="EnterSlug_Placeholder" xml:space="preserve"><value>introduzca-el-slug-aqui</value></data>
+  <data name="GenerateSlug" xml:space="preserve"><value>Generar</value></data>
+  <data name="NoResultsFound" xml:space="preserve"><value>No se encontraron resultados</value></data>
+  <data name="AddTag_Placeholder" xml:space="preserve"><value>Buscar o añadir etiquetas...</value></data>
+  <data name="CreateOption" xml:space="preserve"><value>Crear "{0}"</value></data>
+  <data name="SaveChanges" xml:space="preserve"><value>Guardar cambios</value></data>
+  <data name="CancelEditing" xml:space="preserve"><value>Cancelar edición</value></data>
+  <data name="EditRow" xml:space="preserve"><value>Editar fila</value></data>
+  <data name="Confirm" xml:space="preserve"><value>Confirmar</value></data>
+  <data name="Back" xml:space="preserve"><value>Atrás</value></data>
+  <data name="Finish" xml:space="preserve"><value>Finalizar</value></data>
+  <data name="Optional" xml:space="preserve"><value>Opcional</value></data>
+  <data name="ClearAll" xml:space="preserve"><value>Borrar todo</value></data>
+  <data name="Filters" xml:space="preserve"><value>Filtros</value></data>
+  <data name="ActiveFilters" xml:space="preserve"><value>Filtros activos</value></data>
+  <data name="Columns" xml:space="preserve"><value>Columnas</value></data>
+  <data name="Actions" xml:space="preserve"><value>Acciones</value></data>
+  <data name="Sort" xml:space="preserve"><value>Ordenar</value></data>
+  <data name="SortAscending" xml:space="preserve"><value>Ascendente</value></data>
+  <data name="SortDescending" xml:space="preserve"><value>Descendente</value></data>
+  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
+  <data name="NoDataAvailable" xml:space="preserve"><value>No hay datos disponibles</value></data>
+  <data name="DataLoadFailed" xml:space="preserve"><value>No se ha podido cargar la lista.</value></data>
+  <data name="DataLoadFailedGeneric" xml:space="preserve"><value>No se ha podido cargar la información.</value></data>
+  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
+  <data name="SelectRow" xml:space="preserve"><value>Seleccionar fila {0}</value></data>
+  <data name="RemoveFilterFor" xml:space="preserve"><value>Quitar filtro de {0}</value></data>
+  <data name="GenerateFromTitle" xml:space="preserve"><value>Generar a partir del título</value></data>
+  <data name="Demo:TabExample" xml:space="preserve"><value>Ejemplo</value></data>
+  <data name="Demo:TabViewSource" xml:space="preserve"><value>Ver código fuente</value></data>
+  <data name="Demo:TabDocs" xml:space="preserve"><value>Documentación</value></data>
+  <data name="Demo:SourceLabelCodeBlock" xml:space="preserve"><value>Bloque @code</value></data>
+  <data name="Demo:SourceLabelMarkup" xml:space="preserve"><value>Marcado</value></data>
+  <data name="Rte:HeaderNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="Rte:Header1" xml:space="preserve"><value>Encabezado 1</value></data>
+  <data name="Rte:Header2" xml:space="preserve"><value>Encabezado 2</value></data>
+  <data name="Rte:Header3" xml:space="preserve"><value>Encabezado 3</value></data>
+  <data name="Rte:Header4" xml:space="preserve"><value>Encabezado 4</value></data>
+  <data name="Rte:Header5" xml:space="preserve"><value>Encabezado 5</value></data>
+  <data name="Rte:Header6" xml:space="preserve"><value>Encabezado 6</value></data>
+  <data name="Rte:FontDefault" xml:space="preserve"><value>Predeterminada</value></data>
+  <data name="Rte:AlignLeft" xml:space="preserve"><value>Izquierda</value></data>
+  <data name="Rte:AlignCenter" xml:space="preserve"><value>Centro</value></data>
+  <data name="Rte:AlignRight" xml:space="preserve"><value>Derecha</value></data>
+  <data name="Rte:AlignJustify" xml:space="preserve"><value>Justificar</value></data>
+  <data name="Editor:Undo" xml:space="preserve"><value>Deshacer</value></data>
+  <data name="Editor:Redo" xml:space="preserve"><value>Rehacer</value></data>
+  <data name="Editor:Heading" xml:space="preserve"><value>Encabezado</value></data>
+  <data name="Editor:HeaderNormal" xml:space="preserve"><value>Normal</value></data>
+  <data name="Editor:Header1" xml:space="preserve"><value>Encabezado 1</value></data>
+  <data name="Editor:Header2" xml:space="preserve"><value>Encabezado 2</value></data>
+  <data name="Editor:Header3" xml:space="preserve"><value>Encabezado 3</value></data>
+  <data name="Editor:Header4" xml:space="preserve"><value>Encabezado 4</value></data>
+  <data name="Editor:Header5" xml:space="preserve"><value>Encabezado 5</value></data>
+  <data name="Editor:Header6" xml:space="preserve"><value>Encabezado 6</value></data>
+  <data name="Editor:Bold" xml:space="preserve"><value>Negrita</value></data>
+  <data name="Editor:Italic" xml:space="preserve"><value>Cursiva</value></data>
+  <data name="Editor:Underline" xml:space="preserve"><value>Subrayado</value></data>
+  <data name="Editor:Strike" xml:space="preserve"><value>Tachado</value></data>
+  <data name="Editor:OrderedList" xml:space="preserve"><value>Lista numerada</value></data>
+  <data name="Editor:BulletList" xml:space="preserve"><value>Lista con viñetas</value></data>
+  <data name="Editor:AlignLeft" xml:space="preserve"><value>Izquierda</value></data>
+  <data name="Editor:AlignCenter" xml:space="preserve"><value>Centro</value></data>
+  <data name="Editor:AlignRight" xml:space="preserve"><value>Derecha</value></data>
+  <data name="Editor:Link" xml:space="preserve"><value>Insertar enlace</value></data>
+  <data name="Editor:Image" xml:space="preserve"><value>Insertar imagen</value></data>
+  <data name="Editor:Quote" xml:space="preserve"><value>Cita</value></data>
+  <data name="Editor:CodeBlock" xml:space="preserve"><value>Bloque de código</value></data>
+  <data name="Editor:ClearFormatting" xml:space="preserve"><value>Borrar formato</value></data>
+  <data name="Editor:InsertImageFromGallery" xml:space="preserve"><value>Insertar imagen de la galería</value></data>
+  <data name="Editor:InsertFileFromGallery" xml:space="preserve"><value>Insertar archivo de la galería</value></data>
+  <data name="Editor:TaskList" xml:space="preserve"><value>Lista de tareas</value></data>
+  <data name="Editor:Table" xml:space="preserve"><value>Insertar tabla</value></data>
+  <data name="Editor:Callout" xml:space="preserve"><value>Insertar llamada</value></data>
+  <data name="Editor:AskAi" xml:space="preserve"><value>Preguntar a la IA</value></data>
+  <data name="Editor:Accept" xml:space="preserve"><value>Aceptar</value></data>
+  <data name="Editor:Reject" xml:space="preserve"><value>Rechazar</value></data>
+  <data name="Editor:Dismiss" xml:space="preserve"><value>Descartar</value></data>
+  <data name="Editor:AcceptAll" xml:space="preserve"><value>Aceptar todo</value></data>
+  <data name="Editor:RejectAll" xml:space="preserve"><value>Rechazar todo</value></data>
+  <data name="Editor:SuggestionReview" xml:space="preserve"><value>Revisión de sugerencias de IA</value></data>
+  <data name="Map:OpenInOpenStreetMap" xml:space="preserve"><value>Abrir en OpenStreetMap</value></data>
+  <data name="Map:PickLocation" xml:space="preserve"><value>Elegir ubicación</value></data>
+  <data name="Map:ShareLocation" xml:space="preserve"><value>Compartir ubicación</value></data>
+  <data name="Map:UseMyLocation" xml:space="preserve"><value>Usar mi ubicación</value></data>
+  <data name="Map:SearchPlace" xml:space="preserve"><value>Buscar un lugar...</value></data>
+  <data name="Map:CurrentLocation" xml:space="preserve"><value>Ubicación actual</value></data>
+  <data name="Map:GeolocationFailed" xml:space="preserve"><value>No se pudo obtener su ubicación.</value></data>
   <data name="Settings:Save" xml:space="preserve"><value>Guardar</value></data>
   <data name="Settings:Discard" xml:space="preserve"><value>Descartar cambios</value></data>
   <data name="Settings:Stay" xml:space="preserve"><value>Seguir editando</value></data>
@@ -69,11 +223,4 @@
   <data name="Settings:SaveFailed" xml:space="preserve"><value>No se pudo guardar la configuración.</value></data>
   <data name="Settings:EmptyTitle" xml:space="preserve"><value>No hay configuración disponible</value></data>
   <data name="Settings:SectionPicker" xml:space="preserve"><value>Sección</value></data>
-  <data name="Loading" xml:space="preserve"><value>Cargando…</value></data>
-  <data name="DataLoadFailed" xml:space="preserve"><value>No se ha podido cargar la lista.</value></data>
-  <data name="DataLoadFailedGeneric" xml:space="preserve"><value>No se ha podido cargar la información.</value></data>
-  <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
-  <data name="Search_Placeholder" xml:space="preserve"><value>Buscar...</value></data>
-  <data name="Columns" xml:space="preserve"><value>Columnas</value></data>
-  <data name="FilterBy" xml:space="preserve"><value>Filtro: {0}</value></data>
 </root>
