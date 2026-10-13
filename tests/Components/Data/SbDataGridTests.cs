@@ -282,7 +282,8 @@ public class SbDataGridTests : BunitContext
             .AddChildContent(ColumnsTemplate));
 
         cut.WaitForState(() => cut.Markup.Contains("sb-datagrid__row--skeleton"), TimeSpan.FromSeconds(2));
-        Assert.Contains("Loading…", cut.Markup);
+        // Busy chrome (and the Loading… status text) is delayed; wait for it before asserting.
+        cut.WaitForState(() => cut.Markup.Contains("Loading…"), TimeSpan.FromSeconds(2));
         Assert.DoesNotContain("No data available", cut.Markup);
         Assert.DoesNotContain("Loading...", cut.Markup);
         Assert.Equal("true", cut.Find("table.sb-datagrid__table").GetAttribute("aria-busy"));
