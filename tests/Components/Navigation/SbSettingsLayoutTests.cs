@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.JSInterop;
 using SufiChain.SufiBlazor.Components.Navigation;
 using SufiChain.SufiBlazor.Localization;
 
@@ -785,6 +786,26 @@ public class SbSettingsLayoutTests : BunitContext
         Assert.Equal(label, item.GetAttribute("title"));
         Assert.Equal(label, item.GetAttribute("aria-label"));
         Assert.Equal(label, item.QuerySelector(".sb-settings-item__label")?.TextContent);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DisposeAsync_IgnoresDisconnectAndCancel_AndIsIdempotent(bool disconnected)
+    {
+        Exception unwatchException = disconnected
+            ? new JSDisconnectedException("circuit disconnected")
+            : new TaskCanceledException("unwatch canceled");
+        var unwatch = JSInterop.SetupVoid("SufiBlazor.settingsLayout.unwatch", _ => true)
+            .SetException(unwatchException);
+        var cut = RenderLayout(null, builder =>
+        {
+            Section(builder, 0, "general", "General", "settings");
+        });
+
+        await cut.Instance.DisposeAsync();
+        await cut.Instance.DisposeAsync();
+        unwatch.VerifyInvoke("SufiBlazor.settingsLayout.unwatch", 1);
     }
 
     private IRenderedComponent<SbSettingsLayout> RenderLayout(

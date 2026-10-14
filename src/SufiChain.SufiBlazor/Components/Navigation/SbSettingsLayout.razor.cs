@@ -36,6 +36,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private bool _saving;
     private int _toastVersion;
     private readonly CancellationTokenSource _disposeCts = new();
+    private bool _disposed;
     private string? _activeId;
     private string? _notifiedActiveId;
     private string? _pendingSectionId;
@@ -1264,10 +1265,23 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
         FinishExternalLeave(false);
         _locationRegistration?.Dispose();
         _toastVersion++;
-        _disposeCts.Cancel();
+        try
+        {
+            _disposeCts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
         _disposeCts.Dispose();
         if (!_jsReady)
         {
@@ -1279,7 +1293,10 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
             await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.unwatch", _instanceId);
             await JS.InvokeVoidAsync("SufiBlazor.settingsLayout.setBeforeUnload", _instanceId, false);
         }
-        catch (Exception ex) when (ex is JSException or InvalidOperationException)
+        catch (Exception ex) when (ex is JSException
+            or JSDisconnectedException
+            or InvalidOperationException
+            or OperationCanceledException)
         {
         }
     }
