@@ -343,6 +343,69 @@ public class SbSelectTests : BunitContext
         Assert.NotNull(cut.Find("#select-id-value"));
     }
 
+    private IRenderedComponent<SbSelect<SelectTestItem, int>> RenderLargeSelect(
+        int count,
+        Action<ComponentParameterCollectionBuilder<SbSelect<SelectTestItem, int>>> configure)
+    {
+        var items = CreateItems(count);
+        return Render<SbSelect<SelectTestItem, int>>(p =>
+        {
+            p.Add(x => x.Items, items)
+                .Add(x => x.TextField, (Func<SelectTestItem, string>)(item => item.Name))
+                .Add(x => x.ValueField, (Func<SelectTestItem, int>)(item => item.Id))
+                .Add(x => x.Searchable, true);
+            configure(p);
+        });
+    }
+
+    [Fact]
+    public async Task VirtualizedSelectDoesNotRenderEveryOption()
+    {
+        var cut = RenderLargeSelect(600, p => p.Add(x => x.Virtualize, true));
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main").Click());
+
+        Assert.NotNull(cut.Find(".sb-select-options"));
+        Assert.True(cut.FindAll(".sb-select-option").Count < 600);
+    }
+
+    [Fact]
+    public async Task NonVirtualizedSelectRendersEveryOption()
+    {
+        var cut = RenderLargeSelect(60, _ => { });
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main").Click());
+
+        Assert.Equal(60, cut.FindAll(".sb-select-option").Count);
+    }
+
+    [Fact]
+    public async Task ClientFilterDebounceAppliesFilterAfterDelay()
+    {
+        var cut = RenderLargeSelect(30, p => p.Add(x => x.ClientFilterDebounceMs, 150));
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main").Click());
+
+        cut.Find(".sb-select-search__input").Input("Item 17");
+
+        // The typed text shows at once; the list filters after the debounce.
+        Assert.Equal("Item 17", cut.Find(".sb-select-search__input").GetAttribute("value"));
+        cut.WaitForAssertion(() =>
+        {
+            var options = cut.FindAll(".sb-select-option");
+            Assert.Single(options);
+            Assert.Contains("Item 17", options[0].TextContent);
+        }, TimeSpan.FromSeconds(3));
+    }
+
+    [Fact]
+    public async Task ClientFilterMatchesTrimmedTerm()
+    {
+        var cut = RenderLargeSelect(30, _ => { });
+        await cut.InvokeAsync(() => cut.Find(".sb-select-trigger__main").Click());
+
+        cut.Find(".sb-select-search__input").Input("  Item 23 ");
+
+        Assert.Single(cut.FindAll(".sb-select-option"));
+    }
+
     private class SelectTestItem
     {
         public int Id { get; set; }
