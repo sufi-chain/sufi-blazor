@@ -54,10 +54,9 @@
                           class="sb-conversation-composer__textarea"
                           rows="@Rows"
                           placeholder="@Placeholder"
-                          disabled="@(IsDisabled || ShowSendingState)"
-                          @bind:get="_draft"
-                          @bind:set="HandleDraftInputAsync"
-                          @bind:event="oninput"></textarea>
+                          disabled="@(IsDisabled || (ShowSendingState && RetainDraftWhileSending))"
+                          value="@_domValue"
+                          @oninput="HandleTextAreaInputAsync"></textarea>
             </div>
             <div class="sb-conversation-composer__actions-end">
                 @EndActions
@@ -90,8 +89,13 @@
    private ElementReference _shellRef;
    private ElementReference _textAreaRef;
    private string _draft = string.Empty;
+   // sufi-chain#386: the value the server last wrote into the textarea. It changes only when
+   // the host or the composer itself sets the text (initial value, clear after send, transcript),
+   // never on typing. A server-bound value re-rendered on every keystroke and, on a slow circuit,
+   // wrote back an older value over characters the user had typed since («ست ۱» for «تست ۱»).
+   private string _domValue = string.Empty;
+   private bool _domSyncPending;
    private string _lastParentValue = string.Empty;
-   private bool _updatingFromInput;
    private bool _enterBound;
    private bool _enterBindStarted;
    private bool _submitting;
@@ -218,22 +222,50 @@
        // Adopt external Value only when the parent actually changed it (clear after
        // send, AI suggest, programmatic set). Skip the input round-trip and skip
        // unrelated host re-renders so the textarea DOM/value is left alone while typing.
-       if (_updatingFromInput)
-       {
-           _updatingFromInput = false;
-           return;
-       }
-
        var incoming = Value ?? string.Empty;
        if (!string.Equals(incoming, _lastParentValue, StringComparison.Ordinal))
        {
            _lastParentValue = incoming;
-           _draft = incoming;
+           // A two-way host echoes what was just typed. That is not a host edit, and
+           // writing it back into the textarea would race keystrokes still in flight.
+           if (!string.Equals(incoming, _draft, StringComparison.Ordinal))
+           {
+               SetTextFromHost(incoming);
+           }
        }
+   }
+
+   /// <summary>
+   /// Text set by the host or the composer (not typed). The render writes it as the value,
+   /// and the DOM is also set through JS because an unchanged render value (for example two
+   /// clears in a row) would not touch a textarea the user has typed into since.
+   /// </summary>
+   private void SetTextFromHost(string value)
+   {
+       if (string.Equals(value, _draft, StringComparison.Ordinal)
+           && string.Equals(value, _domValue, StringComparison.Ordinal))
+       {
+           return;
+       }
+
+       _draft = value;
+       _domValue = value;
+       _domSyncPending = true;
    }
 
    protected override async Task OnAfterRenderAsync(bool firstRender)
    {
+       if (_domSyncPending && !firstRender)
+       {
+           _domSyncPending = false;
+           await SyncTextAreaDomAsync(_draft);
+       }
+       else if (firstRender)
+       {
+           // The first render already wrote the value attribute.
+           _domSyncPending = false;
+       }
+
        if (_enterBound || _enterBindStarted)
        {
            return;
@@ -289,10 +321,13 @@
        }
    }
 
+   private Task HandleTextAreaInputAsync(ChangeEventArgs args) =>
+       HandleDraftInputAsync(args.Value?.ToString());
+
    private async Task HandleDraftInputAsync(string? value)
    {
+       // Typing never changes _domValue, so the next render leaves the textarea alone.
        _draft = value ?? string.Empty;
-       _updatingFromInput = true;
        // Do not advance _lastParentValue here. Hosts that skip ValueChanged (to avoid
        // remounting) keep a stale Value; treating local typing as the parent value
        // would make the next empty parent Value look like an external clear.
@@ -318,8 +353,14 @@
         if (!retainDraft)
         {
             _draft = string.Empty;
+            _domValue = string.Empty;
             _lastParentValue = string.Empty;
             await SyncTextAreaDomAsync(string.Empty);
+        }
+        else
+        {
+            // The textarea already shows this text; keep the render value in step.
+            _domValue = body;
         }
 
         _submitting = true;
@@ -333,24 +374,53 @@
 
             if (request.DraftAfterSend != null)
             {
-                _draft = request.DraftAfterSend;
-                _lastParentValue = _draft;
-                await SyncTextAreaDomAsync(_draft);
-                await ValueChanged.InvokeAsync(_draft);
+                var next = request.DraftAfterSend;
+                var typedDuringSend = !retainDraft && !string.Equals(next, _draft, StringComparison.Ordinal)
+                    && string.IsNullOrEmpty(next) && !string.IsNullOrEmpty(_draft);
+                if (typedDuringSend)
+                {
+                    // Human chats stay editable while sending. Keep the follow-up the user
+                    // is already typing instead of wiping it with the host's empty draft.
+                    _lastParentValue = string.Empty;
+                }
+                else if (!string.Equals(next, _draft, StringComparison.Ordinal))
+                {
+                    _draft = next;
+                    _domValue = next;
+                    _lastParentValue = next;
+                    await SyncTextAreaDomAsync(next);
+                    await ValueChanged.InvokeAsync(next);
+                }
+                else
+                {
+                    // Same text the browser already has (it came from input events).
+                    // Writing it back would race keystrokes still in flight.
+                    _domValue = next;
+                    _lastParentValue = next;
+                    await ValueChanged.InvokeAsync(next);
+                }
             }
             else if (!retainDraft)
             {
-                _draft = string.Empty;
-                _lastParentValue = string.Empty;
-                await SyncTextAreaDomAsync(string.Empty);
-                await ValueChanged.InvokeAsync(string.Empty);
+                if (string.IsNullOrEmpty(_draft))
+                {
+                    _domValue = string.Empty;
+                    _lastParentValue = string.Empty;
+                    await ValueChanged.InvokeAsync(string.Empty);
+                }
+                else
+                {
+                    // Keep the follow-up typed while the send was running.
+                    _lastParentValue = string.Empty;
+                }
             }
         }
         catch
         {
-            if (!retainDraft)
+            if (!retainDraft && string.IsNullOrEmpty(_draft))
             {
                 _draft = body;
+                _domValue = body;
                 _lastParentValue = string.Empty;
                 await SyncTextAreaDomAsync(body);
             }
