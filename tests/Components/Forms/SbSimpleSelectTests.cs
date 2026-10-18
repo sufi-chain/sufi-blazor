@@ -125,6 +125,50 @@ public class SbSimpleSelectTests : BunitContext
     }
 
     [Fact]
+    public void Value_without_a_matching_option_shows_the_placeholder_not_the_raw_value()
+    {
+        // sufi-chain#457: switching projects re-registers the category options after the trigger paints;
+        // the trigger must never show the raw value (a Guid) in between.
+        var raw = Guid.NewGuid().ToString();
+
+        var cut = RenderSimpleSelect(p => p
+            .Add(x => x.Value, raw)
+            .Add(x => x.Placeholder, "Choose..."));
+
+        Assert.DoesNotContain(raw, cut.Find(".sb-select-trigger").TextContent);
+        Assert.Contains("Choose...", cut.Find(".sb-select-trigger__placeholder").TextContent);
+        Assert.Empty(cut.FindAll(".sb-select-trigger__value"));
+    }
+
+    [Fact]
+    public void Value_shows_its_label_once_the_option_registers()
+    {
+        var id = Guid.NewGuid().ToString();
+        RenderFragment noOptions = _ => { };
+        RenderFragment withOption = builder =>
+        {
+            builder.OpenComponent<SbSelectOption<string>>(0);
+            builder.AddAttribute(1, "Value", id);
+            builder.AddAttribute(2, "Text", "Category label");
+            builder.CloseComponent();
+        };
+
+        var cut = Render<SbSimpleSelect<string>>(p => p
+            .Add(x => x.Value, id)
+            .AddChildContent(noOptions));
+        Assert.DoesNotContain(id, cut.Find(".sb-select-trigger").TextContent);
+
+        cut.Render(p => p.AddChildContent(withOption));
+
+        cut.WaitForAssertion(() =>
+        {
+            var trigger = cut.Find(".sb-select-trigger").TextContent;
+            Assert.Contains("Category label", trigger);
+            Assert.DoesNotContain(id, trigger);
+        });
+    }
+
+    [Fact]
     public void ButtonIsDisabledWhenDisabledTrue()
     {
         // Arrange & Act

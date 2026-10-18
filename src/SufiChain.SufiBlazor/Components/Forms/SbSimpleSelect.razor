@@ -32,8 +32,10 @@
                 aria-expanded="@(_isOpen ? "true" : "false")"
                 aria-labelledby="@LabelledBy"
                 aria-controls="@(_isOpen ? $"{EffectiveId}-options" : null)">
-            <span id="@($"{EffectiveId}-value")" class="@(HasValue ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
-                @if (!HasValue)
+            @* sufi-chain#457: a value with no registered option (options still loading, or a stale value) shows the
+               placeholder, never Value.ToString() such as a raw Guid. *@
+            <span id="@($"{EffectiveId}-value")" class="@(ShowsSelection ? "sb-select-trigger__value" : "sb-select-trigger__placeholder")">
+                @if (!ShowsSelection)
                 {
                     @(Placeholder ?? L["Select_Placeholder"])
                 }
@@ -131,6 +133,7 @@
     private int _optionCollectionKey;
     private TValue? _lastRecoveredValue;
     private List<SbSelectOptionInfo<TValue>> _options = new();
+    private bool _selectedLabelStale;
 
     /// <summary>
     /// Selected value.
@@ -245,6 +248,8 @@
         }
     }
 
+    private bool ShowsSelection => HasValue && GetSelectedOption() != null;
+
     private string IconClass => $"sb-select-trigger__icon{(_isOpen ? " sb-select-trigger__icon--open" : "")}";
 
     private string DropdownClass => _shouldFlip ? "sb-select-dropdown sb-select-dropdown--flip-up" : "sb-select-dropdown";
@@ -258,16 +263,28 @@
         // cause GetDisplayText to fall back to Value.ToString() (e.g. a Guid).
         var existingIndex = _options.FindIndex(o =>
             EqualityComparer<TValue>.Default.Equals(o.Value, option.Value));
+        var isSelected = HasValue && EqualityComparer<TValue>.Default.Equals(option.Value, Value);
         if (existingIndex >= 0)
         {
+            // sufi-chain#457: the selected option's label changed after the trigger painted; refresh once.
+            if (isSelected && !string.Equals(_options[existingIndex].Text, option.Text, StringComparison.Ordinal))
+            {
+                _selectedLabelStale = true;
+            }
+
             _options[existingIndex] = option;
         }
         else
         {
             _options.Add(option);
+            if (isSelected)
+            {
+                // sufi-chain#457: the selected option registered after the trigger painted the placeholder.
+                _selectedLabelStale = true;
+            }
         }
 
-        if (HasValue && EqualityComparer<TValue>.Default.Equals(option.Value, Value))
+        if (isSelected)
         {
             _lastRecoveredValue = default;
         }
@@ -297,6 +314,14 @@
 
         var hasMatchingOption = _options.Any(o =>
             EqualityComparer<TValue>.Default.Equals(o.Value, Value));
+
+        if (hasMatchingOption && _selectedLabelStale)
+        {
+            _selectedLabelStale = false;
+            _lastRecoveredValue = default;
+            _ = InvokeAsync(StateHasChanged);
+            return;
+        }
 
         if (hasMatchingOption)
         {
@@ -360,7 +385,7 @@
             return selectedOption.Text ?? selectedOption.Value?.ToString() ?? "";
         }
 
-        return Value.ToString() ?? "";
+        return "";
     }
 
     private string GetOptionClass(bool isSelected, bool isDisabled)
