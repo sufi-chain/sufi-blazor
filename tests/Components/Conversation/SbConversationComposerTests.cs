@@ -185,8 +185,84 @@ public class SbConversationComposerTests : BunitContext
         textarea.Input("aria");
 
         Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
-        Assert.Equal("aria", textarea.GetAttribute("value"));
+        // sufi-chain#386: typing never re-renders the value, so a slow circuit cannot
+        // write an older value back over characters the user typed since.
+        Assert.Equal(string.Empty, cut.Find("textarea").GetAttribute("value"));
+        Assert.Equal(0, SetValueCalls());
     }
+
+    [Fact]
+    public void Host_Rerender_While_Typing_Does_Not_Rewrite_The_Textarea()
+    {
+        var cut = Render<SbConversationComposer>(parameters => parameters
+            .Add(p => p.Value, string.Empty));
+
+        cut.Find("textarea").Input("تست");
+        // A poll, presence tick or timeline update re-renders the host with its stale Value.
+        cut.Render(parameters => parameters
+            .Add(p => p.Value, string.Empty)
+            .Add(p => p.Placeholder, "Write a message"));
+        cut.Find("textarea").Input("تست ۱");
+        cut.Render(parameters => parameters
+            .Add(p => p.Value, string.Empty)
+            .Add(p => p.Placeholder, "Write a message"));
+
+        Assert.Equal(string.Empty, cut.Find("textarea").GetAttribute("value"));
+        Assert.Equal(0, SetValueCalls());
+    }
+
+    [Fact]
+    public async Task Human_Chat_Stays_Editable_While_Sending_And_Keeps_The_Follow_Up()
+    {
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var values = new List<string>();
+        var bodies = new List<string>();
+        var cut = Render<SbConversationComposer>(parameters => parameters
+            .Add(p => p.ValueChanged, EventCallback.Factory.Create<string>(this, value => values.Add(value)))
+            .Add(p => p.OnSend, EventCallback.Factory.Create<SbConversationSendRequest>(this, async request =>
+            {
+                bodies.Add(request.Body);
+                started.TrySetResult();
+                await release.Task;
+            })));
+
+        cut.Find("textarea").Input("پیام اول");
+        var click = cut.Find(".sb-conversation-composer__send").ClickAsync(new Microsoft.AspNetCore.Components.Web.MouseEventArgs());
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // The send is still running (a slow circuit or server). The field must accept typing.
+        cut.WaitForAssertion(() => Assert.False(cut.Find("textarea").HasAttribute("disabled")));
+        cut.Find("textarea").Input("پیام دوم");
+
+        release.TrySetResult();
+        await click;
+
+        Assert.Equal("پیام اول", Assert.Single(bodies));
+        Assert.Equal("پیام دوم", values[^1]);
+        // Only the clear before the send touched the DOM; the follow-up was not wiped.
+        Assert.Equal(1, SetValueCalls());
+        Assert.False(cut.Find("textarea").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Host_Clear_After_Typing_Resets_The_Dom_Value()
+    {
+        var cut = Render<SbConversationComposer>(parameters => parameters
+            .Add(p => p.Value, "draft"));
+
+        cut.Find("textarea").Input("draft edited");
+        cut.Render(parameters => parameters.Add(p => p.Value, string.Empty));
+
+        Assert.Equal(string.Empty, cut.Find("textarea").GetAttribute("value"));
+        Assert.Contains(JSInterop.Invocations, invocation =>
+            invocation.Identifier == "SufiBlazor.conversationComposer.setValue"
+            && Equals(invocation.Arguments[1], string.Empty));
+    }
+
+    private int SetValueCalls() =>
+        JSInterop.Invocations.Count(invocation =>
+            invocation.Identifier == "SufiBlazor.conversationComposer.setValue");
 
     [Fact]
     public void Timeline_Renders_Messages()
