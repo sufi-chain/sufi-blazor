@@ -4,6 +4,7 @@
 @implements IDisposable
 @inject IJSRuntime JSRuntime
 @inject IStringLocalizer<SufiBlazorResource> L
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 
 <div class="sb-select-anchor" @ref="_anchorRef">
     @if (!string.IsNullOrEmpty(Label))
@@ -90,29 +91,20 @@
                         <span>@L["Loading"]</span>
                     </div>
                 }
-                else if (FilteredItems.Any())
+                else if (VisibleItems is { Count: > 0 } visible)
                 {
-                    @foreach (var item in FilteredItems)
+                    @if (Virtualize)
                     {
-                        var itemValue = ValueField(item);
-                        var isSelected = EqualityComparer<TValue>.Default.Equals(itemValue, Value);
-                        var itemDisabled = IsItemDisabled(item);
-                        <button type="button"
-                                class="@GetOptionClass(isSelected, itemDisabled)"
-                                role="option"
-                                aria-selected="@isSelected"
-                                aria-disabled="@(itemDisabled ? "true" : null)"
-                                disabled="@itemDisabled"
-                                @onclick="() => SelectItem(item)">
-                            @if (ItemTemplate != null)
-                            {
-                                @ItemTemplate(item)
-                            }
-                            else
-                            {
-                                @TextField(item)
-                            }
-                        </button>
+                        <Virtualize Items="visible" Context="item" ItemSize="VirtualizeItemSize" OverscanCount="8">
+                            @RenderOption(item)
+                        </Virtualize>
+                    }
+                    else
+                    {
+                        @foreach (var item in visible)
+                        {
+                            @RenderOption(item)
+                        }
                     }
                 }
                 else
@@ -146,6 +138,8 @@
     private DotNetObjectReference<SbSelect<TItem, TValue>>? _dotNetRef;
     private bool _isOpen;
     private string _searchText = "";
+    private string _appliedSearchText = "";
+    private CancellationTokenSource? _clientFilterCts;
     private bool _shouldFlip;
     private bool _isLoading;
     private List<TItem> _remoteItems = new();
@@ -212,6 +206,24 @@
     /// </summary>
     [Parameter]
     public int DebounceMs { get; set; } = 300;
+
+    /// <summary>
+    /// Renders only the visible options (Blazor <c>Virtualize</c>). Use for long local lists such as model catalogs.
+    /// </summary>
+    [Parameter]
+    public bool Virtualize { get; set; }
+
+    /// <summary>
+    /// Estimated option height in pixels used when <see cref="Virtualize"/> is on.
+    /// </summary>
+    [Parameter]
+    public float VirtualizeItemSize { get; set; } = 44f;
+
+    /// <summary>
+    /// Debounce in milliseconds for filtering local <see cref="Items"/>. 0 filters on every keystroke.
+    /// </summary>
+    [Parameter]
+    public int ClientFilterDebounceMs { get; set; }
 
     /// <summary>
     /// Maximum number of remote search results to show.
@@ -327,15 +339,42 @@
                 return Enumerable.Empty<TItem>();
             }
             
-            if (string.IsNullOrWhiteSpace(_searchText))
+            if (string.IsNullOrWhiteSpace(_appliedSearchText))
             {
                 return Items;
             }
 
-            return Items.Where(item => 
-                TextField(item).Contains(_searchText, StringComparison.OrdinalIgnoreCase));
+            var term = _appliedSearchText.Trim();
+            return Items.Where(item =>
+                TextField(item).Contains(term, StringComparison.OrdinalIgnoreCase));
         }
     }
+
+    /// <summary>Filtered options materialized once per render.</summary>
+    private List<TItem> VisibleItems => FilteredItems as List<TItem> ?? FilteredItems.ToList();
+
+    private RenderFragment RenderOption(TItem item) => __builder =>
+    {
+        var itemValue = ValueField(item);
+        var isSelected = EqualityComparer<TValue>.Default.Equals(itemValue, Value);
+        var itemDisabled = IsItemDisabled(item);
+        <button type="button"
+                class="@GetOptionClass(isSelected, itemDisabled)"
+                role="option"
+                aria-selected="@isSelected"
+                aria-disabled="@(itemDisabled ? "true" : null)"
+                disabled="@itemDisabled"
+                @onclick="() => SelectItem(item)">
+            @if (ItemTemplate != null)
+            {
+                @ItemTemplate(item)
+            }
+            else
+            {
+                @TextField(item)
+            }
+        </button>
+    };
 
     private string GetDisplayText()
     {
@@ -392,7 +431,7 @@
 
         if (SearchFunc == null)
         {
-            StateHasChanged();
+            await ApplyClientFilterAsync();
             return;
         }
 
@@ -416,6 +455,41 @@
             });
         };
         _debounceTimer.Start();
+    }
+
+    private async Task ApplyClientFilterAsync()
+    {
+        _clientFilterCts?.Cancel();
+        _clientFilterCts?.Dispose();
+        _clientFilterCts = null;
+
+        if (ClientFilterDebounceMs <= 0)
+        {
+            _appliedSearchText = _searchText;
+            StateHasChanged();
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _clientFilterCts = cts;
+        try
+        {
+            await Task.Delay(ClientFilterDebounceMs, cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        _appliedSearchText = _searchText;
+        StateHasChanged();
+    }
+
+    private void ResetSearch()
+    {
+        _clientFilterCts?.Cancel();
+        _searchText = "";
+        _appliedSearchText = "";
     }
 
     private async Task PerformRemoteSearchAsync()
@@ -492,7 +566,7 @@
         if (Disabled) return;
         
         _isOpen = !_isOpen;
-        _searchText = "";
+        ResetSearch();
 
         if (_isOpen)
         {
@@ -530,7 +604,7 @@
         await ValueChanged.InvokeAsync(value);
         _isOpen = false;
         _restoreTriggerFocus = true;
-        _searchText = "";
+        ResetSearch();
         await JSRuntime.InvokeVoidAsync("SufiBlazor.clickAway.unregister", _anchorRef);
     }
 
@@ -543,7 +617,7 @@
 
         _hasSelectedItem = false;
         _selectedItem = default!;
-        _searchText = "";
+        ResetSearch();
         await ValueChanged.InvokeAsync(default);
     }
 
@@ -566,7 +640,7 @@
         if (_isOpen)
         {
             _isOpen = false;
-            _searchText = "";
+            ResetSearch();
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -575,5 +649,7 @@
     {
         _dotNetRef?.Dispose();
         _debounceTimer?.Dispose();
+        _clientFilterCts?.Cancel();
+        _clientFilterCts?.Dispose();
     }
 }
