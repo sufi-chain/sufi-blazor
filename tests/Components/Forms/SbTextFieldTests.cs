@@ -23,6 +23,9 @@ public class SbTextFieldTests : BunitContext
     public SbTextFieldTests()
     {
         Services.AddSingleton<IStringLocalizer<SufiBlazorResource>>(new StubStringLocalizer());
+        // Host and component sets write the DOM through JS. Typing must never call it, and the
+        // latency tests assert that with an explicit count.
+        JSInterop.Mode = JSRuntimeMode.Loose;
     }
 
     private IRenderedComponent<SbTextField<string>> RenderTextField(
@@ -455,5 +458,179 @@ public class SbTextFieldTests : BunitContext
         var input = cut.Find("input");
         Assert.Equal("username-input", input.GetAttribute("data-testid"));
         Assert.Equal("Username", input.GetAttribute("aria-label"));
+    }
+
+    // sufi-chain#533: on a slow circuit the parent re-renders with values older than what the user
+    // has typed. The rendered value attribute and the DOM must never go back.
+    [Fact]
+    public void RapidInputWithDelayedEchoKeepsEveryCharacter()
+    {
+        var reportedValues = new List<string>();
+        var cut = RenderLatencyField(reportedValues);
+
+        cut.Find("input").Input("a");
+        RerenderLatencyField(cut, reportedValues, string.Empty);
+        cut.Find("input").Input("ar");
+        RerenderLatencyField(cut, reportedValues, "a");
+        cut.Find("input").Input("ari");
+        RerenderLatencyField(cut, reportedValues, "ar");
+        cut.Find("input").Input("aria");
+        RerenderLatencyField(cut, reportedValues, "ari");
+
+        Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
+        Assert.Equal(0, TextInputSetValueCalls());
+    }
+
+    [Fact]
+    public void RapidInputSurvivesUnrelatedRerendersAndValidation()
+    {
+        var model = new LatencyModel();
+        var cut = Render<LatencyHost>(p => p.Add(x => x.Model, model));
+
+        cut.Find("input.sb-text-field__input").Input("a");
+        // Unrelated parameter change: the host's Value is still empty.
+        cut.Render(p => p.Add(x => x.Model, model).Add(x => x.Label, "Title"));
+        cut.Find("input.sb-text-field__input").Input("ar");
+        // EditContext validation pass re-renders the whole form.
+        cut.Find("form").Submit();
+        cut.Find("input.sb-text-field__input").Input("ari");
+        cut.Render(p => p.Add(x => x.Model, model).Add(x => x.Label, "Title 2"));
+        cut.Find("input.sb-text-field__input").Input("aria");
+
+        Assert.Equal(["a", "ar", "ari", "aria"], model.Echoes);
+        Assert.Equal(0, TextInputSetValueCalls());
+    }
+
+    [Fact]
+    public void PersianTextKeepsItsFirstLetterWhenTheHostRenderIsStale()
+    {
+        var reportedValues = new List<string>();
+        var cut = RenderLatencyField(reportedValues);
+
+        cut.Find("input").Input("ت");
+        RerenderLatencyField(cut, reportedValues, string.Empty);
+        cut.Find("input").Input("تس");
+        RerenderLatencyField(cut, reportedValues, "ت");
+        cut.Find("input").Input("تست ۱ با اینتر");
+
+        Assert.Equal("تست ۱ با اینتر", reportedValues[^1]);
+        Assert.Equal(0, TextInputSetValueCalls());
+    }
+
+    [Fact]
+    public void ExternalParentChangeReachesTheField()
+    {
+        var reportedValues = new List<string>();
+        var cut = RenderLatencyField(reportedValues);
+
+        cut.Find("input").Input("typed");
+        RerenderLatencyField(cut, reportedValues, "programmatic");
+
+        Assert.Equal("programmatic", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void ClearUpdatesTheFieldAndNotifiesTheHost()
+    {
+        _textFieldValue = "seed";
+        var cut = RenderTextField(p => p.Add(x => x.Clearable, true));
+
+        cut.Find(".sb-text-field__clear").Click();
+
+        Assert.Equal(string.Empty, cut.Find("input").GetAttribute("value"));
+        Assert.Equal(string.Empty, cut.Instance.CurrentText);
+    }
+
+    [Fact]
+    public async Task GetCommittedValueReturnsTheBrowserText()
+    {
+        var reportedValues = new List<string>();
+        var cut = RenderLatencyField(reportedValues);
+
+        JSInterop.Setup<string?>("SufiBlazor.readControlValue", _ => true)
+            .SetResult("تست ۱");
+
+        var committed = await cut.InvokeAsync(() => cut.Instance.GetCommittedValueAsync());
+
+        Assert.Equal("تست ۱", committed);
+        Assert.Equal("تست ۱", cut.Instance.CurrentText);
+        Assert.Equal("تست ۱", reportedValues[^1]);
+    }
+
+    /// <summary>
+    /// Renders the field with an explicit Value and a callback, so a test can re-render with a
+    /// value that lags the keystrokes without setting a parameter twice in one builder.
+    /// </summary>
+    private IRenderedComponent<SbTextField<string>> RenderLatencyField(List<string> reportedValues)
+    {
+        return Render<SbTextField<string>>(p => AddLatencyFieldParameters(p, reportedValues, _textFieldValue));
+    }
+
+    /// <summary>
+    /// Re-renders the field with a host value that lags behind what the browser already holds.
+    /// </summary>
+    private void RerenderLatencyField(
+        IRenderedComponent<SbTextField<string>> cut,
+        List<string> reportedValues,
+        string laggingHostValue)
+    {
+        cut.Render(p => AddLatencyFieldParameters(p, reportedValues, laggingHostValue));
+    }
+
+    private void AddLatencyFieldParameters(
+        ComponentParameterCollectionBuilder<SbTextField<string>> p,
+        List<string> reportedValues,
+        string hostValue)
+    {
+        p.Add(x => x.ValueExpression, () => _textFieldValue);
+        p.Add(x => x.Value, hostValue);
+        p.Add(x => x.ValueChanged, EventCallback.Factory.Create<string>(this, value =>
+        {
+            reportedValues.Add(value);
+            _textFieldValue = value;
+        }));
+    }
+
+    private int TextInputSetValueCalls() =>
+        JSInterop.Invocations.Count(invocation =>
+            invocation.Identifier == "SufiBlazor.textInput.setValue");
+}
+
+file sealed class LatencyModel
+{
+    public string Title { get; set; } = string.Empty;
+
+    public List<string> Echoes { get; } = new();
+}
+
+/// <summary>
+/// A host that lags behind its own input: it records every ValueChanged but keeps rendering the
+/// model value it had before, which is what a slow circuit does between round trips.
+/// </summary>
+file sealed class LatencyHost : ComponentBase
+{
+    [Parameter]
+    public LatencyModel Model { get; set; } = new();
+
+    [Parameter]
+    public string? Label { get; set; }
+
+    protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<Microsoft.AspNetCore.Components.Forms.EditForm>(0);
+        builder.AddAttribute(1, nameof(Microsoft.AspNetCore.Components.Forms.EditForm.Model), Model);
+        builder.AddAttribute(2, nameof(Microsoft.AspNetCore.Components.Forms.EditForm.ChildContent),
+            (Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.EditContext>)(_ => formBuilder =>
+            {
+                formBuilder.OpenComponent<SbTextField<string>>(0);
+                formBuilder.AddAttribute(1, nameof(SbTextField<string>.Label), Label);
+                formBuilder.AddAttribute(2, nameof(SbTextField<string>.Value), Model.Title);
+                formBuilder.AddAttribute(3, nameof(SbTextField<string>.ValueExpression),
+                    (System.Linq.Expressions.Expression<Func<string>>)(() => Model.Title));
+                formBuilder.AddAttribute(4, nameof(SbTextField<string>.ValueChanged),
+                    EventCallback.Factory.Create<string>(this, value => Model.Echoes.Add(value)));
+                formBuilder.CloseComponent();
+            }));
+        builder.CloseComponent();
     }
 }

@@ -228,6 +228,47 @@ window.SufiBlazor = window.SufiBlazor || {};
   };
 
   /**
+   * Text input value sync (sufi-chain#533).
+   * A server-bound value attribute is re-rendered on every parent render, and on a slow circuit
+   * that writes an older value over characters typed since. Components render a value that only a
+   * genuine host set changes; when that set leaves the rendered value identical (two clears in a
+   * row, a reset to text the element already holds) the DOM is written here instead.
+   */
+  sb.textInput = {
+    /**
+     * Write the value and keep the caret where the user left it.
+     * @param {HTMLInputElement|HTMLTextAreaElement|null} element
+     * @param {string} value
+     */
+    setValue: function (element, value) {
+      if (!element) return;
+
+      var next = value == null ? "" : String(value);
+      if (element.value === next) return;
+
+      var focused = document.activeElement === element;
+      var start = focused ? element.selectionStart : null;
+      var end = focused ? element.selectionEnd : null;
+      var direction = focused && element.selectionDirection ? element.selectionDirection : "none";
+
+      element.value = next;
+
+      if (!focused) return;
+
+      try {
+        var length = next.length;
+        element.setSelectionRange(
+          start == null ? length : Math.min(start, length),
+          end == null ? length : Math.min(end, length),
+          direction
+        );
+      } catch (e) {
+        // Input types such as number or email reject selection APIs.
+      }
+    },
+  };
+
+  /**
    * Conversation composer helpers.
    * Enter-to-send must preventDefault in the browser before Blazor's async
    * keydown handler runs; otherwise the textarea keeps / re-inserts the draft.
@@ -276,8 +317,8 @@ window.SufiBlazor = window.SufiBlazor || {};
      * @param {string} value
      */
     setValue: function (textarea, value) {
-      if (!textarea) return;
-      textarea.value = value == null ? "" : String(value);
+      // Same caret-preserving write as the shared text inputs (sufi-chain#533).
+      sb.textInput.setValue(textarea, value);
     },
   };
 

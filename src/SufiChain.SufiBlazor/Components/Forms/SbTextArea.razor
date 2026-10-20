@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Forms.Internal
 @inject IJSRuntime JsRuntime
 
 <div class="sb-textarea @(Error ? "sb-textarea--error" : "") @(Disabled ? "sb-textarea--disabled" : "") @(ReadOnly ? "sb-textarea--readonly" : "") @Class" style="@Style">
@@ -14,9 +15,8 @@
     }
     <textarea @ref="_inputRef"
               class="sb-textarea__input"
-              @bind:get="_draft"
-              @bind:set="OnInputAsync"
-              @bind:event="oninput"
+              value="@_sync.DomValue"
+              @oninput="OnInputAsync"
               @onchange="OnChangeAsync"
               placeholder="@Placeholder"
               disabled="@Disabled"
@@ -41,7 +41,7 @@
     @if (ShowCharacterCount && MaxLength.HasValue)
     {
         <div class="sb-textarea__counter">
-            @(_draft?.Length ?? 0) / @MaxLength
+            @(_sync.Draft.Length) / @MaxLength
         </div>
     }
     
@@ -53,10 +53,11 @@
 
 @code {
     private ElementReference _inputRef;
-    private string? _draft;
-    private string? _lastParentValue;
-    private bool _hasObservedParentValue;
-    private bool _updatingFromInput;
+
+    // sufi-chain#533: shared draft/stale-parent guard. The textarea renders _sync.DomValue, which
+    // only a genuine host set or a component action changes, so a lagging parent render cannot
+    // overwrite characters typed since.
+    private readonly SbTextInputSync _sync = new();
 
     /// <summary>
     /// The current text value.
@@ -67,7 +68,7 @@
     /// <summary>
     /// Text held by the control, including input that has not yet round-tripped to the parent.
     /// </summary>
-    public string? CurrentText => _draft;
+    public string? CurrentText => _sync.Draft;
 
     /// <summary>
     /// Text currently shown in the browser, including keystrokes that have not yet updated <see cref="CurrentText"/>.
@@ -78,10 +79,10 @@
         if (fromDom != null)
         {
             await CommitValueAsync(fromDom);
-            return _draft;
+            return _sync.Draft;
         }
 
-        return _draft ?? Value;
+        return _sync.Draft;
     }
     
     /// <summary>
@@ -191,24 +192,29 @@
 
     protected override void OnParametersSet()
     {
-        // Ignore the parameter round-trip caused by this component's own input.
-        // Under Interactive Server latency, that round-trip can contain an older
-        // parent value than the draft already present in the browser.
-        if (_updatingFromInput)
-        {
-            _updatingFromInput = false;
-            return;
-        }
+        _sync.ObserveParent(Value);
+    }
 
-        // Only adopt a value when the parent actually changes it. Unrelated parent
-        // rerenders can otherwise replay a stale parameter over newer browser input
-        // while an Interactive Server circuit is under latency.
-        if (!_hasObservedParentValue ||
-            !string.Equals(Value, _lastParentValue, StringComparison.Ordinal))
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // A component action can leave the rendered value identical, so the DOM has to be written
+        // explicitly. Typing never sets this flag, so it costs nothing while typing.
+        if (_sync.DomSyncPending)
         {
-            _lastParentValue = Value;
-            _draft = Value;
-            _hasObservedParentValue = true;
+            _sync.MarkDomSynced();
+            await SyncDomValueAsync(_sync.Draft);
+        }
+    }
+
+    private async Task SyncDomValueAsync(string value)
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("SufiBlazor.textInput.setValue", _inputRef, value);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException)
+        {
+            // Static prerender or a torn-down circuit. The rendered value still matches.
         }
     }
 
@@ -224,9 +230,9 @@
         }
     }
     
-    private Task OnInputAsync(string? value)
+    private Task OnInputAsync(ChangeEventArgs args)
     {
-        return CommitValueAsync(value);
+        return CommitValueAsync(args.Value?.ToString());
     }
 
     private Task OnChangeAsync(ChangeEventArgs args)
@@ -236,14 +242,12 @@
 
     private async Task CommitValueAsync(string? value)
     {
-        if (_hasObservedParentValue && string.Equals(value, _draft, StringComparison.Ordinal))
+        if (!_sync.WriteInput(value))
         {
             return;
         }
 
-        _draft = value;
-        _updatingFromInput = true;
-        await ValueChanged.InvokeAsync(value);
+        await ValueChanged.InvokeAsync(_sync.Draft);
     }
 
     private async Task<string?> TryReadDomValueAsync()
