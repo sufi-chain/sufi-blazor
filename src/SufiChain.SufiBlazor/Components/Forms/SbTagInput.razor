@@ -1,5 +1,6 @@
 @namespace SufiChain.SufiBlazor.Components.Forms
 @using SufiChain.SufiBlazor.Components.Common
+@using SufiChain.SufiBlazor.Components.Forms.Internal
 @inject IJSRuntime JSRuntime
 
 <div class="sb-tag-input @(Disabled ? "sb-tag-input--disabled" : "") @Class" style="@Style" @ref="_containerRef">
@@ -27,9 +28,8 @@
                    class="sb-tag-input__input"
                    id="@Id"
                    @ref="_inputRef"
-                   @bind:get="_inputValue"
-                   @bind:set="OnInput"
-                   @bind:event="oninput"
+                   value="@_sync.DomValue"
+                   @oninput="OnInputEvent"
                    @onkeydown="OnKeyDown"
                    @onblur="OnBlur"
                    placeholder="@(Tags.Any() ? "" : Placeholder)"
@@ -49,7 +49,11 @@
 @code {
     private ElementReference _containerRef;
     private ElementReference _inputRef;
-    private string _inputValue = "";
+
+    // sufi-chain#533: the pending tag text is a local draft. A parent re-render (a tag list echo,
+    // a validation pass) used to write an older draft into the input, which merged partial typing
+    // into tags like "cmsblogpost". The rendered value now only follows the component.
+    private readonly SbTextInputSync _sync = new();
     
     /// <summary>
     /// The list of tags.
@@ -117,9 +121,16 @@
     [Parameter]
     public string? Style { get; set; }
     
-    private void OnInput(string? input)
+    private Task OnInputEvent(ChangeEventArgs args) => OnInput(args.Value?.ToString());
+
+    private Task OnInput(string? input)
     {
-        var value = input ?? "";
+        if (!_sync.WriteInput(input))
+        {
+            return Task.CompletedTask;
+        }
+
+        var value = _sync.Draft;
         if (ContainsCommitSeparator(value))
         {
             foreach (var part in SplitCommitted(value))
@@ -131,11 +142,10 @@
                 }
             }
 
-            _inputValue = "";
-            return;
+            ClearPendingTag();
         }
 
-        _inputValue = value;
+        return Task.CompletedTask;
     }
 
     private bool ContainsCommitSeparator(string value)
@@ -163,12 +173,12 @@
     
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
-        if (IsDelimiterKey(e.Key) && !string.IsNullOrWhiteSpace(_inputValue))
+        if (IsDelimiterKey(e.Key) && !string.IsNullOrWhiteSpace(_sync.Draft))
         {
-            await AddTagAsync(_inputValue.Trim());
-            _inputValue = "";
+            await AddTagAsync(_sync.Draft.Trim());
+            ClearPendingTag();
         }
-        else if (e.Key == "Backspace" && string.IsNullOrEmpty(_inputValue) && Tags.Any())
+        else if (e.Key == "Backspace" && string.IsNullOrEmpty(_sync.Draft) && Tags.Any())
         {
             await RemoveTag(Tags.Last());
         }
@@ -176,10 +186,32 @@
     
     private async Task OnBlur()
     {
-        if (!string.IsNullOrWhiteSpace(_inputValue))
+        if (!string.IsNullOrWhiteSpace(_sync.Draft))
         {
-            await AddTagAsync(_inputValue.Trim());
-            _inputValue = "";
+            await AddTagAsync(_sync.Draft.Trim());
+            ClearPendingTag();
+        }
+    }
+
+    /// <summary>
+    /// Clears the pending tag text through the sync so the DOM is emptied even when the rendered
+    /// value was already empty.
+    /// </summary>
+    private void ClearPendingTag() => _sync.SetFromComponent(string.Empty);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_sync.DomSyncPending)
+        {
+            _sync.MarkDomSynced();
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("SufiBlazor.textInput.setValue", _inputRef, _sync.Draft);
+            }
+            catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException)
+            {
+                // Static prerender or a torn-down circuit.
+            }
         }
     }
     

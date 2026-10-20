@@ -14,6 +14,12 @@ public class SbTextAreaTests : BunitContext
         return Render<SbTextArea>(p => configure?.Invoke(p));
     }
 
+    public SbTextAreaTests()
+    {
+        // Host and component sets write the DOM through JS. Typing must never call it.
+        JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
     [Fact]
     public void RendersTextAreaStructure()
     {
@@ -190,7 +196,10 @@ public class SbTextAreaTests : BunitContext
         cut.Render(p => p.Add(x => x.Value, string.Empty));
 
         Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
-        Assert.Equal("aria", cut.Find("textarea").GetAttribute("value"));
+        // sufi-chain#533: the host value stays empty here, so the render value never follows the
+        // keystrokes and no render can write an older value over the text the browser holds.
+        Assert.Equal(string.Empty, cut.Find("textarea").GetAttribute("value"));
+        Assert.Equal("aria", cut.Instance.CurrentText);
     }
 
     [Fact]
@@ -213,7 +222,9 @@ public class SbTextAreaTests : BunitContext
         cut.Render(p => p.Add(x => x.Value, "ari"));
 
         Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
-        Assert.Equal("aria", cut.Find("textarea").GetAttribute("value"));
+        // The render value only ever follows an acknowledged host value, so it never regresses.
+        Assert.Equal("a", cut.Find("textarea").GetAttribute("value"));
+        Assert.Equal("aria", cut.Instance.CurrentText);
     }
 
     [Fact]
@@ -420,6 +431,9 @@ public class SbTextAreaTests : BunitContext
         // Assert
         Assert.Equal("New text", received);
         Assert.Equal("New text", cut.Instance.CurrentText);
+        // Typing must not write the DOM through JS; the browser already holds the text.
+        Assert.DoesNotContain(JSInterop.Invocations, invocation =>
+            invocation.Identifier == "SufiBlazor.textInput.setValue");
     }
 
     [Fact]
@@ -444,7 +458,8 @@ public class SbTextAreaTests : BunitContext
         cut.Render(p => p.Add(x => x.Value, (string?)null));
 
         Assert.Equal("QA P13 desc", cut.Instance.CurrentText);
-        Assert.Equal("QA P13 desc", cut.Find("textarea").GetAttribute("value"));
+        // The rendered value stays with the host value; the browser keeps the typed text.
+        Assert.Equal(string.Empty, cut.Find("textarea").GetAttribute("value"));
     }
 
     [Fact]
@@ -455,7 +470,7 @@ public class SbTextAreaTests : BunitContext
             .Add(x => x.Value, (string?)null)
             .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, v => received = v)));
 
-        Assert.Null(cut.Instance.CurrentText);
+        Assert.Equal(string.Empty, cut.Instance.CurrentText);
         JSInterop.Setup<string?>("SufiBlazor.readControlValue", _ => true)
             .SetResult("QA P13 desc");
 
@@ -506,6 +521,7 @@ public class SbTextAreaTests : BunitContext
         cut.Render(p => p.Add(x => x.Value, "Changed text"));
 
         Assert.Equal("Changed text", cut.Find("textarea").GetAttribute("value"));
+        Assert.Equal("Changed text", cut.Instance.CurrentText);
     }
 
     [Fact]
@@ -523,4 +539,61 @@ public class SbTextAreaTests : BunitContext
         Assert.Equal("description-area", textarea.GetAttribute("data-testid"));
         Assert.Equal("Description field", textarea.GetAttribute("aria-label"));
     }
+
+    // sufi-chain#533: the shared draft guard keeps the rendered value attribute still while the
+    // user types, so a parent render that lags the circuit cannot drop characters.
+    [Fact]
+    public void RapidInputWithDelayedEchoKeepsEveryCharacter()
+    {
+        var reportedValues = new List<string?>();
+        var cut = RenderTextArea(p => p
+            .Add(x => x.Value, string.Empty)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, value => reportedValues.Add(value))));
+
+        cut.Find("textarea").Input("a");
+        cut.Render(p => p.Add(x => x.Value, string.Empty));
+        cut.Find("textarea").Input("ar");
+        cut.Render(p => p.Add(x => x.Value, "a"));
+        cut.Find("textarea").Input("ari");
+        cut.Render(p => p.Add(x => x.Value, "ar"));
+        cut.Find("textarea").Input("aria");
+        cut.Render(p => p.Add(x => x.Value, "ari"));
+
+        Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
+        Assert.Equal(0, TextInputSetValueCalls());
+    }
+
+    [Fact]
+    public void ExternalResetAfterSaveReachesTheField()
+    {
+        var cut = RenderTextArea(p => p.Add(x => x.Value, "saved text"));
+        cut.Find("textarea").Input("edited but not saved");
+        cut.Render(p => p.Add(x => x.Value, "saved text"));
+        cut.Render(p => p.Add(x => x.Value, "reset by host"));
+
+        Assert.Equal("reset by host", cut.Find("textarea").GetAttribute("value"));
+        Assert.Equal("reset by host", cut.Instance.CurrentText);
+    }
+
+    [Fact]
+    public void PersianTextKeepsItsFirstLetterWhenTheHostRenderIsStale()
+    {
+        var reportedValues = new List<string?>();
+        var cut = RenderTextArea(p => p
+            .Add(x => x.Value, string.Empty)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, value => reportedValues.Add(value))));
+
+        cut.Find("textarea").Input("ت");
+        cut.Render(p => p.Add(x => x.Value, string.Empty));
+        cut.Find("textarea").Input("تس");
+        cut.Render(p => p.Add(x => x.Value, "ت"));
+        cut.Find("textarea").Input("تست ۱ با اینتر");
+
+        Assert.Equal("تست ۱ با اینتر", reportedValues[^1]);
+        Assert.Equal(0, TextInputSetValueCalls());
+    }
+
+    private int TextInputSetValueCalls() =>
+        JSInterop.Invocations.Count(invocation =>
+            invocation.Identifier == "SufiBlazor.textInput.setValue");
 }

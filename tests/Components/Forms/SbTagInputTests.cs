@@ -8,6 +8,12 @@ namespace SufiChain.SufiBlazor.Tests.Components.Forms;
 
 public class SbTagInputTests : BunitContext
 {
+    public SbTagInputTests()
+    {
+        // Clearing the pending tag text writes the DOM through JS.
+        JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
     private IRenderedComponent<SbTagInput> RenderTagInput(
         Action<ComponentParameterCollectionBuilder<SbTagInput>>? configure = null)
     {
@@ -247,6 +253,31 @@ public class SbTagInputTests : BunitContext
             new KeyboardEventArgs { Key = "Enter" }));
 
         Assert.Equal(["aria"], tags);
+    }
+
+    // sufi-chain#533: the pending tag text used to be rendered back from the component state, so a
+    // parent re-render (a tag-list echo, a validation pass) rewrote the input and partial typing
+    // became merged tags such as "cmsblogpost".
+    [Fact]
+    public async Task ParentRerenderDoesNotRenderThePendingTagTextBack()
+    {
+        var tags = new List<string>();
+        var cut = Render<SbTagInput>(p => p.Add(x => x.Tags, tags));
+
+        await cut.InvokeAsync(() => cut.Find(".sb-tag-input__input").Input("cms"));
+        cut.Render(p => p.Add(x => x.Tags, tags));
+
+        Assert.Equal(string.Empty, cut.Find(".sb-tag-input__input").GetAttribute("value"));
+
+        await cut.InvokeAsync(() => cut.Find(".sb-tag-input__input").Input("cmsblog"));
+        cut.Render(p => p.Add(x => x.Tags, tags));
+        await cut.InvokeAsync(() => cut.Find(".sb-tag-input__input").Input("cmsblogpost"));
+        await cut.InvokeAsync(() => cut.Find(".sb-tag-input__input").TriggerEventAsync(
+            "onkeydown",
+            new KeyboardEventArgs { Key = "Enter" }));
+
+        Assert.Single(tags);
+        Assert.Equal("cmsblogpost", tags[0]);
     }
 
     [Fact]

@@ -1,7 +1,9 @@
 @namespace SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Forms.Internal
 @typeparam TValue
 @inherits Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
 @inject IStringLocalizer<SufiBlazorResource> L
+@inject IJSRuntime JsRuntime
 
 <div class="@($"sb-text-field-wrapper {Class}".Trim())" style="@Style">
     @if (!string.IsNullOrEmpty(Label))
@@ -36,11 +38,12 @@
                aria-describedby="@EffectiveAriaDescribedBy"
                inputmode="@InputMode"
                autocomplete="@EffectiveAutoComplete"
-               @bind="CurrentValueAsString"
-               @bind:event="oninput"
+               value="@VisibleValue"
+               @oninput="HandleInputAsync"
+               @onchange="HandleChangeAsync"
                @attributes="AdditionalAttributes" />
 
-        @if (Clearable && !Disabled && !ReadOnly && !string.IsNullOrEmpty(CurrentValueAsString))
+        @if (Clearable && !Disabled && !ReadOnly && !string.IsNullOrEmpty(_sync.Draft))
         {
             <button type="button"
                     class="sb-text-field__clear"
@@ -81,6 +84,10 @@
     private ElementReference _inputRef;
     private bool _showPassword;
     private string _generatedId = $"sb-text-field-{Guid.NewGuid():N}";
+
+    // sufi-chain#533: a parent re-render under circuit latency used to write its older Value back
+    // over characters typed since. The rendered value comes from this draft guard instead.
+    private readonly SbTextInputSync _sync = new();
 
     /// <summary>
     /// Label text displayed above the input.
@@ -239,6 +246,90 @@
 
     private string InputType => Type == "password" && _showPassword ? "text" : Type;
 
+    /// <summary>
+    /// Text written into the rendered <c>value</c> attribute. It follows the host value and the
+    /// component's own actions, never the keystrokes still in flight.
+    /// </summary>
+    private string VisibleValue => _sync.DomValue;
+
+    /// <summary>
+    /// Text currently held by the field, including keystrokes that have not reached the host yet.
+    /// </summary>
+    public string? CurrentText => _sync.Draft;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _sync.ObserveParent(FormatValueAsString(Value) ?? string.Empty);
+    }
+
+    private Task HandleInputAsync(ChangeEventArgs args)
+    {
+        if (!_sync.WriteInput(args.Value?.ToString()))
+        {
+            return Task.CompletedTask;
+        }
+
+        // Route the text through InputBase so EditContext validation and ValueChanged keep firing
+        // exactly as they did with @bind.
+        CurrentValueAsString = _sync.Draft;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Commit-on-blur fallback: the change event can carry text whose input event never arrived.
+    /// </summary>
+    private Task HandleChangeAsync(ChangeEventArgs args) => HandleInputAsync(args);
+
+    /// <summary>
+    /// Text currently in the browser, including keystrokes whose input event is still in flight.
+    /// </summary>
+    public async Task<string?> GetCommittedValueAsync()
+    {
+        var fromDom = await TryReadDomValueAsync();
+        if (fromDom != null && _sync.WriteInput(fromDom))
+        {
+            CurrentValueAsString = _sync.Draft;
+        }
+
+        return _sync.Draft;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // A component action such as Clear can leave the rendered value identical, so the DOM has
+        // to be written explicitly. Typing never sets this flag, so it costs nothing while typing.
+        if (_sync.DomSyncPending)
+        {
+            _sync.MarkDomSynced();
+            await SyncDomValueAsync(_sync.Draft);
+        }
+    }
+
+    private async Task SyncDomValueAsync(string value)
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("SufiBlazor.textInput.setValue", _inputRef, value);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException)
+        {
+            // Static prerender or a torn-down circuit. The rendered value still matches.
+        }
+    }
+
+    private async Task<string?> TryReadDomValueAsync()
+    {
+        try
+        {
+            return await JsRuntime.InvokeAsync<string?>("SufiBlazor.readControlValue", _inputRef);
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException)
+        {
+            return null;
+        }
+    }
+
     [CascadingParameter]
     private SbSaveFieldErrorSet? SaveFieldErrors { get; set; }
 
@@ -315,6 +406,7 @@
     private async Task HandleClear()
     {
         if (Disabled || ReadOnly) return;
+        _sync.SetFromComponent(string.Empty);
         CurrentValueAsString = string.Empty;
         await OnClear.InvokeAsync();
     }
