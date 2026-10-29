@@ -1,20 +1,11 @@
 name: SufiBlazor editors
 
 on:
-  push:
-    paths:
-      - "frontend/**"
-      - "src/SufiChain.SufiBlazor/wwwroot/_sufi/editors/**"
-      - "src/SufiChain.SufiBlazor/wwwroot/sufiblazor-editors.css"
-  pull_request:
-    paths:
-      - "frontend/**"
-      - "src/SufiChain.SufiBlazor/wwwroot/_sufi/editors/**"
-      - "src/SufiChain.SufiBlazor/wwwroot/sufiblazor-editors.css"
+  workflow_dispatch:
 
 jobs:
   check-bundles:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, x64, sufi-build]
     defaults:
       run:
         working-directory: frontend
