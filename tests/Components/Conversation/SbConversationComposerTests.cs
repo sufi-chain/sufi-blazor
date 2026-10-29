@@ -211,6 +211,37 @@ public class SbConversationComposerTests : BunitContext
         Assert.Equal(0, SetValueCalls());
     }
 
+    /// <summary>
+    /// HelpDesk replies and the live-chat operator composer echo the draft on the next host
+    /// render. That echo must not advance the textarea value attribute (sufi-chain#533 / #386).
+    /// </summary>
+    [Theory]
+    [InlineData("", "The quick brown fox jumps over the lazy dog.")]
+    [InlineData("", "تست ۱ با اینتر سریع")]
+    [InlineData("draft", "draft plus")]
+    public void Bind_Echo_Leaves_The_Rendered_Value_Untouched(string initial, string typed)
+    {
+        var value = initial;
+        var cut = Render<SbConversationComposer>(parameters => parameters
+            .Add(p => p.Value, value)
+            .Add(p => p.ValueChanged, EventCallback.Factory.Create<string>(this, next => value = next)));
+
+        Assert.Equal(initial, cut.Find("textarea").GetAttribute("value"));
+
+        for (var i = 1; i <= typed.Length; i++)
+        {
+            cut.Find("textarea").Input(typed[..i]);
+            var echoed = value;
+            cut.Render(parameters => parameters
+                .Add(p => p.Value, echoed)
+                .Add(p => p.ValueChanged, EventCallback.Factory.Create<string>(this, next => value = next)));
+            Assert.Equal(initial, cut.Find("textarea").GetAttribute("value"));
+        }
+
+        Assert.Equal(typed, value);
+        Assert.Equal(0, SetValueCalls());
+    }
+
     [Fact]
     public async Task Human_Chat_Stays_Editable_While_Sending_And_Keeps_The_Follow_Up()
     {

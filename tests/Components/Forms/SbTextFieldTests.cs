@@ -1,5 +1,9 @@
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Bunit;
@@ -478,7 +482,93 @@ public class SbTextFieldTests : BunitContext
         RerenderLatencyField(cut, reportedValues, "ari");
 
         Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
+        Assert.Equal(string.Empty, cut.Find("input").GetAttribute("value"));
         Assert.Equal(0, TextInputSetValueCalls());
+    }
+
+    /// <summary>
+    /// sufi-chain#533 on 9.5. Accounts, profile, CMS titles, and CRM contacts use
+    /// <c>@bind-Value</c>, so every keystroke is echoed back as <c>Value</c> before the next
+    /// one is applied. The rendered value attribute must stay on the last external text.
+    /// Advancing it to the echo is what Blazor writes into the DOM under 300–500 ms latency.
+    /// </summary>
+    [Theory]
+    [InlineData("", "The quick brown fox jumps over the lazy dog.")]
+    [InlineData("", "تست ۱ با اینتر سریع")]
+    [InlineData("علی", "علی رضایی")]
+    public void BindEchoLeavesTheRenderedValueUntouched(string initial, string typed)
+    {
+        _textFieldValue = initial;
+        var cut = RenderBoundField();
+
+        Assert.Equal(initial, cut.Find("input.sb-text-field__input").GetAttribute("value"));
+
+        for (var i = 1; i <= typed.Length; i++)
+        {
+            cut.Find("input.sb-text-field__input").Input(typed[..i]);
+            RerenderBoundField(cut);
+            Assert.Equal(initial, cut.Find("input.sb-text-field__input").GetAttribute("value"));
+        }
+
+        Assert.Equal(typed, _textFieldValue);
+        Assert.Equal(typed, cut.Instance.CurrentText);
+        Assert.Equal(0, TextInputSetValueCalls());
+
+        _textFieldValue = "programmatic";
+        RerenderBoundField(cut);
+        Assert.Equal("programmatic", cut.Find("input.sb-text-field__input").GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// Profile settings bind the field inside <c>EditForm</c> with data-annotation validation.
+    /// That re-render is the accounts/* path: the echo and the validation pass happen inside
+    /// the input event, and the value attribute must still not move.
+    /// </summary>
+    [Fact]
+    public void AccountProfileBindEchoKeepsPersianAndEnglishText()
+    {
+        var model = new AccountProfileNameModel();
+        var cut = Render<AccountProfileForm>(p => p.Add(x => x.Model, model));
+
+        Type(cut, model, "The quick brown fox jumps over the lazy dog.");
+        Type(cut, model, "تست ۱ با اینتر سریع");
+
+        model.Name = "برنامه";
+        cut.Render(p => p.Add(x => x.Model, model));
+
+        Assert.Equal("برنامه", cut.Find("input.sb-text-field__input").GetAttribute("value"));
+        Assert.Equal(0, TextInputSetValueCalls());
+
+        static void Type(IRenderedComponent<AccountProfileForm> cut, AccountProfileNameModel model, string typed)
+        {
+            var renderedBefore = cut.Find("input.sb-text-field__input").GetAttribute("value");
+            for (var i = 1; i <= typed.Length; i++)
+            {
+                var next = typed[..i];
+                cut.Find("input.sb-text-field__input").Input(next);
+                Assert.Equal(next, model.Name);
+                Assert.Equal(renderedBefore, cut.Find("input.sb-text-field__input").GetAttribute("value"));
+            }
+        }
+    }
+
+    private IRenderedComponent<SbTextField<string>> RenderBoundField()
+    {
+        return Render<SbTextField<string>>(p => AddBoundFieldParameters(p));
+    }
+
+    private void RerenderBoundField(IRenderedComponent<SbTextField<string>> cut)
+    {
+        cut.Render(p => AddBoundFieldParameters(p));
+    }
+
+    private void AddBoundFieldParameters(ComponentParameterCollectionBuilder<SbTextField<string>> p)
+    {
+        p.Add(x => x.Label, "UserName");
+        p.Add(x => x.Clearable, true);
+        p.Add(x => x.ValueExpression, () => _textFieldValue);
+        p.Add(x => x.Value, _textFieldValue);
+        p.Add(x => x.ValueChanged, EventCallback.Factory.Create<string>(this, value => _textFieldValue = value));
     }
 
     [Fact]
@@ -629,6 +719,50 @@ file sealed class LatencyHost : ComponentBase
                     (System.Linq.Expressions.Expression<Func<string>>)(() => Model.Title));
                 formBuilder.AddAttribute(4, nameof(SbTextField<string>.ValueChanged),
                     EventCallback.Factory.Create<string>(this, value => Model.Echoes.Add(value)));
+                formBuilder.CloseComponent();
+            }));
+        builder.CloseComponent();
+    }
+}
+
+/// <summary>
+/// Profile settings shape: an <see cref="EditForm"/> with data annotations around one bound name.
+/// </summary>
+file sealed class AccountProfileNameModel
+{
+    [Required]
+    [MinLength(1)]
+    [StringLength(80)]
+    public string Name { get; set; } = string.Empty;
+}
+
+/// <summary>
+/// Host that echoes each keystroke through <c>@bind-Value</c>, including the validation re-render.
+/// </summary>
+file sealed class AccountProfileForm : ComponentBase
+{
+    [Parameter]
+    public AccountProfileNameModel Model { get; set; } = new();
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<EditForm>(0);
+        builder.AddAttribute(1, nameof(EditForm.Model), Model);
+        builder.AddAttribute(2, nameof(EditForm.FormName), "profile");
+        builder.AddAttribute(3, nameof(EditForm.ChildContent),
+            (RenderFragment<EditContext>)(_ => formBuilder =>
+            {
+                formBuilder.OpenComponent<DataAnnotationsValidator>(0);
+                formBuilder.CloseComponent();
+
+                formBuilder.OpenComponent<SbTextField<string>>(1);
+                formBuilder.AddAttribute(2, nameof(SbTextField<string>.Label), "UserName");
+                formBuilder.AddAttribute(3, nameof(SbTextField<string>.Clearable), true);
+                formBuilder.AddAttribute(4, nameof(SbTextField<string>.Value), Model.Name);
+                formBuilder.AddAttribute(5, nameof(SbTextField<string>.ValueExpression),
+                    (Expression<Func<string>>)(() => Model.Name));
+                formBuilder.AddAttribute(6, nameof(SbTextField<string>.ValueChanged),
+                    EventCallback.Factory.Create<string>(this, value => Model.Name = value));
                 formBuilder.CloseComponent();
             }));
         builder.CloseComponent();

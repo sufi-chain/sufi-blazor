@@ -54,9 +54,9 @@
 @code {
     private ElementReference _inputRef;
 
-    // sufi-chain#533: shared draft/stale-parent guard. The textarea renders _sync.DomValue, which
-    // only a genuine host set or a component action changes, so a lagging parent render cannot
-    // overwrite characters typed since.
+    // sufi-chain#533: the textarea renders _sync.DomValue, which only a genuine host set or a
+    // component action changes. A @bind-Value echo must not advance it, or a lagging render
+    // writes the older echo over characters typed since.
     private readonly SbTextInputSync _sync = new();
 
     /// <summary>

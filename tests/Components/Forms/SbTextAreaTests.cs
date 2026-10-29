@@ -222,8 +222,10 @@ public class SbTextAreaTests : BunitContext
         cut.Render(p => p.Add(x => x.Value, "ari"));
 
         Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
-        // The render value only ever follows an acknowledged host value, so it never regresses.
-        Assert.Equal("a", cut.Find("textarea").GetAttribute("value"));
+        // The 9.1 guard advanced the rendered value to the first acknowledged echo ("a").
+        // That write is the drop: Blazor applies it after later keystrokes are already in the
+        // browser. The attribute stays on the last external value instead.
+        Assert.Equal(string.Empty, cut.Find("textarea").GetAttribute("value"));
         Assert.Equal("aria", cut.Instance.CurrentText);
     }
 
@@ -560,7 +562,50 @@ public class SbTextAreaTests : BunitContext
         cut.Render(p => p.Add(x => x.Value, "ari"));
 
         Assert.Equal(["a", "ar", "ari", "aria"], reportedValues);
+        Assert.Equal(string.Empty, cut.Find("textarea").GetAttribute("value"));
         Assert.Equal(0, TextInputSetValueCalls());
+    }
+
+    /// <summary>
+    /// sufi-chain#533. CMS bodies and other <c>SbTextArea</c> <c>@bind-Value</c> fields echo each
+    /// keystroke. The rendered value must stay on the last external text for Persian and English.
+    /// </summary>
+    [Theory]
+    [InlineData("", "The quick brown fox jumps over the lazy dog.")]
+    [InlineData("", "تست ۱ با اینتر سریع")]
+    [InlineData("پیش‌نویس", "پیش‌نویس کامل")]
+    public void BindEchoLeavesTheRenderedValueUntouched(string initial, string typed)
+    {
+        var value = initial;
+        var cut = RenderTextArea(p => AddBoundAreaParameters(p, () => value, next => value = next ?? string.Empty));
+        Assert.Equal(initial, cut.Find("textarea").GetAttribute("value"));
+
+        for (var i = 1; i <= typed.Length; i++)
+        {
+            var next = typed[..i];
+            cut.Find("textarea").Input(next);
+            var echoed = value;
+            cut.Render(p => AddBoundAreaParameters(p, () => echoed, updated => value = updated ?? string.Empty));
+            Assert.Equal(initial, cut.Find("textarea").GetAttribute("value"));
+        }
+
+        Assert.Equal(typed, value);
+        Assert.Equal(typed, cut.Instance.CurrentText);
+        Assert.Equal(0, TextInputSetValueCalls());
+
+        value = "reset by host";
+        var reset = value;
+        cut.Render(p => AddBoundAreaParameters(p, () => reset, updated => value = updated ?? string.Empty));
+        Assert.Equal("reset by host", cut.Find("textarea").GetAttribute("value"));
+    }
+
+    private void AddBoundAreaParameters(
+        ComponentParameterCollectionBuilder<SbTextArea> p,
+        Func<string> read,
+        Action<string?> write)
+    {
+        p.Add(x => x.Value, read());
+        p.Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, write));
     }
 
     [Fact]

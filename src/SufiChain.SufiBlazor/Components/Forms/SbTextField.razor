@@ -85,8 +85,9 @@
     private bool _showPassword;
     private string _generatedId = $"sb-text-field-{Guid.NewGuid():N}";
 
-    // sufi-chain#533: a parent re-render under circuit latency used to write its older Value back
-    // over characters typed since. The rendered value comes from this draft guard instead.
+    // sufi-chain#533: the rendered value comes from the draft guard. A @bind-Value echo must
+    // not advance it: under circuit latency the browser is ahead of that echo, and writing
+    // the echo into the value attribute drops the characters typed since.
     private readonly SbTextInputSync _sync = new();
 
     /// <summary>
