@@ -5,10 +5,12 @@ namespace SufiChain.SufiBlazor.Components.Forms.Internal;
 /// <para>
 /// The element renders <see cref="DomValue"/>, and <see cref="DomValue"/> changes only when the
 /// host genuinely sets the text (load, clear, reset after save, programmatic fill) or the component
-/// itself acts (Clear, slugify). Typing changes only <see cref="Draft"/>, so a parent re-render that
-/// still carries an older value cannot write it back over characters the user has typed since.
-/// This is the pattern proven on stage for the conversation composer (sufi-chain#386); this type
-/// applies it to the shared text controls (sufi-chain#533).
+/// itself acts (Clear, slugify). Typing changes only <see cref="Draft"/>.
+/// A <c>@bind-Value</c> echo is not a host edit: the server has accepted a keystroke, but on a
+/// slow circuit the browser already holds later characters. Writing that echo into the value
+/// attribute makes Blazor assign <c>element.value</c> and drops them. Account and profile forms
+/// echo every keystroke, which is why they lost text after the 9.1 guard (sufi-chain#533).
+/// The conversation composer already skips this write (sufi-chain#386).
 /// </para>
 /// </summary>
 internal sealed class SbTextInputSync
@@ -66,12 +68,13 @@ internal sealed class SbTextInputSync
 
         if (string.Equals(incoming, Draft, StringComparison.Ordinal))
         {
-            // The host caught up with what is already on screen: an echo or a save round-trip.
+            // The host caught up with a keystroke this circuit has already accepted.
+            // Leave DomValue alone. Mirroring the echo into the rendered value is what
+            // dropped characters on 9.5: the render arrives after the user has typed more,
+            // and Blazor then sets element.value to the older echo. Clear-button and
+            // validation UI follow Draft, so they do not need this write.
             Acknowledge(incoming);
             LastParentValue = incoming;
-            // The browser already shows this text, so mirroring it in the render value cannot
-            // disturb the DOM, and it keeps conditional UI such as a clear button in step.
-            DomValue = incoming;
             return false;
         }
 
