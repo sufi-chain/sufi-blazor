@@ -533,6 +533,10 @@ window.SufiBlazor = window.SufiBlazor || {};
           element._sbFocusReturn = trigger;
         }
         if (!element._sbCloseBound) {
+          element.addEventListener("cancel", function (event) {
+            // Blazor cannot compile oncancel:preventDefault, so the browser close is stopped here.
+            event.preventDefault();
+          });
           element.addEventListener("close", function () {
             var returnTarget = element._sbFocusReturn;
             element._sbFocusReturn = null;

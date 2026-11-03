@@ -8,7 +8,6 @@
         style="@EffectiveStyle"
         @onkeydown="HandleKeyDown"
         @oncancel="HandleCancel"
-        @oncancel:preventDefault="true"
         @onclose="HandleNativeClose"
         aria-labelledby="@(Header != null || Title != null ? _titleId : null)"
         aria-describedby="@(!string.IsNullOrWhiteSpace(Description) && Header == null ? $"{_titleId}-description" : null)"
