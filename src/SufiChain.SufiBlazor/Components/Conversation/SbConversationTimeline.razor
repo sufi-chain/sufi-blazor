@@ -38,6 +38,7 @@
                                                    BadgeLabel="@message.BadgeLabel"
                                                    IsHighlightedBadge="@message.IsHighlightedBadge"
                                                    Timestamp="@message.Timestamp"
+                                                   TimeZoneId="@TimeZoneId"
                                                    Alignment="@message.Alignment"
                                                    AttachmentLabels="@message.AttachmentLabels" />
                         }
@@ -67,6 +68,13 @@
     /// <summary>Messages to render.</summary>
     [Parameter]
     public IEnumerable<SbConversationMessageModel>? Messages { get; set; }
+
+    /// <summary>
+    /// IANA or Windows zone id for message timestamps.
+    /// Null displays as Asia/Tehran.
+    /// </summary>
+    [Parameter]
+    public string? TimeZoneId { get; set; }
 
     /// <summary>Shows the loading state.</summary>
     [Parameter]

@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiBlazor.Components.Conversation
+@using SufiChain.SufiBlazor.Utilities.DateUtils
 
 <div class="@CssClass" style="@Style" @attributes="AdditionalAttributes">
     @if (!string.IsNullOrWhiteSpace(BadgeLabel) || !string.IsNullOrWhiteSpace(SenderLabel) || Timestamp.HasValue)
@@ -22,7 +23,7 @@
                 }
                 @if (Timestamp.HasValue)
                 {
-                    <span class="sb-conversation-message__time">@Timestamp.Value.ToLocalTime().ToString(TimestampFormat)</span>
+                    <span class="sb-conversation-message__time">@FormatTimestamp(Timestamp.Value)</span>
                 }
             }
         </div>
@@ -73,9 +74,16 @@
     [Parameter]
     public bool IsHighlightedBadge { get; set; }
 
-    /// <summary>Optional timestamp.</summary>
+    /// <summary>Optional timestamp. Stored instants are UTC.</summary>
     [Parameter]
     public DateTimeOffset? Timestamp { get; set; }
+
+    /// <summary>
+    /// IANA or Windows zone id used to render <see cref="Timestamp"/>.
+    /// Null and "Unspecified" display as Asia/Tehran.
+    /// </summary>
+    [Parameter]
+    public string? TimeZoneId { get; set; }
 
     /// <summary>Timestamp display format.</summary>
     [Parameter]
@@ -115,6 +123,9 @@
 
     private string CssClass =>
         $"sb-conversation-message sb-conversation-message--{Alignment.ToString().ToLowerInvariant()} {Class}".Trim();
+
+    private string FormatTimestamp(DateTimeOffset timestamp) =>
+        SbDisplayTime.Format(timestamp, TimestampFormat, TimeZoneId);
 
     private string BubbleCssClass =>
         Alignment == SbConversationAlignment.End
