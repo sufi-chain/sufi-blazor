@@ -1749,6 +1749,16 @@
         }
         catch (ObjectDisposedException)
         {
+            // Navigating away mid-load used to return while _serverBusy stayed true,
+            // which left skeleton rows up if the circuit survived.
+            if (_disposed || version != _serverLoadVersion)
+            {
+                return;
+            }
+
+            _serverBusy = false;
+            _contentResolved = true;
+            TrackBusyChrome();
             return;
         }
         catch (OperationCanceledException)

@@ -175,6 +175,22 @@ public class SbDataGridTests : BunitContext
     }
 
     [Fact]
+    public void ServerProviderObjectDisposedClearsBusyStateInsteadOfEndlessSkeletons()
+    {
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.ItemsProvider, _ => Task.FromException<SbDataResponse<TestItem>>(
+                new ObjectDisposedException("scope")))
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .AddChildContent(ColumnsTemplate));
+
+        cut.WaitForState(
+            () => !cut.Markup.Contains("sb-datagrid__row--skeleton"),
+            TimeSpan.FromSeconds(2));
+        Assert.DoesNotContain("sb-datagrid__row--skeleton", cut.Markup);
+    }
+
+    [Fact]
     public void RendersRowsWhenItemsArriveAfterEmptyFirstRender()
     {
         // Reproduces the Hooshvares/MCP-tools race: first render binds empty Items while
