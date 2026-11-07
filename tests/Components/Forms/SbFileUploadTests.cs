@@ -86,6 +86,21 @@ public class SbFileUploadTests : BunitContext
     }
 
     [Fact]
+    public void AcceptAttribute_RendersCommaSeparatedDottedExtensionsOnTheInput()
+    {
+        // The CMS media structure stores ".jpg,.jpeg,.png,...". A space-separated
+        // copy of that list is one HTML accept token, so the Windows picker hides
+        // request-1.png even though the extension is allowed.
+        var cut = RenderFileUpload(p => p.Add(x => x.Accept, ".jpg .jpeg .png .gif .webp .avif .svg .ico"));
+
+        var accept = cut.Find("input.sb-file-upload__input").GetAttribute("accept");
+
+        Assert.Equal(".jpg,.jpeg,.png,.gif,.webp,.avif,.svg,.ico", accept);
+        Assert.DoesNotContain(" ", accept);
+        Assert.DoesNotContain("*.*", accept);
+    }
+
+    [Fact]
     public void RendersConstraintsTextWhenMaxFileSizeProvided()
     {
         // Arrange & Act
