@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiBlazor.Components.Data
+@implements IDisposable
 @inject IStringLocalizer<SufiBlazorResource> L
 
 <div class="sb-filter-bar @Class">
@@ -54,7 +55,7 @@
 </div>
 
 @code {
-    private System.Timers.Timer? _debounceTimer;
+    private CancellationTokenSource? _debounceCts;
     private string? _searchText;
     private string? _lastParentSearchValue;
     private long _searchInputVersion;
@@ -94,6 +95,12 @@
     /// </summary>
     [Parameter]
     public int SearchDebounceMs { get; set; } = 300;
+
+    /// <summary>
+    /// Clock for the search debounce. Unset uses the system clock.
+    /// </summary>
+    [Parameter]
+    public TimeProvider? Clock { get; set; }
     
     /// <summary>
     /// Active filters.
@@ -138,16 +145,33 @@
     {
         _searchText = value;
         var inputVersion = ++_searchInputVersion;
-        _debounceTimer?.Stop();
-        _debounceTimer?.Dispose();
-        
-        _debounceTimer = new System.Timers.Timer(SearchDebounceMs);
-        _debounceTimer.Elapsed += async (s, args) =>
+        ScheduleDebounce(inputVersion);
+    }
+
+    private void ScheduleDebounce(long inputVersion)
+    {
+        CancelDebounce();
+        var cts = new CancellationTokenSource();
+        _debounceCts = cts;
+        _ = CompleteDebounceAsync(inputVersion, cts.Token);
+    }
+
+    private async Task CompleteDebounceAsync(long inputVersion, CancellationToken cancellationToken)
+    {
+        try
         {
-            _debounceTimer?.Stop();
+            await Task.Delay(TimeSpan.FromMilliseconds(SearchDebounceMs), ActiveClock, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        try
+        {
             await InvokeAsync(async () =>
             {
-                if (inputVersion != _searchInputVersion)
+                if (cancellationToken.IsCancellationRequested || inputVersion != _searchInputVersion)
                 {
                     return;
                 }
@@ -155,14 +179,37 @@
                 await SearchValueChanged.InvokeAsync(_searchText);
                 await OnApply.InvokeAsync();
             });
-        };
-        _debounceTimer.Start();
+        }
+        catch (ObjectDisposedException)
+        {
+            // The component was removed before the debounce elapsed.
+        }
+    }
+
+    private TimeProvider ActiveClock => Clock ?? TimeProvider.System;
+
+    private void CancelDebounce()
+    {
+        if (_debounceCts is null)
+        {
+            return;
+        }
+
+        _debounceCts.Cancel();
+        _debounceCts.Dispose();
+        _debounceCts = null;
+    }
+
+    public void Dispose()
+    {
+        _searchInputVersion++;
+        CancelDebounce();
     }
     
     private async Task ClearSearch()
     {
         _searchInputVersion++;
-        _debounceTimer?.Stop();
+        CancelDebounce();
         _searchText = null;
         await SearchValueChanged.InvokeAsync(null);
         await OnApply.InvokeAsync();
@@ -178,7 +225,7 @@
     private async Task ClearAllFilters()
     {
         _searchInputVersion++;
-        _debounceTimer?.Stop();
+        CancelDebounce();
         ActiveFilters.Clear();
         _searchText = null;
         await ActiveFiltersChanged.InvokeAsync(ActiveFilters);
