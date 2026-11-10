@@ -1118,6 +1118,44 @@ public class SbDataGridTests : BunitContext
         Assert.DoesNotContain("Beta", cut.Markup);
     }
 
+    // sufi-chain#533: a slow circuit re-renders the filter input with an older value and drops
+    // keystrokes. The rendered value attribute must stay on the last external text.
+    [Fact]
+    public async Task FilterRowKeepsTypedTextWhenTheCircuitEchoesAnOlderValue()
+    {
+        var items = new List<TestItem>
+        {
+            new() { Id = 1, Name = "Alpha", Status = "Open" },
+            new() { Id = 2, Name = "Beta", Status = "Closed" }
+        };
+
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.Items, items)
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .Add(x => x.ShowFilterRow, true)
+            .Add(x => x.CardLayout, SbDataGridCardLayout.Never)
+            .AddChildContent(FilterRowColumnsTemplate));
+
+        var input = cut.Find("input.sb-datagrid__filter-input");
+        Assert.True(string.IsNullOrEmpty(input.GetAttribute("value")));
+
+        await cut.InvokeAsync(() => input.Input("A"));
+        await Task.Delay(400);
+        await cut.InvokeAsync(() => { });
+        Assert.True(string.IsNullOrEmpty(cut.Find("input.sb-datagrid__filter-input").GetAttribute("value")));
+
+        await cut.InvokeAsync(() => cut.Find("input.sb-datagrid__filter-input").Input("Al"));
+        await Task.Delay(400);
+        await cut.InvokeAsync(() => { });
+
+        Assert.True(string.IsNullOrEmpty(cut.Find("input.sb-datagrid__filter-input").GetAttribute("value")));
+        cut.WaitForState(() =>
+            cut.FindAll("tbody .sb-datagrid__row:not(.sb-datagrid__row--empty)").Count == 1);
+        Assert.Contains("Alpha", cut.Markup);
+        Assert.DoesNotContain("Beta", cut.Markup);
+    }
+
     [Fact]
     public async Task FilterRowSelectFiltersClientItems()
     {

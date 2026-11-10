@@ -1,4 +1,5 @@
 @namespace SufiChain.SufiBlazor.Components.Data
+@using SufiChain.SufiBlazor.Components.Forms.Internal
 @implements IDisposable
 @inject IStringLocalizer<SufiBlazorResource> L
 
@@ -8,11 +9,10 @@
         <div class="sb-filter-bar__search">
             <input type="text"
                    class="sb-filter-bar__search-input"
-                   @bind:get="_searchText"
-                   @bind:set="OnSearchInput"
-                   @bind:event="oninput"
+                   value="@_searchSync.DomValue"
+                   @oninput="OnSearchInput"
                    placeholder="@(SearchPlaceholder ?? L["Search_Placeholder"])" />
-            @if (!string.IsNullOrEmpty(_searchText))
+            @if (!string.IsNullOrEmpty(_searchSync.Draft))
             {
                 <button type="button" class="sb-filter-bar__search-clear" @onclick="ClearSearch">
                     ×
@@ -55,9 +55,8 @@
 </div>
 
 @code {
+    private readonly SbTextInputSync _searchSync = new();
     private CancellationTokenSource? _debounceCts;
-    private string? _searchText;
-    private string? _lastParentSearchValue;
     private long _searchInputVersion;
     
     /// <summary>
@@ -134,16 +133,16 @@
 
     protected override void OnParametersSet()
     {
-        if (!string.Equals(SearchValue, _lastParentSearchValue, StringComparison.Ordinal))
-        {
-            _lastParentSearchValue = SearchValue;
-            _searchText = SearchValue;
-        }
+        _searchSync.ObserveParent(SearchValue);
     }
 
-    private void OnSearchInput(string? value)
+    private void OnSearchInput(ChangeEventArgs args)
     {
-        _searchText = value;
+        if (!_searchSync.WriteInput(args.Value?.ToString()))
+        {
+            return;
+        }
+
         var inputVersion = ++_searchInputVersion;
         ScheduleDebounce(inputVersion);
     }
@@ -176,7 +175,7 @@
                     return;
                 }
 
-                await SearchValueChanged.InvokeAsync(_searchText);
+                await SearchValueChanged.InvokeAsync(_searchSync.Draft);
                 await OnApply.InvokeAsync();
             });
         }
@@ -210,7 +209,7 @@
     {
         _searchInputVersion++;
         CancelDebounce();
-        _searchText = null;
+        _searchSync.WriteInput(null);
         await SearchValueChanged.InvokeAsync(null);
         await OnApply.InvokeAsync();
     }
@@ -227,7 +226,7 @@
         _searchInputVersion++;
         CancelDebounce();
         ActiveFilters.Clear();
-        _searchText = null;
+        _searchSync.WriteInput(null);
         await ActiveFiltersChanged.InvokeAsync(ActiveFilters);
         await SearchValueChanged.InvokeAsync(null);
         await OnApply.InvokeAsync();
