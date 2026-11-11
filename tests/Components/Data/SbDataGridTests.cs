@@ -21,7 +21,9 @@ file class StubStringLocalizer : IStringLocalizer<SufiBlazorResource>
         ["NoDataAvailable"] = "No data available",
         ["Loading"] = "Loading…",
         ["DataLoadFailed"] = "The list couldn't be loaded.",
-        ["Retry"] = "Try again"
+        ["Retry"] = "Try again",
+        ["SelectRow"] = "Select row {0}",
+        ["SelectAllRows"] = "Select all rows"
     };
 
     public LocalizedString this[string name]
@@ -37,7 +39,8 @@ file class StubStringLocalizer : IStringLocalizer<SufiBlazorResource>
         }
     }
 
-    public LocalizedString this[string name, params object[] arguments] => new(name, string.Format(CultureInfo.InvariantCulture, name, arguments));
+    public LocalizedString this[string name, params object[] arguments] =>
+        new(name, string.Format(CultureInfo.InvariantCulture, this[name].Value, arguments));
     public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures) => Array.Empty<LocalizedString>();
 }
 
@@ -443,6 +446,22 @@ public class SbDataGridTests : BunitContext
         // Assert
         var grid = cut.Find(".sb-datagrid");
         Assert.Contains("sb-datagrid--density-comfortable", grid.ClassList);
+    }
+
+    [Fact]
+    public void SelectionCheckboxesUseAriaLabel()
+    {
+        var cut = RenderDataGrid(configure: p => p.Add(x => x.SelectionMode, SbSelectionMode.MultipleRows));
+
+        var inputs = cut.FindAll(".sb-datagrid__cell--selection input[type='checkbox']");
+        Assert.Equal(4, inputs.Count);
+        Assert.All(inputs, input =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(input.GetAttribute("aria-label")));
+            Assert.Null(input.GetAttribute("arialabel"));
+        });
+        Assert.Equal("Select all rows", inputs[0].GetAttribute("aria-label"));
+        Assert.Equal("Select row 1", inputs[1].GetAttribute("aria-label"));
     }
 
     [Fact]

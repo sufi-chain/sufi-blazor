@@ -75,7 +75,7 @@
   --sb-color-text: #101F2C;
   --sb-color-text-secondary: var(--persian-blue-grayish-purplish);
   --sb-color-text-muted: var(--persian-green-grayish);
-  --sb-color-text-disabled: var(--persian-blue-pale);
+  --sb-color-text-disabled: color-mix(in srgb, var(--sb-color-text) 62%, var(--sb-color-surface));
   --sb-color-surface-muted: color-mix(in srgb, var(--persian-blue-vivid-pale) 30%, white);
   --sb-color-surface-secondary: color-mix(in srgb, var(--persian-blue-vivid-pale) 10%, white);
   --sb-color-surface-subtle: var(--sb-color-surface-secondary);
@@ -321,7 +321,7 @@
     --sb-color-text: #F2F6F9;
     --sb-color-text-secondary: var(--persian-blue-vivid-pale);
     --sb-color-text-muted: var(--persian-blue-pale);
-    --sb-color-text-disabled: #718690;
+    --sb-color-text-disabled: color-mix(in srgb, var(--sb-color-text) 62%, var(--sb-color-surface));
     --sb-color-surface-muted: var(--sb-color-background);
     --sb-color-surface-secondary: var(--sb-color-surface-variant);
     --sb-color-surface-subtle: var(--sb-color-surface-muted);
@@ -4899,7 +4899,9 @@ samp,
 }
 
 .sb-pagination__button:disabled {
-    opacity: 0.5;
+    color: var(--sb-color-text-disabled);
+    background-color: var(--sb-color-surface);
+    border-color: var(--sb-color-border);
     cursor: not-allowed;
 }
 

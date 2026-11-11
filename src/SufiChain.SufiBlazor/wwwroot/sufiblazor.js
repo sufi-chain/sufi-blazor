@@ -519,6 +519,142 @@ window.SufiBlazor = window.SufiBlazor || {};
    * Native dialog element operations
    * These are minimal - just calling native HTMLDialogElement methods
    */
+  function isDialogTrigger(trigger, dialog) {
+    return !!trigger
+      && trigger.isConnected
+      && trigger !== document.body
+      && trigger !== document.documentElement
+      && typeof trigger.focus === "function"
+      && !(dialog && dialog.contains && dialog.contains(trigger));
+  }
+
+  // Blazor replaces the clicked button when the dialog opens. The live node is
+  // disconnected by then, so the CSS path is what still finds the new button.
+  function focusPath(element) {
+    if (!element || element.nodeType !== 1) {
+      return "";
+    }
+    if (element.id) {
+      return "#" + CSS.escape(element.id);
+    }
+    var parts = [];
+    var node = element;
+    while (node && node.nodeType === 1 && node !== document.body) {
+      if (node.id) {
+        parts.unshift("#" + CSS.escape(node.id));
+        break;
+      }
+      var part = node.nodeName.toLowerCase();
+      var index = 1;
+      var sibling = node;
+      while ((sibling = sibling.previousElementSibling)) {
+        if (sibling.nodeName === node.nodeName) {
+          index += 1;
+        }
+      }
+      parts.unshift(part + ":nth-of-type(" + index + ")");
+      node = node.parentElement;
+    }
+    return parts.join(" > ");
+  }
+
+  if (!sb._lastFocusBound && typeof document !== "undefined") {
+    document.addEventListener("focusin", function (event) {
+      var target = event.target;
+      if (!isDialogTrigger(target, null)) {
+        return;
+      }
+      if (target.closest && target.closest("dialog")) {
+        return;
+      }
+      sb._lastFocus = target;
+      sb._lastFocusSelector = focusPath(target);
+    }, true);
+    sb._lastFocusBound = true;
+  }
+
+  function rememberDialogTrigger(element) {
+    var trigger = document.activeElement;
+    if (!isDialogTrigger(trigger, element)) {
+      trigger = isDialogTrigger(sb._lastFocus, element) ? sb._lastFocus : null;
+    }
+    element._sbFocusReturn = trigger;
+    element._sbFocusSelector = (trigger && focusPath(trigger)) || sb._lastFocusSelector || "";
+  }
+
+  function restoreDialogTrigger(element) {
+    var selector = element._sbFocusSelector || "";
+    var direct = element._sbFocusReturn || null;
+    element._sbFocusReturn = null;
+    element._sbFocusSelector = selector;
+    if (!direct && !selector) {
+      return;
+    }
+    var userMoved = false;
+    var applying = false;
+    function resolve() {
+      if (isDialogTrigger(direct, null)) {
+        return direct;
+      }
+      if (!selector) {
+        return null;
+      }
+      var found = document.querySelector(selector);
+      return isDialogTrigger(found, null) ? found : null;
+    }
+    function apply() {
+      if (userMoved || applying) {
+        return;
+      }
+      var target = resolve();
+      if (!target) {
+        return;
+      }
+      var active = document.activeElement;
+      if (active === target || target.contains(active)) {
+        return;
+      }
+      applying = true;
+      try {
+        target.focus();
+      } finally {
+        applying = false;
+      }
+    }
+    function stop() {
+      userMoved = true;
+      document.removeEventListener("focusin", onFocusIn, true);
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("keydown", onKeyDown, true);
+    }
+    function onFocusIn() {
+      apply();
+    }
+    function onPointerDown() {
+      stop();
+    }
+    function onKeyDown(event) {
+      if (event.key !== "Escape") {
+        stop();
+      }
+    }
+    // Chrome focuses the body after a prevented cancel, and the Blazor render
+    // that closes the dialog can replace the trigger. Keep putting focus back
+    // until the user moves on.
+    document.addEventListener("focusin", onFocusIn, true);
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("keydown", onKeyDown, true);
+    apply();
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(apply);
+    }
+    setTimeout(apply, 0);
+    setTimeout(function () {
+      apply();
+      stop();
+    }, 1000);
+  }
+
   sb.dialog = {
     /**
      * Open dialog as modal
@@ -528,21 +664,14 @@ window.SufiBlazor = window.SufiBlazor || {};
       if (element && !element.open && typeof element.showModal === "function") {
         // showModal focuses the dialog and Chrome scrolls every ancestor to reveal it.
         var saved = captureScroll(element);
-        var trigger = document.activeElement;
-        if (trigger && trigger !== document.body && !element.contains(trigger)) {
-          element._sbFocusReturn = trigger;
-        }
+        rememberDialogTrigger(element);
         if (!element._sbCloseBound) {
           element.addEventListener("cancel", function (event) {
             // Blazor cannot compile oncancel:preventDefault, so the browser close is stopped here.
             event.preventDefault();
           });
           element.addEventListener("close", function () {
-            var returnTarget = element._sbFocusReturn;
-            element._sbFocusReturn = null;
-            if (returnTarget && typeof returnTarget.focus === "function") {
-              returnTarget.focus();
-            }
+            restoreDialogTrigger(element);
           });
           element._sbCloseBound = true;
         }
@@ -924,4 +1053,20 @@ window.SufiBlazor = window.SufiBlazor || {};
       return false;
     },
   };
+
+  if (typeof document !== "undefined" && !sb._historyBackBound) {
+    document.addEventListener("click", function (event) {
+      var target = event.target;
+      var link = target && target.closest ? target.closest("[data-sufi-history-back]") : null;
+      if (!link) {
+        return;
+      }
+      if (window.history.length > 1) {
+        event.preventDefault();
+        event.stopPropagation();
+        window.history.back();
+      }
+    }, true);
+    sb._historyBackBound = true;
+  }
 })(window.SufiBlazor);
