@@ -122,7 +122,7 @@
         @if (_saveFailed && Active != null)
         {
             <div class="sb-settings-savebar__error" tabindex="-1" @ref="_errorRef">
-                <SbAlert Severity="SbAlertSeverity.Danger">@L["Settings:SaveFailed"]</SbAlert>
+                <SbAlert Severity="SbAlertSeverity.Danger">@SaveFailureText</SbAlert>
             </div>
         }
 
@@ -150,7 +150,9 @@
         }
 
         <CascadingValue Value="this" IsFixed="true">
-            @ChildContent
+            <CascadingValue Value="_saveNotice" IsFixed="true">
+                @ChildContent
+            </CascadingValue>
         </CascadingValue>
     </div>
 

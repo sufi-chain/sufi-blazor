@@ -2523,6 +2523,12 @@ samp,
     color: var(--sb-color-text-muted);
 }
 
+.sb-text-field__error {
+    margin-top: var(--sb-space-1);
+    font-size: var(--sb-font-size-xs);
+    color: var(--sb-color-danger);
+}
+
 /* SbCheckbox */
 .sb-checkbox {
     display: inline-flex;
@@ -10623,6 +10629,7 @@ body.sb-resizing {
 .sb-form-field__error,
 .sb-text-field__label,
 .sb-text-field__helper,
+.sb-text-field__error,
 .sb-textarea__label,
 .sb-textarea__helper,
 .sb-textarea__error,

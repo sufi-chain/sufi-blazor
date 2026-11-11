@@ -62,6 +62,9 @@ public class SufiIconsTests
 
     [Theory]
     [InlineData("layout", SiIconCategory.Layout)]
+    [InlineData("layout-dashboard", SiIconCategory.Layout)]
+    [InlineData("languages", SiIconCategory.Location)]
+    [InlineData("book-open", SiIconCategory.Files)]
     [InlineData("chat-dots", SiIconCategory.Communication)]
     [InlineData("contact", SiIconCategory.Users)]
     [InlineData("form", SiIconCategory.Actions)]
