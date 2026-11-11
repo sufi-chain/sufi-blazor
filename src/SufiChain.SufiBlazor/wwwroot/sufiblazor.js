@@ -519,6 +519,50 @@ window.SufiBlazor = window.SufiBlazor || {};
    * Native dialog element operations
    * These are minimal - just calling native HTMLDialogElement methods
    */
+  if (!sb._lastFocusBound && typeof document !== "undefined") {
+    document.addEventListener("focusin", function (event) {
+      var target = event.target;
+      if (!target || target === document.body || target === document.documentElement) {
+        return;
+      }
+      if (target.closest && target.closest("dialog")) {
+        return;
+      }
+      sb._lastFocus = target;
+    }, true);
+    sb._lastFocusBound = true;
+  }
+
+  function rememberDialogTrigger(element) {
+    var trigger = document.activeElement;
+    if (!trigger || trigger === document.body || trigger === document.documentElement || element.contains(trigger)) {
+      trigger = sb._lastFocus || null;
+    }
+    if (trigger && trigger !== document.body && !element.contains(trigger)) {
+      element._sbFocusReturn = trigger;
+    }
+  }
+
+  function restoreDialogTrigger(element) {
+    var returnTarget = element._sbFocusReturn || sb._lastFocus || null;
+    element._sbFocusReturn = null;
+    if (!returnTarget || returnTarget === document.body || !returnTarget.isConnected || typeof returnTarget.focus !== "function") {
+      return;
+    }
+    var apply = function () {
+      if (returnTarget.isConnected) {
+        returnTarget.focus();
+      }
+    };
+    // Chrome moves focus to the body after a prevented cancel + close().
+    // Restore again on the next frame so the trigger wins.
+    apply();
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(apply);
+    }
+    setTimeout(apply, 0);
+  }
+
   sb.dialog = {
     /**
      * Open dialog as modal
@@ -528,21 +572,14 @@ window.SufiBlazor = window.SufiBlazor || {};
       if (element && !element.open && typeof element.showModal === "function") {
         // showModal focuses the dialog and Chrome scrolls every ancestor to reveal it.
         var saved = captureScroll(element);
-        var trigger = document.activeElement;
-        if (trigger && trigger !== document.body && !element.contains(trigger)) {
-          element._sbFocusReturn = trigger;
-        }
+        rememberDialogTrigger(element);
         if (!element._sbCloseBound) {
           element.addEventListener("cancel", function (event) {
             // Blazor cannot compile oncancel:preventDefault, so the browser close is stopped here.
             event.preventDefault();
           });
           element.addEventListener("close", function () {
-            var returnTarget = element._sbFocusReturn;
-            element._sbFocusReturn = null;
-            if (returnTarget && typeof returnTarget.focus === "function") {
-              returnTarget.focus();
-            }
+            restoreDialogTrigger(element);
           });
           element._sbCloseBound = true;
         }
@@ -924,4 +961,20 @@ window.SufiBlazor = window.SufiBlazor || {};
       return false;
     },
   };
+
+  if (typeof document !== "undefined" && !sb._historyBackBound) {
+    document.addEventListener("click", function (event) {
+      var target = event.target;
+      var link = target && target.closest ? target.closest("[data-sufi-history-back]") : null;
+      if (!link) {
+        return;
+      }
+      if (window.history.length > 1) {
+        event.preventDefault();
+        event.stopPropagation();
+        window.history.back();
+      }
+    }, true);
+    sb._historyBackBound = true;
+  }
 })(window.SufiBlazor);
