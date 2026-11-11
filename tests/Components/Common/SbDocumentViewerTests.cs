@@ -38,4 +38,14 @@ public class SbDocumentViewerTests : BunitContext
 
         Assert.Equal("rtl", cut.Find(".sb-document-viewer").GetAttribute("dir"));
     }
+
+    [Fact]
+    public void TextDirectionAutoFollowsContent()
+    {
+        var cut = Render<SbDocumentViewer>(p => p
+            .Add(x => x.RightToLeft, true)
+            .Add(x => x.TextDirection, "auto"));
+
+        Assert.Equal("auto", cut.Find(".sb-document-viewer").GetAttribute("dir"));
+    }
 }

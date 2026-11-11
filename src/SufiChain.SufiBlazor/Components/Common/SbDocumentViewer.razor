@@ -5,7 +5,7 @@
 
 <div class="@GetContainerClass()"
      style="@Style"
-     dir="@(EffectiveRightToLeft ? "rtl" : "ltr")"
+     dir="@ResolvedTextDirection"
      @attributes="AdditionalAttributes">
     @if (_useFallback)
     {
