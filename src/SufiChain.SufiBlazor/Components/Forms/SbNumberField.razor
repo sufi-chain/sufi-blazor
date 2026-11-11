@@ -103,6 +103,13 @@
     public TNumber? Step { get; set; }
 
     /// <summary>
+    /// When true, a value outside <see cref="Min"/> or <see cref="Max"/> is rewritten to the
+    /// nearest bound. Other forms keep that. Set false to leave the typed value for the form's own message.
+    /// </summary>
+    [Parameter]
+    public bool ClampToMinMax { get; set; } = true;
+
+    /// <summary>
     /// Whether to show spinner buttons.
     /// </summary>
     [Parameter]
@@ -248,6 +255,11 @@
 
     private TNumber ClampValue(TNumber value)
     {
+        if (!ClampToMinMax)
+        {
+            return value;
+        }
+
         if (Min.HasValue && value.CompareTo(Min.Value) < 0)
             return Min.Value;
         if (Max.HasValue && value.CompareTo(Max.Value) > 0)

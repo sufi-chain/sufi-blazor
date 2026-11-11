@@ -11,6 +11,7 @@ A numeric input component with increment/decrement spin buttons, supporting min/
 | Min | TNumber? | null | Minimum allowed value |
 | Max | TNumber? | null | Maximum allowed value |
 | Step | TNumber? | null | Step increment (defaults to 1) |
+| ClampToMinMax | bool | true | Rewrite a value outside min/max to the nearest bound. False keeps the typed value |
 | ShowSpinButtons | bool | true | Whether to show increment/decrement buttons |
 | Placeholder | string? | null | Placeholder text |
 | Disabled | bool | false | Whether the field is disabled |

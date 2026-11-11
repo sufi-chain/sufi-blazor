@@ -228,6 +228,36 @@ public class SbNumberFieldTests : BunitContext
     }
 
     [Fact]
+    public async Task ChangeClampsBelowMinByDefault()
+    {
+        int? received = null;
+        var cut = RenderNumberField(p => p
+            .Add(x => x.Value, 0)
+            .Add(x => x.Min, 0)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<int>(this, v => received = v)));
+
+        await cut.InvokeAsync(() => cut.Find("input")!.Change("-1"));
+
+        Assert.Equal(0, received);
+    }
+
+    [Fact]
+    public async Task ChangeKeepsAValueBelowMinWhenClampIsOff()
+    {
+        decimal? received = null;
+        var cut = Render<SbNumberField<decimal>>(p => p
+            .Add(x => x.Value, 0m)
+            .Add(x => x.Min, 0m)
+            .Add(x => x.Step, 0.01m)
+            .Add(x => x.ClampToMinMax, false)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<decimal>(this, v => received = v)));
+
+        await cut.InvokeAsync(() => cut.Find("input")!.Change("-1"));
+
+        Assert.Equal(-1m, received);
+    }
+
+    [Fact]
     public async Task InvokesValueChangedWhenIncrementClicked()
     {
         // Arrange
