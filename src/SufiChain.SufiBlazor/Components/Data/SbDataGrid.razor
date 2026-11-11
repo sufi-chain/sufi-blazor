@@ -3,6 +3,7 @@
 @using SufiChain.SufiBlazor.Components.Actions
 @using SufiChain.SufiBlazor.Components.Feedback
 @using SufiChain.SufiBlazor.Components.Forms
+@using SufiChain.SufiBlazor.Components.Forms.Internal
 @using SufiChain.SufiBlazor.Contracts.Data
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web.Virtualization
@@ -707,7 +708,7 @@
             <input id="@inputId"
                    type="@inputType"
                    class="sb-datagrid__filter-input"
-                   value="@currentText"
+                   value="@FilterRowDomValue(field, current)"
                    placeholder="@L["Search_Placeholder"]"
                    aria-label="@L["FilterBy", column.Title]"
                    @oninput="e => OnFilterRowTextInputAsync(field, e.Value?.ToString(), column)" />
@@ -793,7 +794,8 @@
     // Filtering state
     private Dictionary<string, SbFilter> _activeFilters = new();
     private readonly Dictionary<string, string> _filterRowDraft = new(StringComparer.Ordinal);
-    private CancellationTokenSource? _filterDebounceCts;
+    private readonly Dictionary<string, SbTextInputSync> _filterRowSync = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, CancellationTokenSource> _filterDebounce = new(StringComparer.Ordinal);
     private readonly HashSet<string> _chooserHiddenFields = new(StringComparer.Ordinal);
     private bool _columnChooserOpen;
     private bool _mobileFiltersOpen;
@@ -1425,8 +1427,10 @@
     public async ValueTask DisposeAsync()
     {
         _disposed = true;
-        _filterDebounceCts?.Cancel();
-        _filterDebounceCts?.Dispose();
+        foreach (var field in _filterDebounce.Keys.ToList())
+        {
+            CancelFilterDebounce(field);
+        }
         try
         {
             await JSRuntime.InvokeVoidAsync("SufiBlazor.viewport.unwatchCompact", _viewportWatchId);
@@ -2606,19 +2610,40 @@
         return filter?.Value?.ToString() ?? string.Empty;
     }
 
+    /// <summary>
+    /// Value written into the filter input. Typing updates the draft only, so a slow
+    /// circuit re-render cannot put an older keystroke back into the DOM (sufi-chain#533).
+    /// </summary>
+    private string FilterRowDomValue(string field, SbFilter? filter)
+    {
+        var sync = FilterSync(field);
+        sync.ObserveParent(filter?.Value?.ToString());
+        return sync.DomValue;
+    }
+
+    private SbTextInputSync FilterSync(string field)
+    {
+        if (!_filterRowSync.TryGetValue(field, out var sync))
+        {
+            sync = new SbTextInputSync();
+            _filterRowSync[field] = sync;
+        }
+
+        return sync;
+    }
+
     private async Task OnFilterRowTextInputAsync(string field, string? value, SbColumn<TItem> column)
     {
-        _filterRowDraft[field] = value ?? string.Empty;
-        _filterDebounceCts?.Cancel();
-        _filterDebounceCts?.Dispose();
-        _filterDebounceCts = new CancellationTokenSource();
-        var token = _filterDebounceCts.Token;
-
-        if (string.IsNullOrWhiteSpace(value))
+        var sync = FilterSync(field);
+        if (!sync.WriteInput(value))
         {
-            await OnColumnFilterChanged(field, null);
             return;
         }
+
+        CancelFilterDebounce(field);
+        var cts = new CancellationTokenSource();
+        _filterDebounce[field] = cts;
+        var token = cts.Token;
 
         try
         {
@@ -2634,8 +2659,27 @@
             return;
         }
 
+        var latest = sync.Draft;
+        if (string.IsNullOrWhiteSpace(latest))
+        {
+            await OnColumnFilterChanged(field, null);
+            return;
+        }
+
         var op = GetFilterInputType(column) == "text" ? SbFilterOperator.Contains : SbFilterOperator.Equals;
-        await OnColumnFilterChanged(field, new SbFilter(field, op, value));
+        await OnColumnFilterChanged(field, new SbFilter(field, op, latest));
+    }
+
+    private void CancelFilterDebounce(string field)
+    {
+        if (!_filterDebounce.TryGetValue(field, out var cts))
+        {
+            return;
+        }
+
+        cts.Cancel();
+        cts.Dispose();
+        _filterDebounce.Remove(field);
     }
 
     private async Task OnFilterRowSelectChangedAsync(string field, string? value)
@@ -2747,6 +2791,11 @@
     {
         _activeFilters.Clear();
         _filterRowDraft.Clear();
+        _filterRowSync.Clear();
+        foreach (var field in _filterDebounce.Keys.ToList())
+        {
+            CancelFilterDebounce(field);
+        }
         SetLocalPageIndex(0);
         await PageIndexChanged.InvokeAsync(0);
         await OnFiltersChanged.InvokeAsync(ActiveFilters);

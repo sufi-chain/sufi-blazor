@@ -185,4 +185,43 @@ public class SbFilterBarTests : BunitContext
             "aria",
             await reportedValue.Task.WaitAsync(TimeSpan.FromSeconds(5)));
     }
+
+    // sufi-chain#533: the search box must not write each keystroke back into the value attribute.
+    [Fact]
+    public async Task SearchInputKeepsRenderedValueWhenParentEchoIsLate()
+    {
+        string? bound = null;
+        var clock = new ManualTimeProvider();
+        var cut = Render<SbFilterBar>(parameters => parameters
+            .Add(p => p.SearchDebounceMs, 50)
+            .Add(p => p.Clock, clock)
+            .Add(p => p.SearchValue, bound)
+            .Add(p => p.SearchValueChanged, EventCallback.Factory.Create<string?>(
+                this,
+                value => bound = value)));
+
+        var input = cut.Find(".sb-filter-bar__search-input");
+        Assert.True(string.IsNullOrEmpty(input.GetAttribute("value")));
+
+        await cut.InvokeAsync(() => input.Input("a"));
+        cut.Render(parameters => parameters
+            .Add(p => p.SearchValue, bound)
+            .Add(p => p.SearchDebounceMs, 50)
+            .Add(p => p.Clock, clock));
+        Assert.True(string.IsNullOrEmpty(cut.Find(".sb-filter-bar__search-input").GetAttribute("value")));
+
+        await cut.InvokeAsync(() =>
+        {
+            cut.Find(".sb-filter-bar__search-input").Input("ar");
+            clock.Advance(TimeSpan.FromMilliseconds(50));
+        });
+
+        cut.Render(parameters => parameters
+            .Add(p => p.SearchValue, "a")
+            .Add(p => p.SearchDebounceMs, 50)
+            .Add(p => p.Clock, clock));
+
+        Assert.Equal("ar", bound);
+        Assert.True(string.IsNullOrEmpty(cut.Find(".sb-filter-bar__search-input").GetAttribute("value")));
+    }
 }
