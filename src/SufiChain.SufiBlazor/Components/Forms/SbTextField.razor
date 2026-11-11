@@ -78,6 +78,10 @@
     {
         <div class="sb-text-field__helper" id="@(EffectiveId)-helper">@HelperText</div>
     }
+    else if (FieldErrorMessage is { Length: > 0 } fieldError)
+    {
+        <div class="sb-text-field__error" id="@(EffectiveId)-error" role="alert">@fieldError</div>
+    }
 </div>
 
 @code {
@@ -229,6 +233,8 @@
                 parts.Add(AriaDescribedBy);
             if (!string.IsNullOrEmpty(HelperText) && !HasError)
                 parts.Add($"{EffectiveId}-helper");
+            if (!string.IsNullOrEmpty(FieldErrorMessage))
+                parts.Add($"{EffectiveId}-error");
             return parts.Count > 0 ? string.Join(" ", parts) : null;
         }
     }
@@ -338,6 +344,8 @@
         FormFieldContext?.HasError == true
         || EditContext?.GetValidationMessages(FieldIdentifier).Any() == true
         || SaveFieldErrors?.Contains(FieldIdentifier.FieldName) == true;
+
+    private string? FieldErrorMessage => SaveFieldErrors?.Message(FieldIdentifier.FieldName);
 
     private string WrapperCssClass
     {

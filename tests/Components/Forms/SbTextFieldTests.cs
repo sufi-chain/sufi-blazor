@@ -647,6 +647,16 @@ public class SbTextFieldTests : BunitContext
         Assert.Equal("تست ۱", reportedValues[^1]);
     }
 
+    [Fact]
+    public void SaveError_ShowsTheValidationMessageOnTheField()
+    {
+        var cut = Render<SaveErrorHost>();
+
+        Assert.Equal("true", cut.Find("input").GetAttribute("aria-invalid"));
+        Assert.Contains("Default From Address is not a valid email address.", cut.Find(".sb-text-field__error").TextContent);
+        Assert.Contains("from-address-error", cut.Find("input").GetAttribute("aria-describedby"));
+    }
+
     /// <summary>
     /// Renders the field with an explicit Value and a callback, so a test can re-render with a
     /// value that lags the keystrokes without setting a parameter twice in one builder.
@@ -739,6 +749,38 @@ file sealed class AccountProfileNameModel
 /// <summary>
 /// Host that echoes each keystroke through <c>@bind-Value</c>, including the validation re-render.
 /// </summary>
+file sealed class SaveErrorHost : ComponentBase
+{
+    private readonly FromAddressModel _model = new();
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<CascadingValue<SbSaveFieldErrorSet>>(0);
+        builder.AddAttribute(1, "Value", new SbSaveFieldErrorSet(
+        [
+            ("DefaultFromAddress", "Default From Address is not a valid email address.")
+        ]));
+        builder.AddAttribute(2, "ChildContent", (RenderFragment)(child =>
+        {
+            child.OpenComponent<SbTextField<string>>(0);
+            child.AddAttribute(1, nameof(SbTextField<string>.Id), "from-address");
+            child.AddAttribute(2, nameof(SbTextField<string>.Label), "Default From Address");
+            child.AddAttribute(3, nameof(SbTextField<string>.Value), "not-an-email");
+            child.AddAttribute(4, nameof(SbTextField<string>.ValueExpression),
+                (Expression<Func<string>>)(() => _model.DefaultFromAddress));
+            child.AddAttribute(5, nameof(SbTextField<string>.ValueChanged),
+                EventCallback.Factory.Create<string>(this, value => _model.DefaultFromAddress = value));
+            child.CloseComponent();
+        }));
+        builder.CloseComponent();
+    }
+}
+
+file sealed class FromAddressModel
+{
+    public string DefaultFromAddress { get; set; } = "";
+}
+
 file sealed class AccountProfileForm : ComponentBase
 {
     [Parameter]

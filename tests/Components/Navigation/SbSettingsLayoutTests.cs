@@ -13,6 +13,17 @@ using SufiChain.SufiBlazor.Localization;
 
 namespace SufiChain.SufiBlazor.Tests.Components.Navigation;
 
+file sealed class SaveNoticeGrab : ComponentBase
+{
+    [CascadingParameter]
+    public SbSettingsSaveNotice? Notice { get; set; }
+
+    [Parameter]
+    public Action<SbSettingsSaveNotice?>? Captured { get; set; }
+
+    protected override void OnParametersSet() => Captured?.Invoke(Notice);
+}
+
 file class SettingsLayoutLocalizer : IStringLocalizer<SufiBlazorResource>
 {
     public LocalizedString this[string name] => new(name, name);
@@ -613,6 +624,31 @@ public class SbSettingsLayoutTests : BunitContext
         Assert.Contains("Settings:SaveFailed", cut.Markup);
         Assert.Contains("Settings:UnsavedChanges", cut.Markup);
         Assert.Equal("email", cut.Find("[aria-current='page']").GetAttribute("data-section-id"));
+    }
+
+    [Fact]
+    public void FailedSave_SurfacesTheValidationMessageBesideTheGenericSentence()
+    {
+        SbSettingsSaveNotice? notice = null;
+        var cut = Render<SbSettingsLayout>(parameters =>
+        {
+            parameters.Add(component => component.AriaLabel, "Settings");
+            parameters.Add(component => component.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<SaveNoticeGrab>(0);
+                builder.AddAttribute(1, "Captured", (Action<SbSettingsSaveNotice?>)(value => notice = value));
+                builder.CloseComponent();
+                Section(builder, 10, "email", "Email", "mail", dirty: true, onSave: () =>
+                {
+                    notice!.Detail = "Default From Address is not a valid email address.";
+                    return Task.FromResult(false);
+                });
+            }));
+        });
+
+        cut.Find(".sb-settings-savebar__save").Click();
+        Assert.Contains("Settings:SaveFailed", cut.Markup);
+        Assert.Contains("Default From Address is not a valid email address.", cut.Markup);
     }
 
     [Fact]

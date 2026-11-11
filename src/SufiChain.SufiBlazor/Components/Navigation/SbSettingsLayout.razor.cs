@@ -28,6 +28,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private bool _isRtl;
     private bool _focusHeading;
     private bool _saveFailed;
+    private readonly SbSettingsSaveNotice _saveNotice = new();
     private bool _toastVisible;
     private bool _guardOpen;
     private TaskCompletionSource<bool>? _externalLeave;
@@ -148,6 +149,17 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
     private bool UseStrip => CompactMode == SbSettingsCompactMode.Strip || (CompactMode == SbSettingsCompactMode.Auto && VisibleSections.Count <= 6);
 
     private bool CanPressSave => Active is { } active && active.ShowsSaveControls && active.EffectiveDirty && active.CanSave && !Busy && !_saving;
+
+    private string SaveFailureText
+    {
+        get
+        {
+            var generic = L["Settings:SaveFailed"].Value;
+            return string.IsNullOrWhiteSpace(_saveNotice.Detail)
+                ? generic
+                : $"{generic} {_saveNotice.Detail}";
+        }
+    }
 
     private List<SbSettingsSection> VisibleSections => _sections.Where(section => section.Visible && !section.Pending).ToList();
 
@@ -926,6 +938,7 @@ public partial class SbSettingsLayout : ComponentBase, IAsyncDisposable
         }
 
         _saving = true;
+        _saveNotice.Clear();
         bool saved;
         try
         {
