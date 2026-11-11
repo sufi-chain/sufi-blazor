@@ -150,6 +150,7 @@
   <data name="DataLoadFailedGeneric" xml:space="preserve"><value>تعذّر تحميل البيانات.</value></data>
   <data name="Retry" xml:space="preserve"><value>إعادة المحاولة</value></data>
   <data name="SelectRow" xml:space="preserve"><value>تحديد الصف {0}</value></data>
+  <data name="SelectAllRows" xml:space="preserve"><value>تحديد كل الصفوف</value></data>
   <data name="RemoveFilterFor" xml:space="preserve"><value>إزالة عامل التصفية لـ {0}</value></data>
   <data name="GenerateFromTitle" xml:space="preserve"><value>إنشاء من العنوان</value></data>
   <data name="Demo:TabExample" xml:space="preserve"><value>مثال</value></data>

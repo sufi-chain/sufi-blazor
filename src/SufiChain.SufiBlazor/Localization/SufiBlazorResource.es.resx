@@ -150,6 +150,7 @@
   <data name="DataLoadFailedGeneric" xml:space="preserve"><value>No se ha podido cargar la información.</value></data>
   <data name="Retry" xml:space="preserve"><value>Reintentar</value></data>
   <data name="SelectRow" xml:space="preserve"><value>Seleccionar fila {0}</value></data>
+  <data name="SelectAllRows" xml:space="preserve"><value>Seleccionar todas las filas</value></data>
   <data name="RemoveFilterFor" xml:space="preserve"><value>Quitar filtro de {0}</value></data>
   <data name="GenerateFromTitle" xml:space="preserve"><value>Generar a partir del título</value></data>
   <data name="Demo:TabExample" xml:space="preserve"><value>Ejemplo</value></data>

@@ -150,6 +150,7 @@
   <data name="DataLoadFailedGeneric" xml:space="preserve"><value>اطلاعات بارگذاری نشد.</value></data>
   <data name="Retry" xml:space="preserve"><value>تلاش دوباره</value></data>
   <data name="SelectRow" xml:space="preserve"><value>انتخاب ردیف {0}</value></data>
+  <data name="SelectAllRows" xml:space="preserve"><value>انتخاب همه ردیف‌ها</value></data>
   <data name="RemoveFilterFor" xml:space="preserve"><value>حذف فیلتر {0}</value></data>
   <data name="GenerateFromTitle" xml:space="preserve"><value>تولید از عنوان</value></data>
   <data name="Demo:TabExample" xml:space="preserve"><value>نمونه</value></data>

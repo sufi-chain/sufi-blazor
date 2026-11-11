@@ -18,6 +18,16 @@ public class SbCheckboxTests : BunitContext
     }
 
     [Fact]
+    public void RendersAriaLabelOnTheInput()
+    {
+        var cut = RenderCheckbox(p => p.Add(x => x.AriaLabel, "Select row 1"));
+
+        var input = cut.Find("input.sb-checkbox__input");
+        Assert.Equal("Select row 1", input.GetAttribute("aria-label"));
+        Assert.Null(input.GetAttribute("arialabel"));
+    }
+
+    [Fact]
     public void RendersCheckboxStructure()
     {
         // Arrange & Act

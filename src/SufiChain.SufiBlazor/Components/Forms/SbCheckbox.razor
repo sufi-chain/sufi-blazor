@@ -10,6 +10,7 @@
            disabled="@Disabled"
            aria-checked="@GetAriaChecked()"
            aria-invalid="@(HasSaveError ? "true" : null)"
+           aria-label="@(string.IsNullOrWhiteSpace(AriaLabel) ? null : AriaLabel)"
            @onchange="HandleChange"
            @attributes="AdditionalAttributes" />
     <span class="sb-checkbox__box">
@@ -72,6 +73,12 @@
     /// </summary>
     [Parameter]
     public string? Label { get; set; }
+
+    /// <summary>
+    /// Accessible name when the checkbox has no visible label. Renders as aria-label.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
 
     /// <summary>
     /// Whether the checkbox is disabled.
