@@ -61,6 +61,15 @@
   --sb-color-info-light: var(--sb-color-info-100);
   --sb-color-info-text: var(--sb-color-info);
   --sb-color-on-info: #FFFFFF;
+  /* Alert pairs: dark text on a pale fill. WCAG AA 4.5:1 for normal text. */
+  --sb-color-alert-danger-bg: #F8D4D4;
+  --sb-color-alert-danger-text: #6E1515;
+  --sb-color-alert-warning-bg: #FBE3C4;
+  --sb-color-alert-warning-text: #6A2E0C;
+  --sb-color-alert-info-bg: #D6E0F8;
+  --sb-color-alert-info-text: #10245F;
+  --sb-color-alert-success-bg: #D2EBE7;
+  --sb-color-alert-success-text: #0C4A46;
   --sb-color-white: #FFFFFF;
   --sb-color-text-white: #FFFFFF;
   --sb-color-surface: #FFFFFF;
@@ -312,6 +321,15 @@ html.sufi-theme-dark .sb-theme-root,
     --sb-color-info-light: var(--sb-color-info-100);
     --sb-color-info-text: color-mix(in srgb, var(--sb-color-info) 80%, white);
     --sb-color-on-info: #101F2C;
+    /* Alert pairs: light text on a deep fill. WCAG AA 4.5:1 for normal text. */
+    --sb-color-alert-danger-bg: #6B1616;
+    --sb-color-alert-danger-text: #FDECEC;
+    --sb-color-alert-warning-bg: #6A3A0C;
+    --sb-color-alert-warning-text: #FFF3E0;
+    --sb-color-alert-info-bg: #16306E;
+    --sb-color-alert-info-text: #E7EEFF;
+    --sb-color-alert-success-bg: #0C4A46;
+    --sb-color-alert-success-text: #E4F7F4;
     --sb-color-surface: #192C38;
     --sb-color-surface-variant: #243B45;
     --sb-color-background: #101F2C;
@@ -2115,26 +2133,26 @@ samp,
 }
 
 .sb-alert--info {
-    background-color: var(--sb-color-info-light);
-    color: var(--sb-color-info-text);
+    background-color: var(--sb-color-alert-info-bg);
+    color: var(--sb-color-alert-info-text);
     border-inline-start-color: var(--sb-color-info);
 }
 
 .sb-alert--success {
-    background-color: var(--sb-color-success-light);
-    color: var(--sb-color-success-text);
+    background-color: var(--sb-color-alert-success-bg);
+    color: var(--sb-color-alert-success-text);
     border-inline-start-color: var(--sb-color-success);
 }
 
 .sb-alert--warning {
-    background-color: var(--sb-color-warning-light);
-    color: var(--sb-color-warning-text);
+    background-color: var(--sb-color-alert-warning-bg);
+    color: var(--sb-color-alert-warning-text);
     border-inline-start-color: var(--sb-color-warning);
 }
 
 .sb-alert--danger {
-    background-color: var(--sb-color-danger-light);
-    color: var(--sb-color-danger-text);
+    background-color: var(--sb-color-alert-danger-bg);
+    color: var(--sb-color-alert-danger-text);
     border-inline-start-color: var(--sb-color-danger);
 }
 
@@ -2166,19 +2184,23 @@ samp,
 }
 
 .sb-alert--info .sb-alert__icon {
-    background-color: var(--sb-color-info-light);
+    background-color: var(--sb-color-alert-info-bg);
+    color: var(--sb-color-alert-info-text);
 }
 
 .sb-alert--success .sb-alert__icon {
-    background-color: var(--sb-color-success-light);
+    background-color: var(--sb-color-alert-success-bg);
+    color: var(--sb-color-alert-success-text);
 }
 
 .sb-alert--warning .sb-alert__icon {
-    background-color: var(--sb-color-warning-light);
+    background-color: var(--sb-color-alert-warning-bg);
+    color: var(--sb-color-alert-warning-text);
 }
 
 .sb-alert--danger .sb-alert__icon {
-    background-color: var(--sb-color-danger-light);
+    background-color: var(--sb-color-alert-danger-bg);
+    color: var(--sb-color-alert-danger-text);
 }
 
 .sb-alert__content {
@@ -2191,8 +2213,9 @@ samp,
     margin-block-end: var(--sb-space-1);
 }
 
+.sb-alert__title,
 .sb-alert__message {
-    color: var(--sb-color-text);
+    color: inherit;
 }
 
 .sb-alert__dismiss {
@@ -2215,27 +2238,7 @@ samp,
     background-color: rgba(0, 0, 0, 0.08);
 }
 
-.sb-theme-dark .sb-alert--info {
-    color: var(--sb-color-info-hover);
-}
-
-.sb-theme-dark .sb-alert--success {
-    color: var(--sb-color-success-hover);
-}
-
-.sb-theme-dark .sb-alert--warning {
-    color: var(--sb-color-warning-text);
-}
-
-.sb-theme-dark .sb-alert--danger {
-    color: var(--sb-color-danger-hover);
-}
-
-.sb-theme-dark .sb-alert__title,
-.sb-theme-dark .sb-alert__message {
-    color: var(--sb-color-text);
-}
-
+html.sufi-theme-dark .sb-theme-root .sb-alert__dismiss:hover,
 .sb-theme-dark .sb-alert__dismiss:hover {
     background-color: rgba(255, 255, 255, 0.08);
 }
