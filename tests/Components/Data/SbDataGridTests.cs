@@ -1127,11 +1127,10 @@ public class SbDataGridTests : BunitContext
 
         var nameInput = cut.Find("input.sb-datagrid__filter-input");
         await cut.InvokeAsync(() => nameInput.Input("Alp"));
-        await Task.Delay(400);
-        await cut.InvokeAsync(() => { });
 
-        cut.WaitForState(() =>
-            cut.FindAll("tbody .sb-datagrid__row:not(.sb-datagrid__row--empty)").Count == 1);
+        cut.WaitForState(
+            () => cut.FindAll("tbody .sb-datagrid__row:not(.sb-datagrid__row--empty)").Count == 1,
+            timeout: TimeSpan.FromSeconds(2));
 
         Assert.Contains("Alpha", cut.Markup);
         Assert.DoesNotContain("Beta", cut.Markup);
@@ -1159,18 +1158,24 @@ public class SbDataGridTests : BunitContext
         var input = cut.Find("input.sb-datagrid__filter-input");
         Assert.True(string.IsNullOrEmpty(input.GetAttribute("value")));
 
+        // "A" matches both names. The debounce (300ms) then the status-clear (100ms) each
+        // re-render the input and replace its oninput id. The next Input has to wait until both
+        // have landed, or bunit dispatches to an id that render already dropped.
         await cut.InvokeAsync(() => input.Input("A"));
-        await Task.Delay(400);
-        await cut.InvokeAsync(() => { });
+        cut.WaitForState(
+            () => cut.Markup.Contains("Filter applied. Showing 2 results."),
+            timeout: TimeSpan.FromSeconds(2));
+        cut.WaitForState(
+            () => !cut.Markup.Contains("Filter applied."),
+            timeout: TimeSpan.FromSeconds(2));
         Assert.True(string.IsNullOrEmpty(cut.Find("input.sb-datagrid__filter-input").GetAttribute("value")));
 
         await cut.InvokeAsync(() => cut.Find("input.sb-datagrid__filter-input").Input("Al"));
-        await Task.Delay(400);
-        await cut.InvokeAsync(() => { });
+        cut.WaitForState(
+            () => cut.FindAll("tbody .sb-datagrid__row:not(.sb-datagrid__row--empty)").Count == 1,
+            timeout: TimeSpan.FromSeconds(2));
 
         Assert.True(string.IsNullOrEmpty(cut.Find("input.sb-datagrid__filter-input").GetAttribute("value")));
-        cut.WaitForState(() =>
-            cut.FindAll("tbody .sb-datagrid__row:not(.sb-datagrid__row--empty)").Count == 1);
         Assert.Contains("Alpha", cut.Markup);
         Assert.DoesNotContain("Beta", cut.Markup);
     }
