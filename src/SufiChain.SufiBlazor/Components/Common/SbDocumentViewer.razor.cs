@@ -24,6 +24,13 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
     [Parameter] public bool EnableMermaid { get; set; } = true;
     [Parameter] public bool EnableHighlight { get; set; } = true;
     [Parameter] public bool? RightToLeft { get; set; }
+
+    /// <summary>
+    /// Text direction for the document root and the renderer.
+    /// <c>auto</c> follows the content. <c>ltr</c> and <c>rtl</c> force a direction.
+    /// Null keeps the culture direction from <see cref="RightToLeft"/>.
+    /// </summary>
+    [Parameter] public string? TextDirection { get; set; }
     [Parameter] public string? Class { get; set; }
     [Parameter] public string? Style { get; set; }
     [Parameter(CaptureUnmatchedValues = true)]
@@ -31,6 +38,9 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
 
     protected bool EffectiveRightToLeft =>
         RightToLeft ?? CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft;
+
+    protected string ResolvedTextDirection =>
+        NormalizeTextDirection(TextDirection) ?? (EffectiveRightToLeft ? "rtl" : "ltr");
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -45,7 +55,7 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
         }
 
         var format = Format.ToString().ToLowerInvariant();
-        var direction = EffectiveRightToLeft ? "rtl" : "ltr";
+        var direction = ResolvedTextDirection;
         if (!firstRender && Content == _lastContent && format == _lastFormat && direction == _lastDirection)
         {
             return;
@@ -78,6 +88,22 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
 
     private string GetContainerClass() =>
         string.IsNullOrWhiteSpace(Class) ? "sb-document-viewer" : $"sb-document-viewer {Class}";
+
+    private static string? NormalizeTextDirection(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return value.Trim().ToLowerInvariant() switch
+        {
+            "auto" => "auto",
+            "ltr" => "ltr",
+            "rtl" => "rtl",
+            _ => null
+        };
+    }
 
     public async ValueTask DisposeAsync()
     {

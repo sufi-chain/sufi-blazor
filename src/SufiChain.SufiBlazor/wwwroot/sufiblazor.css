@@ -10372,6 +10372,7 @@ body.sb-resizing {
 .sb-conversation-message__body {
     white-space: pre-wrap;
     line-height: 1.5;
+    text-align: start;
 }
 
 .sb-conversation-message__footer,
