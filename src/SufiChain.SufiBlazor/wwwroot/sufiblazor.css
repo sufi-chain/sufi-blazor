@@ -259,6 +259,9 @@
     color-scheme: light;
 }
 
+/* The head script sets html.sufi-theme-dark before first paint. SSR can still
+   emit sb-theme-light until the circuit reads the stored mode. */
+html.sufi-theme-dark .sb-theme-root,
 .sb-theme-dark {
     color-scheme: dark;
     --sb-color-primary: var(--persian-blue-vivid-pale);
