@@ -50,32 +50,69 @@ window.SufiBlazor = window.SufiBlazor || {};
     trap: function (container) {
       if (!container) return function () {};
 
-      const focusableSelector =
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-      const focusableElements = container.querySelectorAll(focusableSelector);
-      const firstFocusable = focusableElements[0];
-      const lastFocusable = focusableElements[focusableElements.length - 1];
+      const focusableSelector = [
+        "button:not([disabled])",
+        "a[href]",
+        "input:not([disabled]):not([type='hidden'])",
+        "select:not([disabled])",
+        "textarea:not([disabled])",
+        "[tabindex]:not([tabindex='-1'])",
+      ].join(", ");
 
-      function handleKeyDown(e) {
-        if (e.key !== "Tab") return;
+      function tabbables() {
+        return Array.prototype.filter.call(
+          container.querySelectorAll(focusableSelector),
+          function (element) {
+            if (element.getAttribute("aria-hidden") === "true") {
+              return false;
+            }
+            if (element.closest("[hidden], [inert]")) {
+              return false;
+            }
+            const style = window.getComputedStyle(element);
+            return style.display !== "none" && style.visibility !== "hidden";
+          });
+      }
 
-        if (e.shiftKey) {
-          if (document.activeElement === firstFocusable) {
-            lastFocusable.focus();
-            e.preventDefault();
+      function handleKeyDown(event) {
+        if (event.key !== "Tab" || !container.isConnected) {
+          return;
+        }
+        if (container.tagName === "DIALOG" && !container.open) {
+          return;
+        }
+
+        const items = tabbables();
+        if (!items.length) {
+          event.preventDefault();
+          if (typeof container.focus === "function") {
+            container.focus();
           }
-        } else {
-          if (document.activeElement === lastFocusable) {
-            firstFocusable.focus();
-            e.preventDefault();
+          return;
+        }
+
+        const first = items[0];
+        const last = items[items.length - 1];
+        const active = document.activeElement;
+        const inside = active === container || (active && container.contains(active));
+        if (event.shiftKey) {
+          if (!inside || active === first || active === container) {
+            event.preventDefault();
+            last.focus();
           }
+          return;
+        }
+
+        if (!inside || active === last) {
+          event.preventDefault();
+          first.focus();
         }
       }
 
-      container.addEventListener("keydown", handleKeyDown);
+      container.addEventListener("keydown", handleKeyDown, true);
 
       return function () {
-        container.removeEventListener("keydown", handleKeyDown);
+        container.removeEventListener("keydown", handleKeyDown, true);
       };
     },
   };
@@ -671,10 +708,18 @@ window.SufiBlazor = window.SufiBlazor || {};
             event.preventDefault();
           });
           element.addEventListener("close", function () {
+            if (element._sbFocusRelease) {
+              element._sbFocusRelease();
+              element._sbFocusRelease = null;
+            }
             restoreDialogTrigger(element);
           });
           element._sbCloseBound = true;
         }
+        if (element._sbFocusRelease) {
+          element._sbFocusRelease();
+        }
+        element._sbFocusRelease = sb.focus.trap(element);
         element.showModal();
         restoreScroll(saved);
         requestAnimationFrame(function () { restoreScroll(saved); });
