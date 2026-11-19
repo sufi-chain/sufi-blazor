@@ -1,5 +1,15 @@
 .sb-document-viewer {
   line-height: 1.6;
+  position: relative;
+}
+
+.sb-document-viewer__source {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sb-document-viewer[data-rendered] .sb-document-viewer__source {
+  display: none;
 }
 
 .sb-document-viewer pre,

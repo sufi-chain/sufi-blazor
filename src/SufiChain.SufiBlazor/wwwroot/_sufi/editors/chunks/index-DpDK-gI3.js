@@ -4921,7 +4921,7 @@ async function Tr(n, t, a, i) {
       staticEditorOptions: { textDirection: c }
     });
   }
-  n.innerHTML = u, i?.enableHighlight !== !1 && n.querySelectorAll("pre code").forEach((g) => {
+  n.innerHTML = u, n.parentElement && (u ? n.parentElement.dataset.rendered = "true" : delete n.parentElement.dataset.rendered), i?.enableHighlight !== !1 && n.querySelectorAll("pre code").forEach((g) => {
     ne.highlightElement(g);
   }), i?.enableMermaid !== !1 && n.querySelector("code.language-mermaid, .language-mermaid") && await hr(n);
 }
