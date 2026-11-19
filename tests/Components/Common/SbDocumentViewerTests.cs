@@ -14,6 +14,20 @@ public class SbDocumentViewerTests : BunitContext
     }
 
     [Fact]
+    public void Completed_reply_stays_in_the_bubble_after_another_render()
+    {
+        const string reply = "The assistant reply is visible without a reload.";
+        var cut = Render<SbDocumentViewer>(p => p
+            .Add(x => x.Content, reply)
+            .Add(x => x.Format, SbContentFormat.Markdown));
+
+        Assert.Contains(reply, cut.Markup);
+        cut.Render();
+        Assert.Contains(reply, cut.Markup);
+        Assert.NotNull(cut.Find(".sb-document-viewer__source"));
+    }
+
+    [Fact]
     public void RendersViewerSurface()
     {
         var cut = Render<SbDocumentViewer>(p => p

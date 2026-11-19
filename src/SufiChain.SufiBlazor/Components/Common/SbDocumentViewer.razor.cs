@@ -18,6 +18,8 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
     private string? _lastContent;
     private string? _lastFormat;
     private string? _lastDirection;
+    private bool _painted;
+    private int _renderGeneration;
 
     [Parameter] public string? Content { get; set; }
     [Parameter] public SbContentFormat Format { get; set; } = SbContentFormat.Markdown;
@@ -42,6 +44,23 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
     protected string ResolvedTextDirection =>
         NormalizeTextDirection(TextDirection) ?? (EffectiveRightToLeft ? "rtl" : "ltr");
 
+    /// <summary>
+    /// A later parent render used to recreate the JS-managed element and then skip
+    /// <see cref="OnAfterRenderAsync"/> because the content string had not changed, leaving an empty bubble.
+    /// Once the document is painted, keep that DOM until the content, format, or direction changes.
+    /// </summary>
+    protected override bool ShouldRender()
+    {
+        if (!_painted || _useFallback)
+        {
+            return true;
+        }
+
+        return Content != _lastContent
+            || !string.Equals(Format.ToString(), _lastFormat, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(ResolvedTextDirection, _lastDirection, StringComparison.Ordinal);
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (_disposed)
@@ -54,33 +73,42 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
             _interop = new SbDocumentViewerInterop(JSRuntime);
         }
 
-        var format = Format.ToString().ToLowerInvariant();
-        var direction = ResolvedTextDirection;
-        if (!firstRender && Content == _lastContent && format == _lastFormat && direction == _lastDirection)
-        {
-            return;
-        }
-
         if (_interop == null)
         {
             return;
         }
 
+        var generation = ++_renderGeneration;
+        var content = Content ?? string.Empty;
+        var format = Format.ToString().ToLowerInvariant();
+        var direction = ResolvedTextDirection;
         try
         {
-            await _interop.RenderDocumentAsync(_container, Content ?? "", format, new SbDocumentViewerRenderOptions
+            await _interop.RenderDocumentAsync(_container, content, format, new SbDocumentViewerRenderOptions
             {
                 EnableHighlight = EnableHighlight,
                 EnableMermaid = EnableMermaid,
                 Direction = direction
             });
+            if (_disposed || generation != _renderGeneration)
+            {
+                return;
+            }
+
             _lastContent = Content;
             _lastFormat = format;
             _lastDirection = direction;
+            _painted = true;
             _useFallback = false;
         }
         catch (JSException)
         {
+            if (_disposed || generation != _renderGeneration)
+            {
+                return;
+            }
+
+            _painted = false;
             _useFallback = true;
             await InvokeAsync(StateHasChanged);
         }

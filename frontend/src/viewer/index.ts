@@ -53,6 +53,14 @@ export async function renderDocument(
   }
 
   element.innerHTML = html;
+  const host = element.parentElement;
+  if (host) {
+    if (html) {
+      host.dataset.rendered = "true";
+    } else {
+      delete host.dataset.rendered;
+    }
+  }
 
   if (options?.enableHighlight !== false) {
     element.querySelectorAll("pre code").forEach((block) => {
