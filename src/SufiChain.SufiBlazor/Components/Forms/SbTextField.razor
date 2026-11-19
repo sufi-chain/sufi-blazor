@@ -234,7 +234,13 @@
             if (!string.IsNullOrEmpty(HelperText) && !HasError)
                 parts.Add($"{EffectiveId}-helper");
             if (!string.IsNullOrEmpty(FieldErrorMessage))
-                parts.Add($"{EffectiveId}-error");
+            {
+                var errorId = $"{EffectiveId}-error";
+                if (!parts.Contains(errorId))
+                {
+                    parts.Add(errorId);
+                }
+            }
             return parts.Count > 0 ? string.Join(" ", parts) : null;
         }
     }
