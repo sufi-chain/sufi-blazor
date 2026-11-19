@@ -345,7 +345,20 @@
         || EditContext?.GetValidationMessages(FieldIdentifier).Any() == true
         || SaveFieldErrors?.Contains(FieldIdentifier.FieldName) == true;
 
-    private string? FieldErrorMessage => SaveFieldErrors?.Message(FieldIdentifier.FieldName);
+    private string? FieldErrorMessage
+    {
+        get
+        {
+            var saved = SaveFieldErrors?.Message(FieldIdentifier.FieldName);
+            if (!string.IsNullOrEmpty(saved))
+            {
+                return saved;
+            }
+
+            return EditContext?.GetValidationMessages(FieldIdentifier)
+                .FirstOrDefault(message => !string.IsNullOrWhiteSpace(message));
+        }
+    }
 
     private string WrapperCssClass
     {
