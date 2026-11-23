@@ -920,11 +920,60 @@ public class SbSettingsLayoutTests : BunitContext
         builder.CloseComponent();
     }
 
+    [Fact]
+    public void Late_ready_section_does_not_replace_the_clicked_section()
+    {
+        var cut = Render<ClickedThenReadyHost>();
+        cut.Find(".sb-settings-rail [data-section-id='identity']").Click();
+        Assert.Equal("identity", cut.Find(".sb-settings-rail [aria-current='page']").GetAttribute("data-section-id"));
+
+        cut.Instance.EmailPending = false;
+        cut.Render();
+
+        Assert.Equal("identity", cut.Find(".sb-settings-rail [aria-current='page']").GetAttribute("data-section-id"));
+    }
+
     private static bool BeforeUnload(JSRuntimeInvocation invocation, bool armed) =>
         invocation.Identifier == "SufiBlazor.settingsLayout.setBeforeUnload"
         && invocation.Arguments.Count > 1
         && invocation.Arguments[1] is bool value
         && value == armed;
+}
+
+file sealed class ClickedThenReadyHost : ComponentBase
+{
+    public bool EmailPending { get; set; } = true;
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<SbSettingsLayout>(0);
+        builder.AddAttribute(1, "AriaLabel", "Settings");
+        builder.AddAttribute(2, "ChildContent", (RenderFragment)(content =>
+        {
+            content.OpenComponent<SbSettingsSection>(0);
+            content.AddAttribute(1, "Id", "branding");
+            content.AddAttribute(2, "Label", "Branding");
+            content.AddAttribute(3, "Icon", "palette");
+            content.AddAttribute(4, "ChildContent", (RenderFragment)(body => body.AddMarkupContent(0, "<p>Branding body</p>")));
+            content.CloseComponent();
+
+            content.OpenComponent<SbSettingsSection>(20);
+            content.AddAttribute(21, "Id", "identity");
+            content.AddAttribute(22, "Label", "Identity");
+            content.AddAttribute(23, "Icon", "user-cog");
+            content.AddAttribute(24, "ChildContent", (RenderFragment)(body => body.AddMarkupContent(0, "<p>Identity body</p>")));
+            content.CloseComponent();
+
+            content.OpenComponent<SbSettingsSection>(40);
+            content.AddAttribute(41, "Id", "email");
+            content.AddAttribute(42, "Label", "Email");
+            content.AddAttribute(43, "Icon", "mail");
+            content.AddAttribute(44, "Pending", EmailPending);
+            content.AddAttribute(45, "ChildContent", (RenderFragment)(body => body.AddMarkupContent(0, "<p>Email body</p>")));
+            content.CloseComponent();
+        }));
+        builder.CloseComponent();
+    }
 }
 
 file sealed class PendingChoiceHost : ComponentBase

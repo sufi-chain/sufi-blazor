@@ -10825,8 +10825,6 @@ body.sb-resizing {
     position: sticky;
     z-index: 5;
     inset-block-start: var(--sb-settings-sticky-offset, var(--sb-app-header-height, 0px));
-    max-block-size: calc(100dvh - var(--sb-settings-sticky-offset, var(--sb-app-header-height, 0px)));
-    overflow: auto;
     inline-size: var(--sb-settings-rail-width);
     min-inline-size: 0;
     padding: 0.75rem;
