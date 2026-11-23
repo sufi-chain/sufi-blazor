@@ -395,4 +395,24 @@ public class SbDialogTests : BunitContext
         Assert.NotNull(header);
         Assert.NotNull(cut.Find(".sb-dialog__close-btn"));
     }
+
+    [Fact]
+    public void DialogStylesGoFullScreenAtTheD21Breakpoint()
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir != null && !File.Exists(Path.Combine(dir.FullName, "src", "SufiChain.SufiBlazor", "wwwroot", "sufiblazor.css")))
+        {
+            dir = dir.Parent;
+        }
+
+        Assert.NotNull(dir);
+        var css = File.ReadAllText(Path.Combine(dir!.FullName, "src", "SufiChain.SufiBlazor", "wwwroot", "sufiblazor.css"));
+        var rule = css.IndexOf("@media (max-width: 768px)", StringComparison.Ordinal);
+        Assert.True(rule >= 0);
+        var block = css.Substring(rule, Math.Min(1200, css.Length - rule));
+        Assert.Contains("100dvh", block, StringComparison.Ordinal);
+        Assert.Contains("margin: 0", block, StringComparison.Ordinal);
+        Assert.Contains("position: sticky", block, StringComparison.Ordinal);
+        Assert.Contains(".sb-dialog__footer", block, StringComparison.Ordinal);
+    }
 }
