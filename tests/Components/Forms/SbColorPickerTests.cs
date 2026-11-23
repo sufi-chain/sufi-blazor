@@ -340,4 +340,23 @@ public class SbColorPickerTests : BunitContext
         Assert.Equal("unchanged", received);
         Assert.Empty(cut.FindAll(".sb-colorpicker__dropdown"));
     }
+
+    [Fact]
+    public void InvalidHexDoesNotPreviewOrApply()
+    {
+        string? received = null;
+        var cut = RenderColorPicker(p => p
+            .Add(x => x.Value, "#zzz")
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<string?>(this, value => received = value)));
+
+        var preview = cut.Find(".sb-colorpicker__preview");
+        Assert.Contains("transparent", preview.GetAttribute("style"));
+        Assert.DoesNotContain("#zzz", preview.GetAttribute("style"));
+
+        cut.Find(".sb-colorpicker__trigger").Click();
+        cut.FindAll("button").First(button => button.TextContent.Contains("Apply", StringComparison.Ordinal)).Click();
+
+        Assert.Null(received);
+        Assert.Contains("InvalidColor", cut.Markup);
+    }
 }

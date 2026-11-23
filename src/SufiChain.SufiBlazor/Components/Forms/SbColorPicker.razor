@@ -1,3 +1,4 @@
+@using System.Linq.Expressions
 @namespace SufiChain.SufiBlazor.Components.Forms
 @using SufiChain.SufiBlazor.Components.Actions
 @using SufiChain.SufiBlazor.Components.Common
@@ -17,7 +18,7 @@
         </label>
     }
     <div class="sb-colorpicker__trigger @(Disabled ? "sb-colorpicker__trigger--disabled" : "")" @onclick="Toggle">
-        <span class="sb-colorpicker__preview" style="background-color: @(Value ?? "#ffffff")"></span>
+        <span class="sb-colorpicker__preview" style="background-color: @CssColor(Value)"></span>
         <span class="sb-colorpicker__value">@(Value ?? (Placeholder ?? L["SelectColor_Placeholder"]))</span>
         @if (Clearable && !string.IsNullOrEmpty(Value) && !Disabled)
         {
@@ -52,10 +53,10 @@
             <div class="sb-colorpicker__custom">
                 <label class="sb-colorpicker__label">@L["CustomColor"]</label>
                 <div class="sb-colorpicker__input-row">
-                    <div class="sb-colorpicker__native-wrapper" style="background-color: @(_tempValue ?? "#ffffff")">
+                    <div class="sb-colorpicker__native-wrapper" style="background-color: @CssColor(_tempValue)">
                         <input type="color" 
                                class="sb-colorpicker__native"
-                               value="@(_tempValue ?? "#ffffff")"
+                               value="@NativeColor(_tempValue)"
                                @onchange="OnNativeColorChange" />
                     </div>
                     <input type="text"
@@ -64,8 +65,14 @@
                            @bind:set="OnHexInput"
                            @bind:event="oninput"
                            placeholder="#000000"
-                           maxlength="7" />
+                           maxlength="9"
+                           aria-invalid="@HasColorError"
+                           aria-describedby="@(HasColorError ? "sb-colorpicker-error" : null)" />
                 </div>
+                @if (HasColorError)
+                {
+                    <div id="sb-colorpicker-error" class="sb-colorpicker__error" role="alert">@ColorError</div>
+                }
             </div>
             
             @if (ShowOpacity)
@@ -98,6 +105,7 @@
     private DotNetObjectReference<SbColorPicker>? _dotNetRef;
     private bool _isOpen;
     private string? _tempValue;
+    private string? _hexError;
     private int _opacity = 100;
     private bool _shouldFlip;
     
@@ -112,6 +120,12 @@
     /// </summary>
     [Parameter]
     public EventCallback<string?> ValueChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<string?>>? ValueExpression { get; set; }
+
+    [CascadingParameter]
+    public SbSaveFieldErrorSet? SaveFieldErrors { get; set; }
     
     /// <summary>
     /// Preset color options.
@@ -229,9 +243,13 @@
     private void OnHexInput(string? input)
     {
         var value = input ?? "";
-        if (!value.StartsWith("#"))
+        if (value.Length > 0 && !value.StartsWith('#'))
+        {
             value = "#" + value;
+        }
+
         _tempValue = value;
+        _hexError = string.IsNullOrEmpty(value) || IsHexColor(value) ? null : L["InvalidColor"];
     }
     
     private void OnOpacityChange(ChangeEventArgs e)
@@ -245,6 +263,13 @@
     private async Task Apply()
     {
         var finalValue = _tempValue;
+        if (!string.IsNullOrEmpty(finalValue) && !IsHexColor(finalValue))
+        {
+            _hexError = L["InvalidColor"];
+            return;
+        }
+
+        _hexError = null;
         
         if (ShowOpacity && !string.IsNullOrEmpty(finalValue) && _opacity >= 0 && _opacity <= 100)
         {
@@ -288,11 +313,43 @@
         else
         {
             _tempValue = value;
+            _hexError = IsHexColor(value) ? null : L["InvalidColor"];
             // If it's a simple color without alpha, opacity defaults to 100,
             // unless we want to persist previous opacity? Standard behavior is usually reset to 100 or keep existing if logical.
             // Here we'll reset to 100 if the new value doesn't have alpha information to match the "Value" source of truth.
              if (ShowOpacity && value.Length <= 7) _opacity = 100;
         }
+    }
+
+    private bool HasColorError => !string.IsNullOrEmpty(ColorError);
+
+    private string? ColorError => _hexError ?? SaveFieldErrors?.Message(SbSaveFieldErrorSet.MemberName(ValueExpression));
+
+    private string CssColor(string? value) => IsHexColor(value) ? value! : "transparent";
+
+    private string NativeColor(string? value) => IsHexColor(value) && value!.Length <= 7 ? value! : "#ffffff";
+
+    internal static bool IsHexColor(string? value)
+    {
+        if (string.IsNullOrEmpty(value) || value[0] != '#')
+        {
+            return false;
+        }
+
+        if (value.Length is not (4 or 7 or 9))
+        {
+            return false;
+        }
+
+        for (var i = 1; i < value.Length; i++)
+        {
+            if (!Uri.IsHexDigit(value[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
     
     private async Task Cancel()

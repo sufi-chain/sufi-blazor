@@ -122,6 +122,7 @@
   <data name="FilterIsEmpty" xml:space="preserve"><value>Está vacío</value></data>
   <data name="FilterIsNotEmpty" xml:space="preserve"><value>No está vacío</value></data>
   <data name="CustomColor" xml:space="preserve"><value>Color personalizado</value></data>
+  <data name="InvalidColor" xml:space="preserve"><value>Introduzca un color como #RGB o #RRGGBB.</value></data>
   <data name="Opacity" xml:space="preserve"><value>Opacidad: {0}%</value></data>
   <data name="Preview" xml:space="preserve"><value>Vista previa:</value></data>
   <data name="EnterSlug_Placeholder" xml:space="preserve"><value>introduzca-el-slug-aqui</value></data>

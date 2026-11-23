@@ -122,6 +122,7 @@
   <data name="FilterIsEmpty" xml:space="preserve"><value>خالی است</value></data>
   <data name="FilterIsNotEmpty" xml:space="preserve"><value>خالی نیست</value></data>
   <data name="CustomColor" xml:space="preserve"><value>رنگ سفارشی</value></data>
+  <data name="InvalidColor" xml:space="preserve"><value>رنگ را به‌صورت #RGB یا #RRGGBB وارد کنید.</value></data>
   <data name="Opacity" xml:space="preserve"><value>شفافیت: {0}٪</value></data>
   <data name="Preview" xml:space="preserve"><value>پیش‌نمایش:</value></data>
   <data name="EnterSlug_Placeholder" xml:space="preserve"><value>نامک-را-وارد-کنید</value></data>

@@ -122,6 +122,7 @@
   <data name="FilterIsEmpty" xml:space="preserve"><value>فارغ</value></data>
   <data name="FilterIsNotEmpty" xml:space="preserve"><value>غير فارغ</value></data>
   <data name="CustomColor" xml:space="preserve"><value>لون مخصص</value></data>
+  <data name="InvalidColor" xml:space="preserve"><value>أدخل اللون بصيغة #RGB أو #RRGGBB.</value></data>
   <data name="Opacity" xml:space="preserve"><value>الشفافية: {0}٪</value></data>
   <data name="Preview" xml:space="preserve"><value>معاينة:</value></data>
   <data name="EnterSlug_Placeholder" xml:space="preserve"><value>أدخل-الرابط</value></data>
