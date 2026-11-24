@@ -1273,6 +1273,13 @@
     /// so clicks stay correct while the parent catches up via <see cref="PageIndexChanged"/>.
     /// </summary>
     private int _pageIndex;
+    private bool _parentSuppliesTotalCount;
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        _parentSuppliesTotalCount = parameters.TryGetValue<long>(nameof(TotalCount), out _);
+        return base.SetParametersAsync(parameters);
+    }
     private int _pageSize = 10;
     private int? _pendingPageIndex;
     private int? _pendingPageSize;
@@ -1602,6 +1609,7 @@
         // (Items is one page of a larger TotalCount), do not Skip again or overwrite TotalCount.
         var effectivePageSize = _pageSize > 0 ? _pageSize : PageSize;
         var looksLikeAlreadyPagedSlice =
+            _parentSuppliesTotalCount &&
             ShowPagination &&
             effectivePageSize > 0 &&
             TotalCount > items.Count &&
