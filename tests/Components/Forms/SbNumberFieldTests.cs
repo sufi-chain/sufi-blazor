@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Bunit;
 using SufiChain.SufiBlazor.Components.Forms;
 using Xunit;
@@ -363,5 +364,64 @@ public class SbNumberFieldTests : BunitContext
         var input = cut.Find("input");
         Assert.Equal("number-input", input.GetAttribute("data-testid"));
         Assert.Equal("Quantity", input.GetAttribute("aria-label"));
+    }
+
+    [Fact]
+    public async Task SbNumberField_FastTyping_DoesNotRevertToStaleValue()
+    {
+        decimal parent = 0m;
+        var cut = Render<SbNumberField<decimal>>(p => p
+            .Add(x => x.Value, parent)
+            .Add(x => x.Immediate, true)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<decimal>(this, value => parent = value)));
+
+        var input = cut.Find("input");
+        await cut.InvokeAsync(() => input.TriggerEvent("onfocus", new FocusEventArgs()));
+        await cut.InvokeAsync(() => input.Input("1"));
+        await cut.InvokeAsync(() => input.Input("10"));
+        await cut.InvokeAsync(() => input.Input("100"));
+        await cut.InvokeAsync(() => input.Input("1000"));
+
+        cut.Render(p => p
+            .Add(x => x.Value, 10m)
+            .Add(x => x.Immediate, true)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<decimal>(this, value => parent = value)));
+
+        Assert.Equal("1000", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public async Task SbNumberField_Blur_RaisesValueChangedOnce()
+    {
+        var calls = 0;
+        decimal? received = null;
+        var cut = Render<SbNumberField<decimal>>(p => p
+            .Add(x => x.Value, 0m)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<decimal>(this, value =>
+            {
+                calls++;
+                received = value;
+            })));
+
+        var input = cut.Find("input");
+        await cut.InvokeAsync(() => input.Input("1"));
+        await cut.InvokeAsync(() => input.Input("10"));
+        await cut.InvokeAsync(() => input.Input("1000"));
+        Assert.Equal(0, calls);
+
+        await cut.InvokeAsync(() => input.Change("1000"));
+
+        Assert.Equal(1, calls);
+        Assert.Equal(1000m, received);
+    }
+
+    [Fact]
+    public void SbNumberField_ExternalValueChange_UpdatesInput()
+    {
+        var cut = Render<SbNumberField<decimal>>(p => p.Add(x => x.Value, 10m));
+
+        cut.Render(p => p.Add(x => x.Value, 2500m));
+
+        Assert.Equal("2500", cut.Find("input").GetAttribute("value"));
     }
 }

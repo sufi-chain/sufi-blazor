@@ -22,9 +22,11 @@
                aria-required="@(Required || FormFieldContext?.Required == true ? "true" : null)"
                aria-describedby="@InputDescription"
                aria-invalid="@((FormFieldContext?.HasError == true || HasSaveError) ? "true" : null)"
-               value="@CurrentValueAsString"
+               value="@DisplayValue"
+               @onfocus="HandleFocus"
                @oninput="HandleInput"
                @onchange="HandleChange"
+               @onblur="HandleBlur"
                disabled="@Disabled"
                readonly="@ReadOnly"
                min="@MinAsString"
@@ -101,6 +103,13 @@
     /// </summary>
     [Parameter]
     public TNumber? Step { get; set; }
+
+    /// <summary>
+    /// When true, each keystroke publishes <see cref="ValueChanged"/>. The default publishes on change or blur
+    /// so a late parent render cannot replace the text the user is still typing.
+    /// </summary>
+    [Parameter]
+    public bool Immediate { get; set; }
 
     /// <summary>
     /// When true, a value outside <see cref="Min"/> or <see cref="Max"/> is rewritten to the
@@ -204,7 +213,34 @@
         }
     }
 
-    private string? CurrentValueAsString => FormatInvariant(Value);
+    private string? _draft;
+    private bool _focused;
+
+    private string? DisplayValue => _draft ?? FormatInvariant(Value);
+
+    protected override void OnParametersSet()
+    {
+        if (_focused || _draft == null)
+        {
+            return;
+        }
+
+        if (TryParse(_draft, out var parsed) && EqualityComparer<TNumber>.Default.Equals(ClampValue(parsed), Value))
+        {
+            _draft = null;
+        }
+    }
+
+    private void HandleFocus(FocusEventArgs _)
+    {
+        _focused = true;
+        _draft ??= FormatInvariant(Value);
+    }
+
+    private void HandleBlur(FocusEventArgs _)
+    {
+        _focused = false;
+    }
     private string? MinAsString => Min.HasValue ? FormatInvariant(Min.Value) : null;
     private string? MaxAsString => Max.HasValue ? FormatInvariant(Max.Value) : null;
     private string? StepAsString => Step.HasValue ? FormatInvariant(Step.Value) : "1";
@@ -214,21 +250,28 @@
 
     private async Task HandleInput(ChangeEventArgs args)
     {
-        if (TryParse(args.Value?.ToString(), out var value))
+        _focused = true;
+        _draft = args.Value?.ToString() ?? string.Empty;
+        if (!Immediate || !TryParse(_draft, out var value))
         {
-            await ValueChanged.InvokeAsync(value);
+            return;
         }
+
+        await ValueChanged.InvokeAsync(value);
     }
 
     private async Task HandleChange(ChangeEventArgs args)
     {
-        if (TryParse(args.Value?.ToString(), out var value))
+        _draft = args.Value?.ToString() ?? string.Empty;
+        if (TryParse(_draft, out var value))
         {
             value = ClampValue(value);
+            _draft = FormatInvariant(value);
             await ValueChanged.InvokeAsync(value);
         }
-        else if (string.IsNullOrWhiteSpace(args.Value?.ToString()))
+        else if (string.IsNullOrWhiteSpace(_draft))
         {
+            _draft = FormatInvariant(default);
             await ValueChanged.InvokeAsync(default);
         }
     }
@@ -240,6 +283,7 @@
         var step = Step ?? GetDefaultStep();
         var newValue = Add(Value, step);
         var clampedValue = ClampValue(newValue);
+        _draft = FormatInvariant(clampedValue);
         await ValueChanged.InvokeAsync(clampedValue);
     }
 
@@ -250,6 +294,7 @@
         var step = Step ?? GetDefaultStep();
         var newValue = Subtract(Value, step);
         var clampedValue = ClampValue(newValue);
+        _draft = FormatInvariant(clampedValue);
         await ValueChanged.InvokeAsync(clampedValue);
     }
 
