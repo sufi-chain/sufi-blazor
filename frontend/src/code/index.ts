@@ -10,9 +10,9 @@ import { xml } from "@codemirror/lang-xml";
 import { linter } from "@codemirror/lint";
 import { searchKeymap } from "@codemirror/search";
 import "./code.css";
-import { applyValueChunk, htmlLanguageConfig } from "./transfer";
+import { applyValueChunk, baselineOf, htmlLanguageConfig, isTextDirty, type TextBaseline } from "./transfer";
 
-export { applyValueChunk, htmlLanguageConfig };
+export { applyValueChunk, baselineOf, htmlLanguageConfig, isTextDirty };
 
 type DotNetRef = { invokeMethodAsync(method: string, ...args: unknown[]): Promise<unknown> };
 
@@ -31,25 +31,30 @@ interface InitOptions {
 }
 
 const editors = new Map<string, EditorView>();
+const baselines = new Map<string, TextBaseline>();
 const suppressEditorNotify = new Set<string>();
 const editorNotifyTimers = new Map<string, ReturnType<typeof setTimeout>>();
-/** Stay under the Blazor circuit's default 32 KB receive limit. */
-const editorChunkChars = 8000;
+const dirtyNotifyDelayMs = 300;
 let nextId = 1;
 
-function notifyEditorContent(editorId: string, dotNetRef: DotNetRef, view: EditorView): void {
-  if (suppressEditorNotify.has(editorId)) {
-    return;
-  }
+function rememberBaseline(editorId: string, text: string): void {
+  baselines.set(editorId, baselineOf(text));
+}
 
-  const doc = view.state.doc;
-  if (doc.length <= editorChunkChars) {
-    const pending = editorNotifyTimers.get(editorId);
-    if (pending) {
-      clearTimeout(pending);
-      editorNotifyTimers.delete(editorId);
+async function invokeEditor(dotNetRef: DotNetRef, stage: string, ...args: unknown[]): Promise<void> {
+  try {
+    await dotNetRef.invokeMethodAsync(stage, ...args);
+  } catch {
+    try {
+      await dotNetRef.invokeMethodAsync("OnEditorTransferFailed", stage);
+    } catch {
+      /* The circuit is already gone. */
     }
-    void dotNetRef.invokeMethodAsync("OnEditorContentChanged", doc.toString());
+  }
+}
+
+function notifyEditorContent(editorId: string, dotNetRef: DotNetRef, _view: EditorView): void {
+  if (suppressEditorNotify.has(editorId)) {
     return;
   }
 
@@ -57,14 +62,17 @@ function notifyEditorContent(editorId: string, dotNetRef: DotNetRef, view: Edito
   if (existing) {
     clearTimeout(existing);
   }
+
   editorNotifyTimers.set(editorId, setTimeout(() => {
     editorNotifyTimers.delete(editorId);
     const current = editors.get(editorId);
     if (!current) {
       return;
     }
-    void dotNetRef.invokeMethodAsync("OnLargeEditorContentChanged", current.state.doc.length);
-  }, 250));
+    const text = current.state.doc.toString();
+    const dirty = isTextDirty(baselines.get(editorId), text);
+    void invokeEditor(dotNetRef, "OnEditorDirtyChanged", dirty, text.length);
+  }, dirtyNotifyDelayMs));
 }
 
 function languageExtension(language?: string, autoCloseTags?: boolean) {
@@ -101,14 +109,14 @@ export function initEditor(element: HTMLElement, dotNetRef: DotNetRef, options: 
       {
         key: "Mod-s",
         run: () => {
-          void dotNetRef.invokeMethodAsync("OnEditorShortcut", "save");
+          void invokeEditor(dotNetRef, "OnEditorShortcut", "save");
           return true;
         },
       },
       {
         key: "Mod-p",
         run: () => {
-          void dotNetRef.invokeMethodAsync("OnEditorShortcut", "preview");
+          void invokeEditor(dotNetRef, "OnEditorShortcut", "preview");
           return true;
         },
       },
@@ -146,13 +154,28 @@ export function initEditor(element: HTMLElement, dotNetRef: DotNetRef, options: 
 
   element.setAttribute("dir", "ltr");
   editors.set(editorId, view);
+  rememberBaseline(editorId, options.value ?? "");
   return editorId;
 }
 
 export function destroyEditor(editorId: string): void {
+  const pending = editorNotifyTimers.get(editorId);
+  if (pending) {
+    clearTimeout(pending);
+    editorNotifyTimers.delete(editorId);
+  }
   const view = editors.get(editorId);
   view?.destroy();
   editors.delete(editorId);
+  baselines.delete(editorId);
+}
+
+export function markSaved(editorId: string): void {
+  const view = editors.get(editorId);
+  if (!view) {
+    return;
+  }
+  rememberBaseline(editorId, view.state.doc.toString());
 }
 
 export function getValue(editorId: string): string {
@@ -185,6 +208,7 @@ export function setValue(editorId: string, value: string): void {
     });
   } finally {
     suppressEditorNotify.delete(editorId);
+    rememberBaseline(editorId, view.state.doc.toString());
   }
 }
 
@@ -201,6 +225,7 @@ export function setValueChunk(editorId: string, chunk: string, reset: boolean): 
     });
   } finally {
     suppressEditorNotify.delete(editorId);
+    rememberBaseline(editorId, view.state.doc.toString());
   }
 }
 

@@ -11,6 +11,44 @@ namespace SufiChain.SufiBlazor.Interop;
 public static class SbEditorTextTransfer
 {
     public const int SingleMessageChars = 8000;
+
+    /// <summary>One circuit message stays near 24 KB of UTF-8. 8,000 BMP characters fit under that.</summary>
+    public const int MaxUtf8BytesPerMessage = 24 * 1024;
+
+    public static async Task<string> ReadInChunksAsync(int length, Func<int, int, Task<string?>> readChunk)
+    {
+        if (length <= 0)
+        {
+            return string.Empty;
+        }
+
+        if (length <= SingleMessageChars)
+        {
+            return await readChunk(0, length) ?? string.Empty;
+        }
+
+        var builder = new StringBuilder(length);
+        for (var offset = 0; offset < length; offset += SingleMessageChars)
+        {
+            var take = Math.Min(SingleMessageChars, length - offset);
+            var chunk = await readChunk(offset, take) ?? string.Empty;
+            if (Encoding.UTF8.GetByteCount(chunk) > MaxUtf8BytesPerMessage)
+            {
+                throw new InvalidOperationException("Editor chunk exceeds the UTF-8 message cap.");
+            }
+
+            builder.Append(chunk);
+        }
+
+        return builder.ToString();
+    }
+}
+
+public enum SbCodeEditorTransferState
+{
+    Idle,
+    Reading,
+    Failed
 }
 
 /// <summary>
@@ -58,19 +96,21 @@ public sealed class SbCodeEditorInterop : IAsyncDisposable
     {
         var module = await EnsureModuleAsync();
         var length = await module.InvokeAsync<int>("getValueLength", editorId);
-        if (length <= SbEditorTextTransfer.SingleMessageChars)
+        return await SbEditorTextTransfer.ReadInChunksAsync(length, async (offset, take) =>
         {
-            return await module.InvokeAsync<string>("getValue", editorId);
-        }
+            if (length <= SbEditorTextTransfer.SingleMessageChars)
+            {
+                return await module.InvokeAsync<string>("getValue", editorId);
+            }
 
-        var builder = new StringBuilder(length);
-        for (var offset = 0; offset < length; offset += SbEditorTextTransfer.SingleMessageChars)
-        {
-            var take = Math.Min(SbEditorTextTransfer.SingleMessageChars, length - offset);
-            builder.Append(await module.InvokeAsync<string>("readValueChunk", editorId, offset, take));
-        }
+            return await module.InvokeAsync<string>("readValueChunk", editorId, offset, take);
+        });
+    }
 
-        return builder.ToString();
+    public async Task MarkSavedAsync(string editorId)
+    {
+        var module = await EnsureModuleAsync();
+        await module.InvokeVoidAsync("markSaved", editorId);
     }
 
     public async Task SetValueAsync(string editorId, string value)

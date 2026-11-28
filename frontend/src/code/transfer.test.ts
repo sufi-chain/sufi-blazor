@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyValueChunk, htmlLanguageConfig } from "./transfer";
+import { applyValueChunk, baselineOf, htmlLanguageConfig, planDirtyNotices } from "./transfer";
 import { programmaticContentOptions } from "../rich-text/content";
 
 describe("CMS HTML editor transfer", () => {
@@ -21,5 +21,37 @@ describe("CMS HTML editor transfer", () => {
 
   it("a programmatic rich-text set does not emit an update", () => {
     expect(programmaticContentOptions("html")).toEqual({ contentType: "html", emitUpdate: false });
+  });
+
+  it("notify_doesNotSendDocumentOnKeystroke", () => {
+    const baseline = baselineOf("body { color: black; }");
+    const next = baselineOf("body { color: black; }").length + "x".length;
+    const notices = planDirtyNotices(baseline, ["body { color: black; }x"]);
+    expect(notices).toHaveLength(1);
+    expect(notices[0]?.documentSent).toBe(false);
+    expect(notices[0]?.method).toBe("OnEditorDirtyChanged");
+    expect(JSON.stringify(notices[0])).not.toContain("color: black");
+    expect(notices[0]?.length).toBe(next);
+  });
+
+  it("notify_debouncesDirtyFlag", () => {
+    const baseline = baselineOf("");
+    const notices = planDirtyNotices(baseline, ["a", "ab", "abc"]);
+    expect(notices).toHaveLength(1);
+    expect(notices[0]?.dirty).toBe(true);
+    expect(notices[0]?.length).toBe(3);
+  });
+
+  it("notify_insert300CharsIntoSmallDoc_FlagsDirtyOnce", () => {
+    const start = "p { margin: 0; }";
+    const inserted = start + "x".repeat(300);
+    const notices = planDirtyNotices(baselineOf(start), [inserted]);
+    expect(notices).toEqual([{
+      method: "OnEditorDirtyChanged",
+      dirty: true,
+      length: inserted.length,
+      documentSent: false,
+    }]);
+    expect(inserted.length).toBeLessThanOrEqual(8000);
   });
 });
