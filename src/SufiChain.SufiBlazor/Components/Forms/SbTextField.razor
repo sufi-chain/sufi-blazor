@@ -308,6 +308,8 @@
         return _sync.Draft;
     }
 
+    public ValueTask FocusAsync() => _inputRef.FocusAsync();
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // A component action such as Clear can leave the rendered value identical, so the DOM has
