@@ -73,6 +73,12 @@
     public EventCallback<SbDropEventArgs> OnItemDropped { get; set; }
 
     /// <summary>
+    /// Callback when a drop arrives with no active, accepted drag. The drop is otherwise silent.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDropRejected { get; set; }
+
+    /// <summary>
     /// Callback when drag enters.
     /// </summary>
     [Parameter]
@@ -130,6 +136,7 @@
         if (!AcceptsCurrentDrag())
         {
             _isDragOver = false;
+            await OnDropRejected.InvokeAsync();
             return;
         }
 

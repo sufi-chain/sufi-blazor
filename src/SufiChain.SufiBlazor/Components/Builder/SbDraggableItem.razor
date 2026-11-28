@@ -84,12 +84,11 @@
     {
         if (Disabled)
         {
-            await LogAsync("dragstart SKIP (disabled)");
+            _ = LogAsync("dragstart SKIP (disabled)");
             return;
         }
 
         _isDragging = true;
-        await LogAsync("dragstart");
 
         var args = new SbDragStartEventArgs
         {
@@ -97,25 +96,37 @@
             ItemType = ItemType
         };
 
+        // A drop can be dispatched while this handler is still awaiting. Begin first so that drop
+        // sees IsDragging; diagnostic console.log must not sit in front of it.
+        DragSession?.Begin(args.Data ?? Data, args.ItemType ?? ItemType);
+        _ = LogAsync("dragstart");
+
         await OnDragStarted.InvokeAsync(args);
 
         if (args.Cancel)
         {
             _isDragging = false;
             DragSession?.End();
-            await LogAsync("dragstart CANCELLED");
+            _ = LogAsync("dragstart CANCELLED");
             return;
         }
 
-        DragSession?.Begin(args.Data ?? Data, args.ItemType ?? ItemType);
-        await LogAsync("dragstart session.Begin done");
+        var data = args.Data ?? Data;
+        var itemType = args.ItemType ?? ItemType;
+        if (DragSession is { IsDragging: true } &&
+            (!Equals(DragSession.Data, data) || !string.Equals(DragSession.ItemType, itemType, StringComparison.Ordinal)))
+        {
+            DragSession.Begin(data, itemType);
+        }
+
+        _ = LogAsync("dragstart session.Begin done");
     }
 
     private async Task OnDragEnd(DragEventArgs e)
     {
         _isDragging = false;
-        await LogAsync("dragend");
         DragSession?.End();
+        _ = LogAsync("dragend");
         await OnDragEnded.InvokeAsync();
     }
 }
