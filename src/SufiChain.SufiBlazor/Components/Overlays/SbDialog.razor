@@ -301,15 +301,9 @@
         }
     }
 
-    private async Task ShowAsync()
-    {
-        await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.showModal", _dialogRef);
-    }
+    private Task ShowAsync() => DialogInterop.InvokeAsync(JSRuntime, "SufiBlazor.dialog.showModal", _dialogRef);
 
-    private async Task HideAsync()
-    {
-        await JSRuntime.InvokeVoidAsync("SufiBlazor.dialog.close", _dialogRef);
-    }
+    private Task HideAsync() => DialogInterop.InvokeAsync(JSRuntime, "SufiBlazor.dialog.close", _dialogRef);
 
     private async Task SyncNativeOpenStateAsync()
     {

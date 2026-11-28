@@ -2535,6 +2535,8 @@ html.sufi-theme-dark .sb-theme-root .sb-alert__dismiss:hover,
     margin-top: var(--sb-space-1);
     font-size: var(--sb-font-size-xs);
     color: var(--sb-color-danger);
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 /* SbCheckbox */

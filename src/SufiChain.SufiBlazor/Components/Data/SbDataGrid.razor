@@ -702,6 +702,11 @@
                 }
             </select>
         }
+        else if (GetFilterInputType(column) == "date")
+        {
+            <SbDatePicker Value="@ParseFilterDate(currentText)"
+                          ValueChanged="@(value => OnFilterRowDateChangedAsync(field, value))" />
+        }
         else
         {
             var inputType = GetFilterInputType(column);
@@ -2638,6 +2643,18 @@
         }
 
         return sync;
+    }
+
+    private static DateOnly? ParseFilterDate(string? text) =>
+        DateOnly.TryParse(text, out var date) ? date : null;
+
+    private Task OnFilterRowDateChangedAsync(string field, DateOnly? value)
+    {
+        var text = value?.ToString("yyyy-MM-dd") ?? string.Empty;
+        _filterRowDraft[field] = text;
+        return OnColumnFilterChanged(
+            field,
+            value is null ? null : new SbFilter(field, SbFilterOperator.Equals, text));
     }
 
     private async Task OnFilterRowTextInputAsync(string field, string? value, SbColumn<TItem> column)
