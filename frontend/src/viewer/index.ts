@@ -10,6 +10,7 @@ import markdown from "highlight.js/lib/languages/markdown";
 import csharp from "highlight.js/lib/languages/csharp";
 import bash from "highlight.js/lib/languages/bash";
 import { createDocumentExtensions } from "../rich-text/schema";
+import { applyPerBlockDirection } from "./bidi-blocks";
 import "./viewer.css";
 
 hljs.registerLanguage("javascript", javascript);
@@ -35,7 +36,7 @@ export async function renderDocument(
   element: HTMLElement,
   content: string,
   format: string,
-  options?: { enableHighlight?: boolean; enableMermaid?: boolean; direction?: string },
+  options?: { enableHighlight?: boolean; enableMermaid?: boolean; direction?: string; perBlockDirection?: boolean },
 ): Promise<void> {
   const fmt = (format ?? "markdown").toLowerCase();
   const direction = options?.direction === "rtl" ? "rtl" : "ltr";
@@ -53,6 +54,9 @@ export async function renderDocument(
   }
 
   element.innerHTML = html;
+  if (options?.perBlockDirection) {
+    applyPerBlockDirection(element);
+  }
   const host = element.parentElement;
   if (host) {
     if (html) {

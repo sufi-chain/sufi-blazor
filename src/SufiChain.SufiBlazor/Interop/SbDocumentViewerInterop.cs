@@ -63,5 +63,6 @@ public sealed class SbDocumentViewerRenderOptions
 {
     public bool EnableHighlight { get; set; } = true;
     public bool EnableMermaid { get; set; } = true;
+    public bool PerBlockDirection { get; set; }
     public string? Direction { get; set; }
 }
