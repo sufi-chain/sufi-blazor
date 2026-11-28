@@ -367,7 +367,7 @@ public class SbDataGridTests : BunitContext
     }
 
     [Fact]
-    public void CancelledFirstServerLoadDoesNotShowTheEmptyState()
+    public void SbDataGrid_FirstLoadCancelled_ShowsEmptyNotSkeleton()
     {
         var cut = Render<SbDataGrid<TestItem>>(p => p
             .Add(x => x.ItemsProvider, _ => Task.FromCanceled<SbDataResponse<TestItem>>(new CancellationToken(true)))
@@ -375,11 +375,28 @@ public class SbDataGridTests : BunitContext
             .Add(x => x.ShowPagination, false)
             .AddChildContent(ColumnsTemplate));
 
-        Assert.Null(cut.Find(".sb-datagrid").GetAttribute("aria-busy"));
-        Assert.Equal("true", cut.Find("table.sb-datagrid__table").GetAttribute("aria-busy"));
-        BusyAncestorAssertions.AssertNoBusyAncestor(cut.Find("[role='status']"));
-        Assert.DoesNotContain("No data available", cut.Markup);
+        cut.WaitForState(() => cut.Markup.Contains("No data available"), TimeSpan.FromSeconds(2));
+        Assert.Contains("No data available", cut.Markup);
+        Assert.DoesNotContain("sb-datagrid__row--skeleton", cut.Markup);
         Assert.DoesNotContain("couldn't be loaded", cut.Markup);
+        Assert.Equal("false", cut.Find("table.sb-datagrid__table").GetAttribute("aria-busy"));
+    }
+
+    [Fact]
+    public void CancelledFirstServerLoadEndsEmptyInsteadOfStayingBusy()
+    {
+        var cut = Render<SbDataGrid<TestItem>>(p => p
+            .Add(x => x.ItemsProvider, _ => Task.FromCanceled<SbDataResponse<TestItem>>(new CancellationToken(true)))
+            .Add(x => x.KeySelector, (Func<TestItem, string>)(item => item.Id.ToString()))
+            .Add(x => x.ShowPagination, false)
+            .AddChildContent(ColumnsTemplate));
+
+        cut.WaitForState(() => cut.Markup.Contains("No data available"), TimeSpan.FromSeconds(2));
+        Assert.Null(cut.Find(".sb-datagrid").GetAttribute("aria-busy"));
+        Assert.Equal("false", cut.Find("table.sb-datagrid__table").GetAttribute("aria-busy"));
+        Assert.Contains("No data available", cut.Markup);
+        Assert.DoesNotContain("couldn't be loaded", cut.Markup);
+        Assert.DoesNotContain("sb-datagrid__row--skeleton", cut.Markup);
     }
 
     [Fact]
