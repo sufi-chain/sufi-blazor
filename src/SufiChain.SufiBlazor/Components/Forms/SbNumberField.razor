@@ -243,7 +243,12 @@
     }
     private string? MinAsString => Min.HasValue ? FormatInvariant(Min.Value) : null;
     private string? MaxAsString => Max.HasValue ? FormatInvariant(Max.Value) : null;
-    private string? StepAsString => Step.HasValue ? FormatInvariant(Step.Value) : "1";
+    private string? StepAsString => Step.HasValue ? FormatInvariant(Step.Value) : (IsFractional ? "any" : "1");
+
+    private static bool IsFractional =>
+        typeof(TNumber) == typeof(decimal)
+        || typeof(TNumber) == typeof(double)
+        || typeof(TNumber) == typeof(float);
 
     private bool IsAtMin => Min.HasValue && Value.CompareTo(Min.Value) <= 0;
     private bool IsAtMax => Max.HasValue && Value.CompareTo(Max.Value) >= 0;
@@ -323,6 +328,7 @@
     {
         value = default!;
         if (string.IsNullOrWhiteSpace(text)) return false;
+        text = NormalizeNumericText(text);
 
         var type = typeof(TNumber);
         var culture = CultureInfo.InvariantCulture;
@@ -382,6 +388,33 @@
             // Parse failed
         }
         return false;
+    }
+
+    private static string NormalizeNumericText(string text)
+    {
+        var decimalSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+        var builder = new System.Text.StringBuilder(text.Length);
+        foreach (var ch in text)
+        {
+            if (ch is >= '\u06F0' and <= '\u06F9')
+            {
+                builder.Append((char)('0' + (ch - '\u06F0')));
+            }
+            else if (ch is >= '\u0660' and <= '\u0669')
+            {
+                builder.Append((char)('0' + (ch - '\u0660')));
+            }
+            else if (ch == '\u066B' || (decimalSeparator.Length == 1 && ch == decimalSeparator[0] && ch != '.'))
+            {
+                builder.Append('.');
+            }
+            else
+            {
+                builder.Append(ch);
+            }
+        }
+
+        return builder.ToString();
     }
 
     private static TNumber GetDefaultStep()

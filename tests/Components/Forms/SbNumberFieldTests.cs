@@ -424,4 +424,44 @@ public class SbNumberFieldTests : BunitContext
 
         Assert.Equal("2500", cut.Find("input").GetAttribute("value"));
     }
+
+    [Fact]
+    public async Task SbNumberField_Decimal_TypeSevenPointSevenSeven_Value777()
+    {
+        decimal? received = null;
+        var cut = Render<SbNumberField<decimal>>(p => p
+            .Add(x => x.Value, 0m)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<decimal>(this, value => received = value)));
+
+        var input = cut.Find("input");
+        await cut.InvokeAsync(() => input.TriggerEvent("onfocus", new FocusEventArgs()));
+        await cut.InvokeAsync(() => input.Input("7"));
+        await cut.InvokeAsync(() => input.Input("7."));
+        Assert.Equal("7.", cut.Find("input").GetAttribute("value"));
+        await cut.InvokeAsync(() => input.Input("7.77"));
+        await cut.InvokeAsync(() => input.Change("7.77"));
+
+        Assert.Equal(7.77m, received);
+        Assert.Equal("7.77", cut.Find("input").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void SbNumberField_Decimal_DefaultStepAny()
+    {
+        var cut = Render<SbNumberField<decimal>>(p => p.Add(x => x.Value, 7.77m));
+        Assert.Equal("any", cut.Find("input").GetAttribute("step"));
+    }
+
+    [Fact]
+    public async Task SbNumberField_FaDecimalSeparator_Parses()
+    {
+        decimal? received = null;
+        var cut = Render<SbNumberField<decimal>>(p => p
+            .Add(x => x.Value, 0m)
+            .Add(x => x.ValueChanged, EventCallback.Factory.Create<decimal>(this, value => received = value)));
+
+        await cut.InvokeAsync(() => cut.Find("input").Change("7\u066B77"));
+
+        Assert.Equal(7.77m, received);
+    }
 }
