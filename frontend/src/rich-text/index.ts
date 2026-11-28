@@ -2,7 +2,7 @@ import { Editor } from "@tiptap/core";
 import BubbleMenu from "@tiptap/extension-bubble-menu";
 import Placeholder from "@tiptap/extension-placeholder";
 import CharacterCount from "@tiptap/extension-character-count";
-import { serializeContent, toContentType } from "./content";
+import { programmaticContentOptions, serializeContent, toContentType } from "./content";
 import { EditorFeature, hasFeature } from "./features";
 import { createDocumentExtensions } from "./schema";
 import { createEditorSnapshot } from "./snapshot";
@@ -202,7 +202,7 @@ export function setContent(editorId: string, content: string, format: string): v
   if (!editor) {
     return;
   }
-  editor.commands.setContent(content ?? "", { contentType: toContentType(format) });
+  editor.commands.setContent(content ?? "", programmaticContentOptions(format));
 }
 
 export function focusEditor(editorId: string): void {

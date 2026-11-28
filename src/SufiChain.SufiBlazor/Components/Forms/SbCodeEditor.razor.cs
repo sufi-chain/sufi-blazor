@@ -34,6 +34,11 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
     [Parameter] public bool? RightToLeft { get; set; }
     [Parameter] public bool LineNumbers { get; set; } = true;
     [Parameter] public bool WordWrap { get; set; }
+    /// <summary>
+    /// HTML mode inserts closing tags while typing unless this is false.
+    /// The CMS HTML tab turns it off so inline tags are not rewritten into stray text.
+    /// </summary>
+    [Parameter] public bool AutoCloseTags { get; set; } = true;
     [Parameter] public string? Placeholder { get; set; }
     [Parameter] public string? MinHeight { get; set; } = "200px";
     [Parameter] public string? MaxHeight { get; set; }
@@ -44,11 +49,16 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
     [Parameter] public string? ToolbarScope { get; set; }
     [Parameter] public bool ValidateJson { get; set; }
     [Parameter] public EventCallback<bool> JsonValidChanged { get; set; }
+    [Parameter] public EventCallback<bool> DirtyChanged { get; set; }
     [Parameter] public EventCallback<string> OnShortcut { get; set; }
     [Parameter] public string ToolbarAriaLabel { get; set; } = "Code editor toolbar";
     [Parameter] public string EditorAriaLabel { get; set; } = "Code editor";
 
     public bool IsJsonValid => _jsonValid;
+
+    public SbCodeEditorTransferState TransferState { get; private set; } = SbCodeEditorTransferState.Idle;
+
+    public bool IsDirty { get; private set; }
 
     private SbContentFormat ContentFormat => Language == SbCodeLanguage.Markdown
         ? SbContentFormat.Markdown
@@ -101,7 +111,8 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
                 LineNumbers = LineNumbers,
                 WordWrap = WordWrap,
                 Placeholder = Placeholder,
-                ValidateJson = ValidateJson && Language == SbCodeLanguage.Json
+                ValidateJson = ValidateJson && Language == SbCodeLanguage.Json,
+                AutoCloseTags = AutoCloseTags
             });
             if (seed.Length != initial.Length)
             {
@@ -156,6 +167,42 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
     }
 
     [JSInvokable]
+    public async Task OnEditorDirtyChanged(bool dirty, int length)
+    {
+        IsDirty = dirty;
+        await DirtyChanged.InvokeAsync(dirty);
+        if (!dirty || length > SbEditorTextTransfer.SingleMessageChars || _disposed)
+        {
+            return;
+        }
+
+        try
+        {
+            var value = await ReadValueAsync();
+            if (value == _lastValue)
+            {
+                return;
+            }
+
+            _lastValue = value;
+            Value = value;
+            await ValueChanged.InvokeAsync(value);
+        }
+        catch (Exception)
+        {
+            await OnEditorTransferFailed("read");
+        }
+    }
+
+    [JSInvokable]
+    public Task OnEditorTransferFailed(string stage)
+    {
+        TransferState = SbCodeEditorTransferState.Failed;
+        _ = stage;
+        return Task.CompletedTask;
+    }
+
+    [JSInvokable]
     public async Task OnLargeEditorContentChanged(int length)
     {
         if (_editorId == null || _interop == null || _disposed)
@@ -193,14 +240,39 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
     [JSInvokable]
     public Task OnEditorShortcut(string name) => OnShortcut.InvokeAsync(name);
 
-    public async Task<string> GetValueAsync()
+    public Task<string> GetValueAsync() => ReadValueAsync();
+
+    public async Task<string> ReadValueAsync()
     {
         if (_editorId == null || _interop == null)
         {
-            return Value;
+            return Value ?? string.Empty;
         }
 
-        return await _interop.GetValueAsync(_editorId);
+        TransferState = SbCodeEditorTransferState.Reading;
+        try
+        {
+            var value = await _interop.GetValueAsync(_editorId);
+            TransferState = SbCodeEditorTransferState.Idle;
+            return value ?? string.Empty;
+        }
+        catch (Exception)
+        {
+            TransferState = SbCodeEditorTransferState.Failed;
+            throw;
+        }
+    }
+
+    public async Task MarkSavedAsync()
+    {
+        if (_editorId != null && _interop != null)
+        {
+            await _interop.MarkSavedAsync(_editorId);
+        }
+
+        IsDirty = false;
+        TransferState = SbCodeEditorTransferState.Idle;
+        await DirtyChanged.InvokeAsync(false);
     }
 
     public async Task SetValueAsync(string value)
