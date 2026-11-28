@@ -34,6 +34,11 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
     [Parameter] public bool? RightToLeft { get; set; }
     [Parameter] public bool LineNumbers { get; set; } = true;
     [Parameter] public bool WordWrap { get; set; }
+    /// <summary>
+    /// HTML mode inserts closing tags while typing unless this is false.
+    /// The CMS HTML tab turns it off so inline tags are not rewritten into stray text.
+    /// </summary>
+    [Parameter] public bool AutoCloseTags { get; set; } = true;
     [Parameter] public string? Placeholder { get; set; }
     [Parameter] public string? MinHeight { get; set; } = "200px";
     [Parameter] public string? MaxHeight { get; set; }
@@ -101,7 +106,8 @@ public partial class SbCodeEditor : ComponentBase, IAsyncDisposable, ISbEditorDo
                 LineNumbers = LineNumbers,
                 WordWrap = WordWrap,
                 Placeholder = Placeholder,
-                ValidateJson = ValidateJson && Language == SbCodeLanguage.Json
+                ValidateJson = ValidateJson && Language == SbCodeLanguage.Json,
+                AutoCloseTags = AutoCloseTags
             });
             if (seed.Length != initial.Length)
             {

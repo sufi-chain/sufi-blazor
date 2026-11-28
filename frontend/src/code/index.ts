@@ -10,6 +10,9 @@ import { xml } from "@codemirror/lang-xml";
 import { linter } from "@codemirror/lint";
 import { searchKeymap } from "@codemirror/search";
 import "./code.css";
+import { applyValueChunk, htmlLanguageConfig } from "./transfer";
+
+export { applyValueChunk, htmlLanguageConfig };
 
 type DotNetRef = { invokeMethodAsync(method: string, ...args: unknown[]): Promise<unknown> };
 
@@ -23,6 +26,8 @@ interface InitOptions {
   wordWrap?: boolean;
   placeholder?: string;
   validateJson?: boolean;
+  /** HTML/Scriban only. False stops CodeMirror inserting closing-tag text while typing. */
+  autoCloseTags?: boolean;
 }
 
 const editors = new Map<string, EditorView>();
@@ -62,13 +67,13 @@ function notifyEditorContent(editorId: string, dotNetRef: DotNetRef, view: Edito
   }, 250));
 }
 
-function languageExtension(language?: string) {
+function languageExtension(language?: string, autoCloseTags?: boolean) {
   switch ((language ?? "plaintext").toLowerCase()) {
     case "json":
       return json();
     case "html":
     case "scriban":
-      return html();
+      return html(htmlLanguageConfig(autoCloseTags));
     case "markdown":
       return markdown();
     case "css":
@@ -108,7 +113,7 @@ export function initEditor(element: HTMLElement, dotNetRef: DotNetRef, options: 
         },
       },
     ]),
-    languageExtension(options.language),
+    languageExtension(options.language, options.autoCloseTags),
     EditorView.updateListener.of((update) => {
       if (update.docChanged) {
         notifyEditorContent(editorId, dotNetRef, update.view);
@@ -190,15 +195,9 @@ export function setValueChunk(editorId: string, chunk: string, reset: boolean): 
   }
   suppressEditorNotify.add(editorId);
   try {
-    if (reset) {
-      view.dispatch({
-        changes: { from: 0, to: view.state.doc.length, insert: chunk ?? "" },
-      });
-      return;
-    }
-    const end = view.state.doc.length;
+    const next = applyValueChunk(reset ? "" : view.state.doc.toString(), chunk ?? "", reset);
     view.dispatch({
-      changes: { from: end, to: end, insert: chunk ?? "" },
+      changes: { from: 0, to: view.state.doc.length, insert: next },
     });
   } finally {
     suppressEditorNotify.delete(editorId);

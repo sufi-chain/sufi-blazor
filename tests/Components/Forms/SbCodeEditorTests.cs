@@ -51,6 +51,18 @@ public class SbCodeEditorTests : BunitContext
     }
 
     [Fact]
+    public void AutoCloseTags_DefaultsOn_AndCanBeTurnedOff()
+    {
+        var on = Render<SbCodeEditor>();
+        Assert.True(on.Instance.AutoCloseTags);
+
+        var off = Render<SbCodeEditor>(parameters => parameters
+            .Add(editor => editor.Language, SbCodeLanguage.Html)
+            .Add(editor => editor.AutoCloseTags, false));
+        Assert.False(off.Instance.AutoCloseTags);
+    }
+
+    [Fact]
     public void StaysLeftToRightWhenPageIsRightToLeft()
     {
         var cut = Render<SbCodeEditor>(p => p.Add(x => x.RightToLeft, true));

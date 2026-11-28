@@ -168,4 +168,6 @@ public sealed class SbCodeEditorInitOptions
     public bool WordWrap { get; set; }
     public string? Placeholder { get; set; }
     public bool ValidateJson { get; set; }
+    /// <summary>HTML and Scriban only. False stops the editor inserting closing-tag text.</summary>
+    public bool AutoCloseTags { get; set; } = true;
 }

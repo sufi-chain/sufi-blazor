@@ -13,6 +13,11 @@ export function toContentType(format: string | undefined): EditorContentType {
   return "html";
 }
 
+/** A programmatic set must not emit onUpdate. Tiptap re-serializes HTML and that echo was saved over the code view. */
+export function programmaticContentOptions(format: string | undefined): { contentType: EditorContentType; emitUpdate: false } {
+  return { contentType: toContentType(format), emitUpdate: false };
+}
+
 export function serializeContent(editor: Editor, format: string | undefined): string {
   const type = toContentType(format);
   if (type === "markdown") {
