@@ -18,6 +18,7 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
     private string? _lastContent;
     private string? _lastFormat;
     private string? _lastDirection;
+    private bool _lastPerBlockDirection;
     private bool _painted;
     private int _renderGeneration;
 
@@ -33,6 +34,12 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
     /// Null keeps the culture direction from <see cref="RightToLeft"/>.
     /// </summary>
     [Parameter] public string? TextDirection { get; set; }
+
+    /// <summary>
+    /// Adds <c>dir="auto"</c> on each block and isolates Latin runs inside RTL blocks.
+    /// Off unless a caller such as the chat timeline turns it on.
+    /// </summary>
+    [Parameter] public bool PerBlockDirection { get; set; }
     [Parameter] public string? Class { get; set; }
     [Parameter] public string? Style { get; set; }
     [Parameter(CaptureUnmatchedValues = true)]
@@ -58,7 +65,8 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
 
         return Content != _lastContent
             || !string.Equals(Format.ToString(), _lastFormat, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(ResolvedTextDirection, _lastDirection, StringComparison.Ordinal);
+            || !string.Equals(ResolvedTextDirection, _lastDirection, StringComparison.Ordinal)
+            || PerBlockDirection != _lastPerBlockDirection;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -88,6 +96,7 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
             {
                 EnableHighlight = EnableHighlight,
                 EnableMermaid = EnableMermaid,
+                PerBlockDirection = PerBlockDirection,
                 Direction = direction
             });
             if (_disposed || generation != _renderGeneration)
@@ -98,6 +107,7 @@ public partial class SbDocumentViewer : ComponentBase, IAsyncDisposable
             _lastContent = Content;
             _lastFormat = format;
             _lastDirection = direction;
+            _lastPerBlockDirection = PerBlockDirection;
             _painted = true;
             _useFallback = false;
         }

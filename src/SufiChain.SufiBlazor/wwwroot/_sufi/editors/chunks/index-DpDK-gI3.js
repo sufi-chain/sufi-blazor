@@ -1,4 +1,5 @@
 import { r as Nt, k as Tt, s as yt, l as St, m as Ke, n as At, o as bn, q as Ot, S as Mt, f as wt, M as vt } from "./schema-BC-lZYXa.js";
+import { applyPerBlockDirection } from "./bidi-blocks.js";
 function Rt(n, t, a) {
   const i = n.attrs;
   return i ? t.filter((o) => o.type !== (typeof n.type == "string" ? n.type : n.type.name) ? !1 : o.attribute.rendered).map((o) => o.attribute.renderHTML ? o.attribute.renderHTML(i) || { [o.name]: o.name in i ? i[o.name] : o.attribute.default } : { [o.name]: o.name in i ? i[o.name] : o.attribute.default }).reduce((o, c) => Ot(o, c), {}) : {};
@@ -4921,7 +4922,7 @@ async function Tr(n, t, a, i) {
       staticEditorOptions: { textDirection: c }
     });
   }
-  n.innerHTML = u, n.parentElement && (u ? n.parentElement.dataset.rendered = "true" : delete n.parentElement.dataset.rendered), i?.enableHighlight !== !1 && n.querySelectorAll("pre code").forEach((g) => {
+  n.innerHTML = u, i?.perBlockDirection && applyPerBlockDirection(n), n.parentElement && (u ? n.parentElement.dataset.rendered = "true" : delete n.parentElement.dataset.rendered), i?.enableHighlight !== !1 && n.querySelectorAll("pre code").forEach((g) => {
     ne.highlightElement(g);
   }), i?.enableMermaid !== !1 && n.querySelector("code.language-mermaid, .language-mermaid") && await hr(n);
 }
